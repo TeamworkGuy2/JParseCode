@@ -1,0 +1,206 @@
+TParseBlocks(var) ::= <<
+package $var.packageName$;
+
+import stringUtils.StringIndex;
+import twg2.collections.primitiveCollections.IntArrayList;
+import twg2.collections.primitiveCollections.IntList;
+
+/** Static methods to parse blocks of text marked by start and end characters or strings.
+ * For example the input string:<br>
+ * <pre>function test(t) {
+ *   t = Number.parseInt(t, 10);
+ *   {
+ *     var value = 3 * 5, neg = -1, pos = 1;
+ *     t = t < value ? t * neg : value;
+ *     t = Math.max(t, pos);
+ *   }
+ *   return t;
+ * }</pre>
+ * 
+ * Would return 4 blocks representing the strings:<br>
+ * <pre>"function test(t) "</pre>
+ * <pre>"{
+ *   t = Number.parseInt(t, 10);"</pre>
+ * <pre>"  {
+ *     var value = 3 * 5, neg = -1, pos = 1;
+ *     t = t < value ? t * neg : value;
+ *     t = Math.max(t, pos);
+ *   }"</pre>
+ * <pre>"  return t;
+ * }"<pre><br>
+ * @author TeamworkGuy2
+ * @since 2014-12-12
+ */
+@javax.annotation.Generated("StringTemplate")
+public final class $var.className$ {
+
+	private $var.className$() { throw new AssertionError("cannot instantiate static class $var.className$"); }
+
+
+	/** Identify the blocks in the {@code input} string.
+	 * @param input the string containing {@code blockStart} and {@code blockEnd}
+	 * @param blockStart the string that identifies the start of a block
+	 * @param blockEnd the string that identifies the end of a block
+	 * @return a {@link TextBlock} with nested blocks describing each of the blocks in {@code input}
+	 */
+	public static final TextBlock splitIntoBlocks(String input, String blockStart, String blockEnd) {
+		IntermediateBlock blocks = new IntermediateBlock();
+		splitIntoBlocks(blocks, input, blockStart, blockEnd, new IntArrayList());
+		return blocks;
+	}
+
+
+	/** Identify the blocks in the {@code input} string.
+	 * @param input the string containing {@code blockStart} and {@code blockEnd}
+	 * @param blockStart the character that identifies the start of a block
+	 * @param blockEnd the character that identifies the end of a block
+	 * @param dst the destination to store pairs of start and end block indices in.
+	 * The indices are zero based character indices into the {@code input} string
+	 * @return a {@link TextBlock} with nested blocks describing each of the blocks in {@code input}
+	 */
+	public static final TextBlock splitIntoBlocks(String input, int blockStart, int blockEnd, IntArrayList dst) {
+		IntermediateBlock blocks = new IntermediateBlock();
+		splitIntoBlocks(blocks, input, blockStart, blockEnd, dst);
+		return blocks;
+	}
+
+
+	/** Identify the blocks in the {@code input} string.
+	 * @param input the string containing {@code blockStart} and {@code blockEnd}
+	 * @param blockStart the string that identifies the start of a block
+	 * @param blockEnd the string that identifies the end of a block
+	 * @param dst the destination to store pairs of start and end block indices in.
+	 * The indices are zero based character indices into the {@code input} string
+	 * @return a {@link TextBlock} with nested blocks describing each of the blocks in {@code input}
+	 */
+	public static final TextBlock splitIntoBlocks(StringBuilder input, String blockStart, String blockEnd,
+			IntArrayList dst) {
+		IntermediateBlock blocks = new IntermediateBlock();
+		splitIntoBlocks(blocks, input, blockStart, blockEnd, dst);
+		return blocks;
+	}
+
+
+	/** Identify the blocks in the {@code input} string.
+	 * @param input the string containing {@code blockStart} and {@code blockEnd}
+	 * @param blockStart the character that identifies the start of a block
+	 * @param blockEnd the character that identifies the end of a block
+	 * @param dst the destination to store pairs of start and end block indices in.
+	 * The indices are zero based character indices into the {@code input} string
+	 * @return a {@link TextBlock} with nested blocks describing each of the blocks in {@code input}
+	 */
+	public static final TextBlock splitIntoBlocks(StringBuilder input, int blockStart, int blockEnd,
+			IntArrayList dst) {
+		IntermediateBlock blocks = new IntermediateBlock();
+		splitIntoBlocks(blocks, input, blockStart, blockEnd, dst);
+		return blocks;
+	}
+$var.parseTypes:{arg | 
+
+
+	/** Identify the blocks in the {@code input\} string.
+	 * @param blocks the destination root {@link IntermediateBlock\} to store parsed
+	 * {@link TextBlock TextBlocks\} in
+	 * @param input the string containing {@code blockStart\} and {@code blockEnd\} to parse
+	 * @param $arg.startMarkerName$ the string that identifies the start of a block
+	 * @param $arg.endMarkerName$ the string that identifies the end of a block
+	 * @param dst the destination to store pairs of start and end block indices in.
+	 * The indices are zero based character indices into the {@code input\} string.
+	 * A {@link TextBlock\} with nested blocks describing each of the blocks in {@code input\}
+	 */
+	public static final void splitIntoBlocks(IntermediateBlock blocks, $arg.parserType$ input, $arg.markerType$ $arg.startMarkerName$, $arg.markerType$ $arg.endMarkerName$,
+			IntList dst) {
+		int startStrLen = $arg.startMarkerLength$;
+		int endStrLen = $arg.endMarkerLength$;
+		IntArrayList startIndices = new IntArrayList();
+		int startIndex = $arg.calcInitStartIndex$;
+		int prevEndIndex = 0;
+		int endIndex = $arg.calcInitEndIndex$;
+		IntermediateBlock blockDepth = blocks;
+
+		int level = 0;
+		int loopI = 0;
+		while(endIndex > -1) {
+			// find each leaf block
+			while(startIndex > -1 && startIndex < endIndex) {
+				startIndices.add(startIndex);
+				if(startIndices.size() > 1) {
+					int tmpStart = startIndices.get(startIndices.size() - 2) + startStrLen;
+					int tmpLength = startIndex - tmpStart;
+					dst.add(tmpStart);
+					dst.add(startIndex);
+					int len = $arg.calcTmpLen$;
+					for(int i = 0, size = startIndices.size(); i < size; i++) {
+						//startIndices.set(i, startIndices.get(i) - len);
+					\}
+					String s1 = input.substring(tmpStart, tmpStart + tmpLength);
+					blockDepth.addSubBlock(new TextOffsetBlock(blockDepth, tmpStart, tmpLength));
+				\}
+				else {
+					int tmpStart = loopI > 0 ? prevEndIndex + endStrLen : prevEndIndex;
+					int tmpLength = startIndex - tmpStart;
+					dst.add(tmpStart);
+					dst.add(startIndex);
+					for(int i = 0, size = startIndices.size(); i < size; i++) {
+						//startIndices.set(i, startIndices.get(i) - tmpLength);
+					\}
+					String s2 = input.substring(tmpStart, tmpStart + tmpLength);
+					blockDepth.addSubBlock(new TextOffsetBlock(blockDepth, tmpStart, tmpLength));
+				\}
+				startIndex = $arg.calcStartIndex$;
+
+				IntermediateBlock tempBlock = new IntermediateBlock(blockDepth);
+				blockDepth.addSubBlock(tempBlock);
+				blockDepth = tempBlock;
+
+				level++;
+			\}
+
+			if(startIndices.size() > 0) {
+				int tmpStart = startIndices.get(startIndices.size() - 1) + startStrLen;
+				int tmpLength = endIndex - tmpStart;
+				dst.add(tmpStart);
+				dst.add(endIndex);
+				for(int i = 0, size = startIndices.size(); i < size; i++) {
+					//startIndices.set(i, startIndices.get(i) - tmpLength);
+				\}
+				String s3 = input.substring(tmpStart, tmpStart + tmpLength);
+				blockDepth.addSubBlock(new TextOffsetBlock(blockDepth, tmpStart, tmpLength));
+			\}
+			else {
+				int tmpStart = prevEndIndex + endStrLen;
+				int tmpLength = endIndex - tmpStart;
+				dst.add(tmpStart);
+				dst.add(endIndex);
+				for(int i = 0, size = startIndices.size(); i < size; i++) {
+					//startIndices.set(i, startIndices.get(i) - tmpLength);
+				\}
+				String s4 = input.substring(tmpStart, tmpStart + tmpLength);
+				blockDepth.addSubBlock(new TextOffsetBlock(blockDepth, tmpStart, tmpLength));
+			\}
+
+			prevEndIndex = endIndex;
+			endIndex = $arg.calcEndIndex$;
+			startIndices.clear();
+			if(blockDepth.hasParentBlock()) {
+				blockDepth = blockDepth.getParentBlock();
+			\}
+			else if(endIndex != -1) {
+				throw new IllegalStateException("mismatching number of opening/closing blocks");
+			\}
+			level--;
+			loopI++;
+		\}
+
+		int tmpStart = loopI > 0 ? prevEndIndex + startStrLen : prevEndIndex;
+		int tmpLength = $arg.calcLastTmpLength$;
+		for(int i = 0, size = startIndices.size(); i < size; i++) {
+			//startIndices.set(i, startIndices.get(i) - tmpLength);
+		\}
+		String s5 = input.substring(tmpStart, tmpLength);
+		blockDepth.addSubBlock(new TextOffsetBlock(blockDepth, tmpStart, tmpLength - tmpStart));
+	\}
+}$
+}
+
+>>
