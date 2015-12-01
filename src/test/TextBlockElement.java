@@ -1,9 +1,11 @@
-package documentParser.block;
+package test;
 
 import java.util.Enumeration;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
+
+import documentParser.block.TextOffsetBlock;
 
 /**
  * @author TeamworkGuy2

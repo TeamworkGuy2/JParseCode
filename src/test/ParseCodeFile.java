@@ -4,16 +4,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
-import parser.textFragment.TextFragmentRef;
 import lombok.val;
 import twg2.treeLike.TreeTraversalOrder;
-import twg2.treeLike.TreeTraverse;
-import twg2.treeLike.parameters.IndexedTreeTraverseParameters;
 import twg2.treeLike.simpleTree.SimpleTreeUtil;
-import codeParser.CodeFragmentType;
 import codeParser.codeStats.ParseDirectoryCodeFiles;
-import documentParser.DocumentFragment;
+import codeParser.csharp.CSharpDirtyInterfaceExtractor;
+import codeRepresentation.method.MethodSig;
 import documentParser.DocumentParser;
 
 /**
@@ -38,19 +36,11 @@ public class ParseCodeFile {
 				System.out.println(token.getFragmentType() + ": " + token.getTextFragment().getText(parsedFile.getSrc()));
 			});
 
-			TreeTraverse.Indexed.traverse(IndexedTreeTraverseParameters.allNodes(tree, TreeTraversalOrder.PRE_ORDER, (node) -> node.getChildren().size() > 0, (node) -> node.getChildren())
-				.setConsumerIndexed((tokenNode, idx, size, depth, parent) -> {
-					DocumentFragment<CodeFragmentType> token = tokenNode.getData();
-					TextFragmentRef textFrag = token.getTextFragment();
-					String text = textFrag.getText(parsedFile.getSrc()).toString();
-					if(token.getFragmentType().isCompound() && text.indexOf('(') == 0) {
-						System.out.println();
-					}
-				})
-			);
+			List<MethodSig> intfMethods = CSharpDirtyInterfaceExtractor.extractInterfaceMethods(parsedFile);
 
 			// recreate the source, excluding the parsed elements
 			System.out.println("\n====\n" + DocumentParser.toSource(tree, parsedFile.getSrc(), false));
+			System.out.println("\n====\n" + intfMethods);
 
 			i++;
 		}

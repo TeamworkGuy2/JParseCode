@@ -31,7 +31,6 @@ import javax.swing.text.Document;
 import twg2.collections.primitiveCollections.IntArrayList;
 import documentParser.block.IntermediateBlock;
 import documentParser.block.ParseBlocks;
-import documentParser.block.TextBlockElement;
 import documentParser.block.TextOffsetBlock;
 
 /**
