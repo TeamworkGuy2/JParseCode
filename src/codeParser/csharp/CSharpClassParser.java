@@ -16,6 +16,7 @@ import codeParser.parsers.CodeBlockParser;
 import codeParser.parsers.CodeStringParser;
 import codeParser.parsers.CommentParser;
 import codeParser.parsers.IdentifierParser;
+import documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
@@ -23,7 +24,7 @@ import codeParser.parsers.IdentifierParser;
  */
 public class CSharpClassParser {
 
-	public static CodeFile parse(ParseInput params) {
+	public static CodeFile<DocumentFragmentText<CodeFragmentType>> parse(ParseInput params) {
 		try {
 			val parser = new ParserBuilder()
 				.addConstParser(CommentParser.createCommentParser(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)

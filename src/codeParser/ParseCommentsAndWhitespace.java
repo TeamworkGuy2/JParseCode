@@ -16,7 +16,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
 import codeParser.codeStats.ParsedFileStats;
 import codeParser.parsers.CodeStringParser;
 import codeParser.parsers.CommentParser;
-import documentParser.DocumentFragment;
+import documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
@@ -24,14 +24,14 @@ import documentParser.DocumentFragment;
  */
 public class ParseCommentsAndWhitespace {
 
-	public static CodeFile buildCommentsAndWhitespaceTreeFromFileExtension(String fileExtension, String src) throws IOException {
+	public static CodeFile<DocumentFragmentText<CodeFragmentType>> buildCommentsAndWhitespaceTreeFromFileExtension(String fileExtension, String src) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
 		return buildCommentsAndWhitespaceTree(commentStyle, src);
 	}
 
 
-	public static CodeFile buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
+	public static CodeFile<DocumentFragmentText<CodeFragmentType>> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
 		Precondition stringParser = CodeStringParser.createStringParserForJavascript();
 		Precondition commentParser = CommentParser.createCommentParser(style);
 
@@ -42,7 +42,7 @@ public class ParseCommentsAndWhitespace {
 	}
 
 
-	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, int srcCharCount, List<String> lines, SimpleTree<DocumentFragment<CodeFragmentType>> tree) {
+	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, int srcCharCount, List<String> lines, SimpleTree<DocumentFragmentText<CodeFragmentType>> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
 		val tokensPerLine = documentTreeToTokensPerLine(tree);
 
@@ -90,9 +90,9 @@ public class ParseCommentsAndWhitespace {
 	}
 
 
-	public static List<List<DocumentFragment<CodeFragmentType>>> documentTreeToTokensPerLine(SimpleTree<DocumentFragment<CodeFragmentType>> tree) {
+	public static List<List<DocumentFragmentText<CodeFragmentType>>> documentTreeToTokensPerLine(SimpleTree<DocumentFragmentText<CodeFragmentType>> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
-		List<List<DocumentFragment<CodeFragmentType>>> tokensPerLine = new ArrayList<>();
+		List<List<DocumentFragmentText<CodeFragmentType>>> tokensPerLine = new ArrayList<>();
 
 		val treeTraverseParams = SimpleTreeTraverseParameters.of(tree, false, TreeTraversalOrder.PRE_ORDER)
 				.setSkipRoot(true)

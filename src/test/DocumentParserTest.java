@@ -30,7 +30,7 @@ public class DocumentParserTest {
 		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src);
 
 		// TODO debugging
-		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getTextFragment().toString(src), System.out);
+		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
 	}
 
 
@@ -46,7 +46,7 @@ public class DocumentParserTest {
 		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src);
 
 		// TODO debugging
-		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getTextFragment().toString(src), System.out);
+		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
 	}
 
 

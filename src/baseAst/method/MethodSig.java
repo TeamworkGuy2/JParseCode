@@ -1,4 +1,4 @@
-package codeRepresentation.method;
+package baseAst.method;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

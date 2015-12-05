@@ -25,6 +25,7 @@ import twg2.io.json.Json;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 import codeParser.CodeFile;
+import codeParser.CodeFragmentType;
 import codeParser.CodeLanguage;
 import codeParser.ParseCommentsAndWhitespace;
 import codeParser.ParseInput;
@@ -32,6 +33,8 @@ import codeParser.ParseInput;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize.Typing;
+
+import documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
@@ -135,8 +138,8 @@ public class ParseDirectoryCodeFiles {
 	}
 
 
-	public static List<CodeFile> parseFiles(List<Path> files) throws IOException {
-		List<CodeFile> parsedFiles = new ArrayList<>();
+	public static List<CodeFile<DocumentFragmentText<CodeFragmentType>>> parseFiles(List<Path> files) throws IOException {
+		List<CodeFile<DocumentFragmentText<CodeFragmentType>>> parsedFiles = new ArrayList<>();
 
 		for(Path path : files) {
 			File file = path.toFile();

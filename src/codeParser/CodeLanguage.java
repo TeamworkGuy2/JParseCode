@@ -5,6 +5,7 @@ import java.util.function.Function;
 import lombok.Getter;
 import twg2.collections.util.arrayUtils.ArrayUtil;
 import codeParser.csharp.CSharpClassParser;
+import documentParser.DocumentFragmentText;
 
 
 /**
@@ -19,11 +20,11 @@ public enum CodeLanguage {
 	XML(null, "html", "xml");
 
 
-	@Getter final Function<ParseInput, CodeFile> parser;
+	@Getter final Function<ParseInput, CodeFile<DocumentFragmentText<CodeFragmentType>>> parser;
 	final String[] fileExtensions;
 
 
-	private CodeLanguage(Function<ParseInput, CodeFile> parser, String... fileExtensions) {
+	private CodeLanguage(Function<ParseInput, CodeFile<DocumentFragmentText<CodeFragmentType>>> parser, String... fileExtensions) {
 		this.parser = parser;
 		this.fileExtensions = fileExtensions;
 	}

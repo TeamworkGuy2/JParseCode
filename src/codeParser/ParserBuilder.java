@@ -12,9 +12,9 @@ import streamUtils.EnhancedIterator;
 import streamUtils.StringLineSupplier;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.textParser.TextParserImpl;
-import documentParser.DocumentFragment;
+import twg2.treeLike.simpleTree.SimpleTree;
+import documentParser.DocumentFragmentText;
 import documentParser.DocumentParser;
-import documentParser.DocumentTreeBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -41,7 +41,7 @@ public class ParserBuilder {
 	}
 
 
-	public CodeFile buildAndParse(String src) throws IOException {
+	public CodeFile<DocumentFragmentText<CodeFragmentType>> buildAndParse(String src) throws IOException {
 		List<String> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
@@ -57,16 +57,17 @@ public class ParserBuilder {
 		TextParser input = new TextParserImpl(lineReader, true);
 
 		val docTextFragment = new TextFragmentRef.ImplMut(0, src.length(), 0, 0, -1, -1);
-		val docRoot = new DocumentFragment<>(CodeFragmentType.DOCUMENT, docTextFragment);
+		val docRoot = new DocumentFragmentText<>(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src).toString());
 
-		DocumentTreeBuilder<CodeFragmentType> docTree = fileParser.parseDocument(input, docRoot,
+		SimpleTree<DocumentFragmentText<CodeFragmentType>> docTree = fileParser.parseDocument(input, docRoot,
+				(type, frag) -> new DocumentFragmentText<>(type, frag, frag.getText(src).toString()),
 				(docFrag) -> docFrag.getFragmentType().isCompound(),
 				(parent, child) -> parent != child && parent.getTextFragment().contains(child.getTextFragment()));
 
 		docTextFragment.setLineEnd(input.getLineNumber() - 1);
 		docTextFragment.setColumnEnd(input.getColumnNumber() - 1);
 
-		return new CodeFile(docTree.getTree(), src, lines);
+		return new CodeFile<>(docTree, src, lines);
 	}
 
 }
