@@ -1,17 +1,15 @@
 package parser.textFragment;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import twg2.parser.textParser.ParserPos;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.val;
+import twg2.parser.textParser.ParserPos;
 
 /**
  * @author TeamworkGuy2
@@ -145,42 +143,49 @@ public interface TextFragmentRef {
 
 	static TextFragmentRef.ImplMut merge(TextFragmentRef.ImplMut dst, TextFragmentRef... fragments) {
 		// sort the fragments by start offset
-		List<TextFragmentRef> fragmentsSorted = new ArrayList<>(Arrays.asList(fragments));
-		Collections.sort(fragmentsSorted, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
+		Arrays.sort(fragments, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
 
-		return _merge(fragmentsSorted, dst);
+		return _merge(fragments, dst);
 	}
 
 
 	static TextFragmentRef merge(TextFragmentRef... fragments) {
 		// sort the fragments by start offset
-		List<TextFragmentRef> fragmentsSorted = new ArrayList<>(Arrays.asList(fragments));
-		Collections.sort(fragmentsSorted, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
+		Arrays.sort(fragments, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
 
-		return _merge(fragmentsSorted, null);
+		return _merge(fragments, null);
 	}
 
 
 	static TextFragmentRef merge(Collection<? extends TextFragmentRef> fragments) {
 		// sort the fragments by start offset
-		List<TextFragmentRef> fragmentsSorted = new ArrayList<>(fragments);
-		Collections.sort(fragmentsSorted, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
+		TextFragmentRef[] fragmentsAry = fragments.toArray(new TextFragmentRef[fragments.size()]);
+		Arrays.sort(fragmentsAry, (a, b) -> a.getOffsetStart() - b.getOffsetStart());
 
-		return _merge(fragmentsSorted, null);
+		return _merge(fragmentsAry, null);
 	}
 
 
-	static TextFragmentRef.ImplMut _merge(List<TextFragmentRef> mutableFragmentList, TextFragmentRef.ImplMut dstOpt) {
-		TextFragmentRef.ImplMut res = dstOpt != null ? dstOpt : copyMutable(mutableFragmentList.get(0));
-		for(TextFragmentRef frag : mutableFragmentList) {
-			// + 1 because indices are inclusive
-			if(frag.getOffsetStart() > res.offsetEnd + 1) {
+	static TextFragmentRef.ImplMut _merge(TextFragmentRef[] mutableSortedFragments, TextFragmentRef.ImplMut dstOpt) {
+		TextFragmentRef.ImplMut res = dstOpt != null ? dstOpt : copyMutable(mutableSortedFragments[0]);
+		int resOffsetEnd = res.offsetEnd;
+		int resLineEnd = 0;
+		int resColumnEnd = 0;
+
+		// loop over each fragment (note the fragment list is sorted) and set the ending offset/line/column equal to the fragment's
+		for(TextFragmentRef frag : mutableSortedFragments) {
+			// stop if a fragment is not adjacent to the previous fragment, + 1 because indices are inclusive
+			if(frag.getOffsetStart() > resOffsetEnd + 1) {
 				break;
 			}
-			res.offsetEnd = frag.getOffsetEnd();
-			res.lineEnd = frag.getLineEnd();
-			res.columnEnd = frag.getColumnEnd();
+			resOffsetEnd = frag.getOffsetEnd();
+			resLineEnd = frag.getLineEnd();
+			resColumnEnd = frag.getColumnEnd();
 		}
+
+		res.offsetEnd = resOffsetEnd;
+		res.lineEnd = resLineEnd;
+		res.columnEnd = resColumnEnd;
 		return res;
 	}
 

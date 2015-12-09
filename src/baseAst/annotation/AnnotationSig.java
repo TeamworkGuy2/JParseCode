@@ -1,21 +1,18 @@
 package baseAst.annotation;
 
+import java.util.List;
 import java.util.Map;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import twg2.annotations.Immutable;
 
+@Immutable
+@AllArgsConstructor
 public class AnnotationSig {
-	private @Getter String name;
-	private @Getter Map<String, String> arguments;
-
-	/**
-	 * @param name
-	 * @param arguments
-	 */
-	public AnnotationSig(String name, Map<String, String> arguments) {
-		this.name = name;
-		this.arguments = arguments;
-	}
+	private final @Getter String name;
+	private final @Getter List<String> fullyQualifyingName;
+	private final @Getter Map<String, String> arguments;
 
 
 	@Override

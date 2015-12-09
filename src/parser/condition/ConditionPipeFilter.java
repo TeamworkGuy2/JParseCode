@@ -13,7 +13,6 @@ import parser.textFragment.TextFragmentRef;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharListSorted;
 import twg2.collections.util.ListBuilder;
-import twg2.collections.util.ListUtil;
 import twg2.functions.BiPredicates;
 import twg2.parser.textParser.TextParser;
 import twg2.text.stringUtils.StringJoin;
@@ -43,14 +42,12 @@ public class ConditionPipeFilter {
 		/** true if conditionSets after the initial one are optional, false if not */
 		boolean subseqentConditionSetsOptional;
 		StringBuilder dstBuf;
-		// TODO testing Functionality<T> funcs;
 
 
 		{
 			this.curSetIndex = 0;
 			this.curCondIndex = 0;
 			this.dstBuf = new StringBuilder();
-			// TODO testing this.funcs = new Functionality<T>();
 		}
 
 
@@ -131,37 +128,6 @@ public class ConditionPipeFilter {
 		public void setParserDestination(StringBuilder parserDestination) {
 			this.dstBuf = parserDestination;
 		}
-
-
-		@Override
-		public TextFragmentRef getCompleteMatchedTextCoords() {
-			List<TextFragmentRef> mergedList = new ArrayList<>();
-			for(int i = 0, maxI = Math.min(conditionSets.size() - 1, curSetIndex); i <= maxI; i++) {
-				List<T> conds = conditionSets.get(i);
-				if(i == curSetIndex && ((curCondIndex < conds.size() - 1 && curCondition != null && curCondition.isComplete()) || curCondIndex < conds.size())) {
-					if(curCondIndex > 0) {
-						conds = conds.subList(0, curCondIndex + 1);
-					}
-					else {
-						conds = null;
-					}
-				}
-				if(conds != null && conds.size() > 0) {
-					val matchSegments = ListUtil.map(conds, (a) -> a.getCompleteMatchedTextCoords());
-					val merged = TextFragmentRef.merge(matchSegments);
-					mergedList.add(merged);
-				}
-			}
-			return mergedList.size() > 0 ? TextFragmentRef.merge(mergedList) : mergedList.get(0);
-		}
-
-
-		/* TODO testing
-		@Override
-		public boolean acceptNext(char ch, TextParser buf) {
-			return funcs.acceptNextFunc.test(ch, buf);
-		}
-		*/
 
 
 		@Override
@@ -256,10 +222,7 @@ public class ConditionPipeFilter {
 			val condSet = super.conditionSets.get(0);
 			condSet.add(filter);
 
-			CharList firstCharsList = new CharListSorted();
-			firstFilter.getMatchFirstChars(firstCharsList);
-			this.firstChars = firstCharsList.toArray();
-			setupPipeAllRequiredFilter(this);
+			initFirstChars(firstFilter);
 		}
 
 
@@ -269,10 +232,7 @@ public class ConditionPipeFilter {
 			val condSet = super.conditionSets.get(0);
 			Collections.addAll(condSet, filters);
 
-			CharList firstCharsList = new CharListSorted();
-			firstFilter.getMatchFirstChars(firstCharsList);
-			this.firstChars = firstCharsList.toArray();
-			setupPipeAllRequiredFilter(this);
+			initFirstChars(firstFilter);
 		}
 
 
@@ -281,18 +241,19 @@ public class ConditionPipeFilter {
 			val condSet = super.conditionSets.get(0);
 			condSet.addAll(filters);
 
-			CharList firstCharsList = new CharListSorted();
-			firstFilter.getMatchFirstChars(firstCharsList);
-			this.firstChars = firstCharsList.toArray();
-			setupPipeAllRequiredFilter(this);
+			initFirstChars(firstFilter);
 		}
 
 
 		@SuppressWarnings("unchecked")
 		public WithMarks(List<? extends List<T>> filterSets) {
 			super((List<List<ParserCondition>>)filterSets);
-
 			ParserCondition.WithMarks firstFilter = (ParserCondition.WithMarks)super.conditionSets.get(0).get(0);
+			initFirstChars(firstFilter);
+		}
+
+
+		private final void initFirstChars(ParserCondition.WithMarks firstFilter) {
 			CharList firstCharsList = new CharListSorted();
 			firstFilter.getMatchFirstChars(firstCharsList);
 			this.firstChars = firstCharsList.toArray();
@@ -354,6 +315,8 @@ public class ConditionPipeFilter {
 
 
 	public static class PipeAllRequiredFilter<S extends ParserCondition> extends WithMarks<S> {
+		private TextFragmentRef.ImplMut coords = null;
+
 
 		@SafeVarargs
 		public PipeAllRequiredFilter(ParserCondition.WithMarks filter, S... filters) {
@@ -372,6 +335,12 @@ public class ConditionPipeFilter {
 
 
 		@Override
+		public TextFragmentRef getCompleteMatchedTextCoords() {
+			return this.coords;
+		}
+
+
+		@Override
 		public boolean acceptNext(char ch, TextParser buf) {
 			if(this.curCondition == null) {
 				this.failed = true;
@@ -381,8 +350,11 @@ public class ConditionPipeFilter {
 			boolean res = this.curCondition.acceptNext(ch, buf);
 			// when complete
 			if(this.curCondition.isComplete()) {
-				this.curCondIndex++;
+				val curCondCoords = this.curCondition.getCompleteMatchedTextCoords();
+				this.coords = this.coords == null ? TextFragmentRef.copyMutable(curCondCoords) : TextFragmentRef.merge(this.coords, this.coords, curCondCoords);
+
 				// get the next condition
+				this.curCondIndex++;
 				if(this.curCondIndex < this.conditionSets.get(this.curSetIndex).size()) {
 					this.curCondition = this.conditionSets.get(this.curSetIndex).get(this.curCondIndex);
 				}
@@ -410,60 +382,19 @@ public class ConditionPipeFilter {
 
 
 		@Override
+		void reset() {
+			super.reset();
+			this.coords = null;
+		}
+
+
+		@Override
 		public ParserCondition copy() {
 			val copy = new PipeAllRequiredFilter<>(BasePipeFilter.copyConditionSets(this));
 			BasePipeFilter.copyTo(this, copy);
 			return copy;
 		}
 
-	}
-
-
-
-
-	public static <S extends ParserCondition> BasePipeFilter<S> setupPipeAllRequiredFilter(BasePipeFilter<S> cond) {
-		val funcs = new Functionality<S>();
-		// TODO testing cond.funcs = funcs;
-
-		funcs.copyFunc = ConditionPipeFilter::setupPipeAllRequiredFilter;
-
-		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			if(cond.curCondition == null) {
-				cond.failed = true;
-				return false;
-			}
-
-			boolean res = cond.curCondition.acceptNext(ch, buf);
-			// when complete
-			if(cond.curCondition.isComplete()) {
-				cond.curCondIndex++;
-				// get the next condition
-				if(cond.curCondIndex < cond.conditionSets.get(cond.curSetIndex).size()) {
-					cond.curCondition = cond.conditionSets.get(cond.curSetIndex).get(cond.curCondIndex);
-				}
-				else if(cond.curSetIndex < cond.conditionSets.size() - 1) {
-					cond.curSetIndex++;
-					cond.curCondIndex = 0;
-					cond.curCondition = cond.conditionSets.get(cond.curSetIndex).get(cond.curCondIndex);
-				}
-				// or there are no conditions left (this precondition filter is complete)
-				else {
-					cond.anyComplete = true;
-					cond.curCondition = null;
-				}
-			}
-
-			if(!res) {
-				cond.failed = true;
-			}
-			else {
-				cond.dstBuf.append(ch);
-			}
-
-			return res;
-		};
-
-		return cond;
 	}
 
 
@@ -510,6 +441,7 @@ public class ConditionPipeFilter {
 			if(this.curCondition.isComplete()) {
 				val curCondCoords = this.curCondition.getCompleteMatchedTextCoords();
 				this.coords = this.coords == null ? TextFragmentRef.copyMutable(curCondCoords) : TextFragmentRef.merge(this.coords, this.coords, curCondCoords);
+
 				// get the next condition, or null
 				this.curCondition = this.nextCondition();
 				// required parser done, optional parsers next
@@ -547,6 +479,13 @@ public class ConditionPipeFilter {
 			return res;
 		}
 
+
+		@Override
+		void reset() {
+			super.reset();
+			this.coords = null;
+		}
+
 	}
 
 
@@ -561,7 +500,6 @@ public class ConditionPipeFilter {
 			// when complete
 			if(cond.curCondition.isComplete()) {
 				// get the next condition, or null
-				// TODO testing cond.curCondition = cond.funcs.nextConditionFunc.get();
 				// required parser done, optional parsers next
 				if(cond.curSetIndex > 0) {
 					if(buf.hasNext()) {
@@ -629,8 +567,10 @@ public class ConditionPipeFilter {
 
 		@Override
 		public ParserCondition nextCondition() {
-			super.curCondIndex++;
 			List<ParserCondition> curCondSet = super.conditionSets.get(super.curSetIndex);
+			curCondSet.set(super.curCondIndex, super.curCondition.copyOrReuse());
+
+			super.curCondIndex++;
 
 			// advance to the next condition in the current set
 			if(super.curCondIndex < curCondSet.size()) {
@@ -668,47 +608,6 @@ public class ConditionPipeFilter {
 	}
 
 
-	/** Setup a {@link ParserCondition} that contains a required set of conditions which must be parsed first, followed by an optional set.<br>
-	 * Valid isComplete() points occur after the required conditions, and after each optional condition set.<br>
-	 * NOTE {@link BasePipeFilter#conditionSets}{@code .get(0)} is the required conditions, all other condition sets are optional
-	 */
-	@Deprecated
-	public static <S extends ParserCondition> BasePipeFilter<S> _setupPipeOptionalSuffixFilter(BasePipeFilter<S> cond) {
-		cond.subseqentConditionSetsOptional = true;
-
-		val funcs = new Functionality<S>();
-		// TODO testing cond.funcs = funcs;
-
-		funcs.copyFunc = ConditionPipeFilter::_setupPipeOptionalSuffixFilter;
-
-		funcs.acceptNextFunc = createAcceptNextAllRequiredFunc(cond);
-
-		funcs.nextConditionFunc = () -> {
-			cond.curCondIndex++;
-			List<S> curCondSet = cond.conditionSets.get(cond.curSetIndex);
-
-			// advance to the next condition in the current set
-			if(cond.curCondIndex < curCondSet.size()) {
-				return curCondSet.get(cond.curCondIndex);
-			}
-			// advance to the next set of conditions
-			else if(cond.curSetIndex < cond.conditionSets.size() - 1) {
-				cond.anyComplete = true;
-				cond.curSetIndex++;
-				cond.curCondIndex = 0;
-				curCondSet = cond.conditionSets.get(cond.curSetIndex);
-				return curCondSet.size() > 0 ? curCondSet.get(cond.curCondIndex) : null;
-			}
-			// or there are no conditions left (this precondition filter is complete)
-			else {
-				return null;
-			}
-		};
-
-		return cond;
-	}
-
-
 
 
 	public static class PipeRepeatableSeparatorFilter<S extends ParserCondition> extends PipeAcceptNextAllRequired<S> {
@@ -743,8 +642,10 @@ public class ConditionPipeFilter {
 
 		@Override
 		public ParserCondition nextCondition() {
-			super.curCondIndex++;
 			List<ParserCondition> curCondSet = super.conditionSets.get(super.curSetIndex);
+			curCondSet.set(super.curCondIndex, super.curCondition.copyOrReuse());
+
+			super.curCondIndex++;
 
 			if(super.curCondIndex < curCondSet.size()) {
 				return curCondSet.get(super.curCondIndex);
@@ -791,68 +692,4 @@ public class ConditionPipeFilter {
 
 	}
 
-
-	/** Setup a {@link ParserCondition} that takes element and separator conditions and repeatedly parses an element, a separator, an element, ...<br>
-	 * Valid isComplete() points occur at the end of each element (i.e. the sequence 'element' or 'element separator element' are valid,
-	 * but 'element separator' or 'element separator element separator' are not valid because they end on a separator).<br>
-	 * NOTE: a repeatable separator pipe condition must only contain 2 conditions sets (i.e. {@link BasePipeFilter#conditionSets}{@code .size() == 2}),
-	 * the first condition set is the element parser, the second condition set is the separator parser.
-	 */
-	@Deprecated
-	public static <S extends ParserCondition> BasePipeFilter<S> _setupPipeRepeatableSeparatorFilter(BasePipeFilter<S> cond) {
-		if(cond.conditionSets.size() > 2) {
-			// technically this allows for 1 element repeating parsers
-			throw new IllegalStateException("a repeatable separator pipe condition can only contain 2 condition sets, the element parser and the separator parser");
-		}
-
-		cond.subseqentConditionSetsOptional = false;
-
-		val funcs = new Functionality<S>();
-		// TODO testing cond.funcs = funcs;
-
-		funcs.copyFunc = ConditionPipeFilter::_setupPipeRepeatableSeparatorFilter;
-
-		funcs.acceptNextFunc = createAcceptNextAllRequiredFunc(cond);
-
-		funcs.nextConditionFunc = () -> {
-			cond.curCondIndex++;
-			List<S> curCondSet = cond.conditionSets.get(cond.curSetIndex);
-
-			if(cond.curCondIndex < curCondSet.size()) {
-				return curCondSet.get(cond.curCondIndex);
-			}
-			// advance to the separator parser or back to the element parser
-			else if((cond.curSetIndex == 0) || (cond.curSetIndex > 0)) {
-				// advance to the separator parser
-				if(cond.curSetIndex == 0) {
-					cond.anyComplete = true; // the element parser just completed, so it's a valid parser stop point
-					cond.curSetIndex = (cond.curSetIndex + 1) % cond.conditionSets.size(); // allows for 1 condition
-				}
-				// cycle back to the element parser set
-				else if(cond.curSetIndex > 0) {
-					cond.curSetIndex = 0;
-				}
-				else {
-					throw new AssertionError("unknown repeatable separator pipe condition state");
-				}
-
-				cond.curCondIndex = 0;
-				curCondSet = cond.conditionSets.get(cond.curSetIndex);
-				for(int i = 0, size = curCondSet.size(); i < size; i++) {
-					@SuppressWarnings("unchecked")
-					val curCond = (S)curCondSet.get(i).copyOrReuse();
-					curCondSet.set(i, curCond);
-				}
-				return curCondSet.size() > 0 ? curCondSet.get(cond.curCondIndex) : null;
-			}
-			// or there are no conditions left (this precondition filter is complete)
-			else {
-				return null;
-			}
-		};
-
-		return cond;
-	}
-
 }
-//

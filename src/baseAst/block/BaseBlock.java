@@ -11,6 +11,10 @@ import baseAst.annotation.AnnotationSig;
  */
 public interface BaseBlock {
 
+	public String getSimpleName();
+
+	public List<String> getFullyQualifiedName();
+
 	public ScopeType parentScope();
 
 	public BaseBlock parent();

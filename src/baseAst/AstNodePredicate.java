@@ -19,10 +19,10 @@ import documentParser.DocumentFragmentText;
  *   <li>(new) parentNodeFrag (nullable) - the current tree node's parent's data</li>
  * </ul>
  * @author TeamworkGuy2
- * @since 2015-12-4
+ * @since 2015-12-9
  */
 @FunctionalInterface
-public interface AstNodeConsumer<T> {
+public interface AstNodePredicate<T> {
 
 	/**
 	 * @param node the current tree node
@@ -34,7 +34,7 @@ public interface AstNodeConsumer<T> {
 	 * @param parentNode the parent tree node of the current node
 	 * @param parentNodeFrag the parent tree node's data
 	 */
-	public void accept(SimpleTree<DocumentFragmentText<T>> node, DocumentFragmentText<T> nodeFrag,
+	public boolean test(SimpleTree<DocumentFragmentText<T>> node, DocumentFragmentText<T> nodeFrag,
 			int idx, int size, int depth, List<SimpleTree<DocumentFragmentText<T>>> siblings,
 			SimpleTree<DocumentFragmentText<T>> parentNode, DocumentFragmentText<T> parentNodeFrag);
 

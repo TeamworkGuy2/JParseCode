@@ -1,6 +1,5 @@
 package codeParser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,12 @@ public class ParserBuilder {
 	}
 
 
-	public CodeFile<DocumentFragmentText<CodeFragmentType>> buildAndParse(String src) throws IOException {
+	/** Parse a source string using the parsers added via ({@link #addParser(Precondition, TextTransformer)} and {@link #addConstParser(Precondition, CodeFragmentType)})
+	 * @param src the source string
+	 * @param language optional
+	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
+	 */
+	public <L extends CodeLanguage> CodeFileSrc<DocumentFragmentText<CodeFragmentType>, L> buildAndParse(String src, L language) {
 		List<String> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
@@ -67,7 +71,7 @@ public class ParserBuilder {
 		docTextFragment.setLineEnd(input.getLineNumber() - 1);
 		docTextFragment.setColumnEnd(input.getColumnNumber() - 1);
 
-		return new CodeFile<>(docTree, src, lines);
+		return new CodeFileSrc<>(docTree, src, lines, language);
 	}
 
 }

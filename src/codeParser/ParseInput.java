@@ -15,4 +15,9 @@ public class ParseInput {
 	@Getter private final Consumer<Exception> errorHandler;
 	@Getter private final String fileName; // optional
 
+	@Override
+	public String toString() {
+		return "parseInput: { file: " + fileName + " }";
+	}
+
 }

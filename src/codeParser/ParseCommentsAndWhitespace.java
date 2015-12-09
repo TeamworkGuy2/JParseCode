@@ -24,21 +24,21 @@ import documentParser.DocumentFragmentText;
  */
 public class ParseCommentsAndWhitespace {
 
-	public static CodeFile<DocumentFragmentText<CodeFragmentType>> buildCommentsAndWhitespaceTreeFromFileExtension(String fileExtension, String src) throws IOException {
+	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String fileExtension, String src) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
 		return buildCommentsAndWhitespaceTree(commentStyle, src);
 	}
 
 
-	public static CodeFile<DocumentFragmentText<CodeFragmentType>> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
+	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
 		Precondition stringParser = CodeStringParser.createStringParserForJavascript();
 		Precondition commentParser = CommentParser.createCommentParser(style);
 
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)
 			.addConstParser(stringParser, CodeFragmentType.STRING);
-		return parser.buildAndParse(src);
+		return parser.buildAndParse(src, null);
 	}
 
 

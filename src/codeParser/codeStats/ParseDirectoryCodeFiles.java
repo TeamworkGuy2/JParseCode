@@ -24,9 +24,10 @@ import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
-import codeParser.CodeFile;
+import codeParser.CodeFileSrc;
 import codeParser.CodeFragmentType;
 import codeParser.CodeLanguage;
+import codeParser.CodeLanguageOptions;
 import codeParser.ParseCommentsAndWhitespace;
 import codeParser.ParseInput;
 
@@ -74,7 +75,7 @@ public class ParseDirectoryCodeFiles {
 		Map<CodeLanguage, List<ParsedFileStats>> filesPerCategory = new HashMap<>();
 
 		for(ParsedFileStats fileStat : fileStats) {
-			CodeLanguage lang = CodeLanguage.tryFromFileExtension(StringSplit.lastMatch(fileStat.getSrcId(), "."));
+			CodeLanguage lang = CodeLanguageOptions.tryFromFileExtension(StringSplit.lastMatch(fileStat.getSrcId(), "."));
 			if(lang == null) {
 				uncategorizedFiles.add(fileStat);
 			}
@@ -138,18 +139,25 @@ public class ParseDirectoryCodeFiles {
 	}
 
 
-	public static List<CodeFile<DocumentFragmentText<CodeFragmentType>>> parseFiles(List<Path> files) throws IOException {
-		List<CodeFile<DocumentFragmentText<CodeFragmentType>>> parsedFiles = new ArrayList<>();
+	public static List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parseFiles(List<Path> files) throws IOException {
+		List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parsedFiles = new ArrayList<>();
 
 		for(Path path : files) {
 			File file = path.toFile();
 			String srcStr = StringReplace.replace(FileReadUtil.defaultInst.readString(new FileReader(file)), "\r\n", "\n");
 			String fileName = file.getName();
 			String fileExt = StringSplit.lastMatch(fileName, ".");
-			val lang = CodeLanguage.tryFromFileExtension(fileExt);
+			val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
 			if(lang != null) {
 				val parseParams = new ParseInput(srcStr, null, fileName);
-				val parsedFileInfo = lang.getParser().apply(parseParams);
+				
+				CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFileInfo = null;
+				try {
+					parsedFileInfo = (CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>)lang.getParser().apply(parseParams);
+				} catch(Exception e) {
+					throw new RuntimeException(parseParams.toString(), e);
+				}
+
 				parsedFiles.add(parsedFileInfo);
 			}
 			else {

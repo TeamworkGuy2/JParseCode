@@ -89,17 +89,37 @@ public enum CSharpKeyword {
 		CSharpKeyword[] keywordEnums = CSharpKeyword.values();
 		keywords = new String[keywordEnums.length];
 		for(int i = 0, size = keywordEnums.length; i < size; i++) {
-			keywords[i] = keywordEnums[i].name;
+			keywords[i] = keywordEnums[i].srcName;
 		}
 		Arrays.sort(keywords);
 	}
 
 
-	public final String name;
+	public final String srcName;
 
 
 	CSharpKeyword(String name) {
-		this.name = name;
+		this.srcName = name;
+	}
+
+
+	public String getSrcName() {
+		return srcName;
+	}
+
+
+	public static CSharpKeyword toKeyword(String str) {
+		CSharpKeyword resType = tryToKeyword(str);
+		if(resType == null) {
+			throw new IllegalArgumentException("'" + str + "' is not a valid C# keyword");
+		}
+		return resType;
+	}
+
+
+	public static CSharpKeyword tryToKeyword(String str) {
+		int idx = Arrays.binarySearch(keywords, str);
+		return idx > -1 ? CSharpKeyword.values()[idx] : null;
 	}
 
 

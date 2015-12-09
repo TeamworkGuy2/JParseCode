@@ -13,13 +13,13 @@ import twg2.io.serialize.xml.XmlInput;
 import twg2.io.serialize.xml.XmlOutput;
 import twg2.io.serialize.xml.Xmlable;
 import twg2.text.stringUtils.StringCompare;
+import twg2.text.stringUtils.StringJoin;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-5-25
  */
 public class EclipseClasspathFile implements Xmlable {
-	private static String ENTRY_KEY = "classpath";
 
 
 	/**
@@ -28,8 +28,7 @@ public class EclipseClasspathFile implements Xmlable {
 	 */
 	// package-private
 	static class ClassPathEntry implements Xmlable {
-		private static String ENTRY_KEY = "classpathentry";
-		// package-private
+		private static String CLASS_PATH_ENTRY_KEY = "classpathentry";
 		String kind;
 		String path;
 		String sourcePath;
@@ -42,7 +41,7 @@ public class EclipseClasspathFile implements Xmlable {
 
 		@Override
 		public void readXML(XmlInput in) throws IOException, XMLStreamException {
-			in.readStartBlock(ENTRY_KEY);
+			in.readStartBlock(CLASS_PATH_ENTRY_KEY);
 			XmlAttributes attrs = in.getCurrentElementAttributes();
 			List<String> attrNames = attrs.getAttributeNames();
 
@@ -67,9 +66,20 @@ public class EclipseClasspathFile implements Xmlable {
 
 		@Override
 		public String toString() {
-			return ENTRY_KEY + " " + kind + ": " + path + (sourcePath != null ? (", " + sourcePath) : "");
+			return CLASS_PATH_ENTRY_KEY + " " + kind + ": " + path + (sourcePath != null ? (", " + sourcePath) : "");
 		}
 
+	}
+
+
+	private static String ENTRY_KEY = "classpath";
+	// package-private
+	File file;
+	List<ClassPathEntry> classPathEntries = new ArrayList<>();
+
+
+	public EclipseClasspathFile(File file) {
+		this.file = file;
 	}
 
 
@@ -91,16 +101,6 @@ public class EclipseClasspathFile implements Xmlable {
 	@Override
 	public void writeXML(XmlOutput out) throws IOException, XMLStreamException {
 		throw new IllegalStateException("unimplemented");
-	}
-
-
-	// package-private
-	File file;
-	List<ClassPathEntry> classPathEntries = new ArrayList<>();
-
-
-	public EclipseClasspathFile(File file) {
-		this.file = file;
 	}
 
 
@@ -129,10 +129,7 @@ public class EclipseClasspathFile implements Xmlable {
 		StringBuilder strB = new StringBuilder();
 		strB.append(file);
 		strB.append(": [\n");
-		for(ClassPathEntry entry : classPathEntries) {
-			strB.append(entry.toString());
-			strB.append('\n');
-		}
+		StringJoin.Objects.join(classPathEntries, "\n", strB);
 		strB.append("]\n");
 		return strB.toString();
 	}

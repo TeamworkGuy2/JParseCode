@@ -1,14 +1,13 @@
 package codeParser.csharp;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-
 import lombok.val;
 import parser.Inclusion;
 import parser.StringBoundedParserBuilder;
+import parser.StringParserBuilder;
 import parser.condition.Precondition;
-import codeParser.CodeFile;
+import codeParser.CodeFileSrc;
 import codeParser.CodeFragmentType;
+import codeParser.CodeLanguageOptions;
 import codeParser.CommentStyle;
 import codeParser.ParseInput;
 import codeParser.ParserBuilder;
@@ -24,7 +23,7 @@ import documentParser.DocumentFragmentText;
  */
 public class CSharpClassParser {
 
-	public static CodeFile<DocumentFragmentText<CodeFragmentType>> parse(ParseInput params) {
+	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguageOptions.CSharp> parse(ParseInput params) {
 		try {
 			val parser = new ParserBuilder()
 				.addConstParser(CommentParser.createCommentParser(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)
@@ -34,13 +33,14 @@ public class CSharpClassParser {
 				.addConstParser(createAnnotationParser(), CodeFragmentType.BLOCK)
 				.addParser(IdentifierParser.createIdentifierWithGenericTypeParser(), (text, off, len) -> {
 					return CSharpKeyword.isKeyword(text.toString()) ? CodeFragmentType.KEYWORD : CodeFragmentType.IDENTIFIER; // possible bad performance
-				});
-			return parser.buildAndParse(params.getSrc());
-		} catch(IOException e) {
+				})
+				.addConstParser(createOperatorParser(), CodeFragmentType.OPERATOR);
+			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP);
+		} catch(Exception e) {
 			if(params.getErrorHandler() != null) {
 				params.getErrorHandler().accept(e);
 			}
-			throw new UncheckedIOException(e);
+			throw e;
 		}
 	}
 
@@ -51,6 +51,17 @@ public class CSharpClassParser {
 			.isCompound(true)
 			.build();
 		return annotationParser;
+	}
+
+
+	// TODO only partially implemented
+	static Precondition createOperatorParser() {
+		Precondition operatorParser = new StringParserBuilder()
+			.addCharLiteralMarker('+')
+			.addCharLiteralMarker('-')
+			.addCharLiteralMarker('=')
+			.build();
+		return operatorParser;
 	}
 
 }

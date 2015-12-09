@@ -12,6 +12,7 @@ public enum CodeFragmentType {
 	STRING(false),
 	IDENTIFIER(false),
 	KEYWORD(false),
+	OPERATOR(false),
 	BLOCK(true),
 	NAMESPACE_LIKE(true),
 	CLASS_LIKE(true),
