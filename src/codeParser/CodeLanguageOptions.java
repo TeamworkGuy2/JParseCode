@@ -9,8 +9,8 @@ import java.util.function.Function;
 import lombok.Getter;
 import lombok.val;
 import baseAst.LanguageAstUtil;
-import baseAst.csharp.CSharpAstUtil;
-import codeParser.csharp.CSharpClassParser;
+import baseAst.csharp.CsAstUtil;
+import codeParser.csharp.CsClassParser;
 import documentParser.DocumentFragmentText;
 
 /**
@@ -19,8 +19,8 @@ import documentParser.DocumentFragmentText;
  */
 public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends LanguageAstUtil> implements CodeLanguage {
 
-	public static class CSharp extends CodeLanguageOptions<CSharp, CSharpAstUtil> {
-		CSharp(String displayName, CSharpAstUtil astUtil, Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CSharp>> parser, String... fileExtensions) {
+	public static class CSharp extends CodeLanguageOptions<CSharp, CsAstUtil> {
+		CSharp(String displayName, CsAstUtil astUtil, Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CSharp>> parser, String... fileExtensions) {
 			super(displayName, astUtil, parser, fileExtensions);
 		}
 
@@ -29,7 +29,7 @@ public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends
 
 	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> JAVA = new CodeLanguageOptions<>("Java", null, null, "java");
 	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> JAVASCRIPT = new CodeLanguageOptions<>("Javascript", null, null, "js", "ts");
-	public static final CSharp C_SHARP = new CSharp("C#", new CSharpAstUtil(), CSharpClassParser::parse, "cs");
+	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsClassParser::parse, "cs");
 	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> CSS = new CodeLanguageOptions<>("CSS", (LanguageAstUtil)null, null, "css");
 	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> XML = new CodeLanguageOptions<>("XML", null, null, "html", "xml");
 

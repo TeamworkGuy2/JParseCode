@@ -5,8 +5,8 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-import parser.condition.ParserCondition;
-import parser.condition.StringConditions;
+import parser.text.CharParserCondition;
+import parser.text.StringConditions;
 import twg2.parser.textParser.TextParserImpl;
 
 /**
@@ -30,7 +30,7 @@ public class StringConditionsTest {
 
 		Boolean[] expect = { true, true, true, false };
 
-		ParserCondition cond = StringConditions.startStringFactory().create(startMarkers);
+		CharParserCondition cond = StringConditions.startStringFactory().create(startMarkers);
 
 		int i = 0;
 		for(String testStr : testStrs) {
@@ -64,7 +64,7 @@ public class StringConditionsTest {
 
 		Boolean[] expect = { true, true, true, false };
 
-		ParserCondition cond = StringConditions.endStringFactory().create(Arrays.asList(endMarkers));
+		CharParserCondition cond = StringConditions.endStringFactory().create(Arrays.asList(endMarkers));
 
 		int i = 0;
 		for(String testStr : testStrs) {

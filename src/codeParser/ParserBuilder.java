@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import parser.condition.Precondition;
+import parser.text.CharPrecondition;
 import parser.textFragment.TextFragmentRef;
 import parser.textFragment.TextTransformer;
 import streamUtils.EnhancedIterator;
@@ -28,19 +28,19 @@ public class ParserBuilder {
 	}
 
 
-	public ParserBuilder addParser(Precondition parser, TextTransformer<CodeFragmentType> transformer) {
+	public ParserBuilder addParser(CharPrecondition parser, TextTransformer<CodeFragmentType> transformer) {
 		this.fileParser.addFragmentParser(parser, transformer);
 		return this;
 	}
 
 
-	public ParserBuilder addConstParser(Precondition parser, CodeFragmentType type) {
+	public ParserBuilder addConstParser(CharPrecondition parser, CodeFragmentType type) {
 		this.fileParser.addFragmentParser(parser, (text, off, len) -> type);
 		return this;
 	}
 
 
-	/** Parse a source string using the parsers added via ({@link #addParser(Precondition, TextTransformer)} and {@link #addConstParser(Precondition, CodeFragmentType)})
+	/** Parse a source string using the parsers added via ({@link #addParser(CharPrecondition, TextTransformer)} and {@link #addConstParser(CharPrecondition, CodeFragmentType)})
 	 * @param src the source string
 	 * @param language optional
 	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}

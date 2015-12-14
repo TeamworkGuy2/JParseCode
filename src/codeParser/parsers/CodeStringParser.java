@@ -1,8 +1,8 @@
 package codeParser.parsers;
 
 import parser.Inclusion;
-import parser.StringBoundedParserBuilder;
-import parser.condition.Precondition;
+import parser.text.CharPrecondition;
+import parser.text.StringBoundedParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -13,8 +13,8 @@ public final class CodeStringParser {
 	private CodeStringParser() { throw new AssertionError("cannot instantiate static class CodeStringParser"); }
 
 
-	public static final Precondition createStringParserForJava() {
-		Precondition stringParser = new StringBoundedParserBuilder()
+	public static final CharPrecondition createStringParserForJava() {
+		CharPrecondition stringParser = new StringBoundedParserBuilder()
 			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -23,8 +23,8 @@ public final class CodeStringParser {
 
 
 	// TODO make parser work with all types of C# string literals
-	public static final Precondition createStringParserForCSharp() {
-		Precondition stringParser = new StringBoundedParserBuilder()
+	public static final CharPrecondition createStringParserForCSharp() {
+		CharPrecondition stringParser = new StringBoundedParserBuilder()
 			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -32,8 +32,8 @@ public final class CodeStringParser {
 	}
 
 
-	public static final Precondition createStringParserForJavascript() {
-		Precondition stringParser = new StringBoundedParserBuilder()
+	public static final CharPrecondition createStringParserForJavascript() {
+		CharPrecondition stringParser = new StringBoundedParserBuilder()
 			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();

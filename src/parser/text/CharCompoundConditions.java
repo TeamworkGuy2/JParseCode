@@ -1,8 +1,9 @@
-package parser.condition;
+package parser.text;
 
 import java.util.Collection;
 import java.util.function.Consumer;
 
+import parser.condition.ParserConditionFactory;
 import parser.textFragment.TextFragmentRef;
 import streamUtils.StreamMap;
 import twg2.collections.util.dataStructures.Bag;
@@ -14,36 +15,36 @@ import twg2.text.stringUtils.StringJoin;
  * @author TeamworkGuy2
  * @since 2015-3-07
  */
-public class Conditions {
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> filterFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, Conditions::setupFilter);
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> startFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, Conditions::setupStartFilter);
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> endFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, Conditions::setupEndFilter);
+public class CharCompoundConditions {
+	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> filterFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupFilter);
+	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> startFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupStartFilter);
+	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> endFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupEndFilter);
 
 
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> filterFactory() {
+	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> filterFactory() {
 		return filterFactory;
 	}
 
 
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> startFilterFactory() {
+	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> startFilterFactory() {
 		return startFactory;
 	}
 
 
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, ParserCondition> endFilterFactory() {
+	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> endFilterFactory() {
 		return endFactory;
 	}
 
 
 
 
-	/** A collection of {@link ParserCondition ParserConditions}
+	/** A collection of {@link CharParserCondition ParserConditions}
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class BaseFilter implements ParserCondition {
-		ParserCondition[] originalConds;
-		Bag<ParserCondition> matchingConds;
+	public static class BaseFilter implements CharParserCondition {
+		CharParserCondition[] originalConds;
+		Bag<CharParserCondition> matchingConds;
 		boolean anyComplete = false;
 		boolean failed = false;
 		int acceptedCount;
@@ -55,13 +56,13 @@ public class Conditions {
 		Runnable resetFunc;
 
 
-		public BaseFilter(Collection<ParserCondition> conds) {
-			this(conds.toArray(new ParserCondition[conds.size()]));
+		public BaseFilter(Collection<CharParserCondition> conds) {
+			this(conds.toArray(new CharParserCondition[conds.size()]));
 		}
 
 
 		@SafeVarargs
-		public BaseFilter(ParserCondition... conds) {
+		public BaseFilter(CharParserCondition... conds) {
 			this.originalConds = conds;
 			this.matchingConds = new Bag<>(this.originalConds, 0, this.originalConds.length);
 			this.anyComplete = false;
@@ -69,7 +70,7 @@ public class Conditions {
 
 
 		@Override
-		public ParserCondition copy() {
+		public CharParserCondition copy() {
 			BaseFilter copy = new BaseFilter(StreamMap.map(originalConds, (c) -> c.copy()));
 			if(copyFunc != null) {
 				copyFunc.accept(copy);
@@ -115,7 +116,7 @@ public class Conditions {
 
 
 		@Override
-		public ParserCondition recycle() {
+		public CharParserCondition recycle() {
 			this.reset();
 			return this;
 		}
@@ -166,7 +167,7 @@ public class Conditions {
 	 * @since 2015-2-10
 	 */
 	public static BaseFilter setupStartFilter(BaseFilter cond) {
-		cond.copyFunc = Conditions::setupStartFilter;
+		cond.copyFunc = CharCompoundConditions::setupStartFilter;
 
 		cond.acceptNextFunc = (char ch, TextParser buf) -> {
 			int off = cond.dstBuf.length();
@@ -175,8 +176,8 @@ public class Conditions {
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<ParserCondition> matchingConds = cond.matchingConds;
-			ParserCondition condI = null;
+			Bag<CharParserCondition> matchingConds = cond.matchingConds;
+			CharParserCondition condI = null;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
 				condI = matchingConds.get(i);
@@ -208,7 +209,7 @@ public class Conditions {
 
 				// TODO debugging - ensure that this compound condition ends up with the same parsed text fragment as the sub-conditions
 				//if(cond.anyComplete && !condI.getCompleteMatchedTextCoords().equals(cond.coords)) {
-				//	throw new RuntimeException("Conditions " + condI.getCompleteMatchedTextCoords().toString() + " not equal to sub " + cond + " " + cond.coords.toString());
+				//	throw new RuntimeException("CharCompoundConditions " + condI.getCompleteMatchedTextCoords().toString() + " not equal to sub " + cond + " " + cond.coords.toString());
 				//}
 
 				return true;
@@ -229,7 +230,7 @@ public class Conditions {
 	 * @since 2015-2-10
 	 */
 	public static BaseFilter setupEndFilter(BaseFilter cond) {
-		cond.copyFunc = Conditions::setupEndFilter;
+		cond.copyFunc = CharCompoundConditions::setupEndFilter;
 
 		cond.acceptNextFunc = (char ch, TextParser buf) -> {
 			if(cond.isComplete()) {
@@ -237,10 +238,10 @@ public class Conditions {
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<ParserCondition> matchingConds = cond.matchingConds;
+			Bag<CharParserCondition> matchingConds = cond.matchingConds;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
-				ParserCondition condI = matchingConds.get(i);
+				CharParserCondition condI = matchingConds.get(i);
 				if(!condI.isFailed()) {
 					if(!condI.acceptNext(ch, buf)) {
 						matchingConds.remove(i);

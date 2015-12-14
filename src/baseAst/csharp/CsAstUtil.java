@@ -1,18 +1,17 @@
 package baseAst.csharp;
 
+import baseAst.AccessModifierEnum;
+import baseAst.AccessModifierParser;
+import baseAst.LanguageAstUtil;
 import codeParser.CodeLanguage;
 import codeParser.CodeLanguageOptions;
-import baseAst.AccessModifierParser;
-import baseAst.AccessModifierEnum;
-import baseAst.LanguageAstUtil;
 import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-6
  */
-public class CSharpAstUtil implements AccessModifierParser<AccessModifierEnum, CSharpBlock>, LanguageAstUtil {
-
+public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlock>, LanguageAstUtil {
 
 	@Override
 	public CodeLanguage getLanguage() {
@@ -21,20 +20,20 @@ public class CSharpAstUtil implements AccessModifierParser<AccessModifierEnum, C
 
 
 	@Override
-	public CSharpAstUtil getAccessModifierParser() {
+	public CsAstUtil getAccessModifierParser() {
 		return this;
 	}
 
 
 	@Override
-	public AccessModifierEnum defaultAccessModifier(String src, CSharpBlock currentBlock, CSharpBlock parentBlock) {
+	public AccessModifierEnum defaultAccessModifier(String src, CsBlock currentBlock, CsBlock parentBlock) {
 		AccessModifierEnum access = tryFromLanguageSrc(src);
 		return defaultAccessModifier(access, currentBlock, parentBlock);
 	}
 
 
 	@Override
-	public final AccessModifierEnum defaultAccessModifier(AccessModifierEnum access, CSharpBlock currentBlock, CSharpBlock parentBlock) {
+	public final AccessModifierEnum defaultAccessModifier(AccessModifierEnum access, CsBlock currentBlock, CsBlock parentBlock) {
 		if(access != null) {
 			return access;
 		}
@@ -53,7 +52,7 @@ public class CSharpAstUtil implements AccessModifierParser<AccessModifierEnum, C
 				case NAMESPACE: // namespace { class }
 					return AccessModifierEnum.NAMESPACE_LOCAL;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, CSharpBlock.class);
+					throw EnumUtil.unknownValue(parentBlock, CsBlock.class);
 				}
 			case INTERFACE:
 				switch(parentBlock) {
@@ -64,12 +63,12 @@ public class CSharpAstUtil implements AccessModifierParser<AccessModifierEnum, C
 				case NAMESPACE: // namespace { interface }
 					return AccessModifierEnum.NAMESPACE_LOCAL;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, CSharpBlock.class);
+					throw EnumUtil.unknownValue(parentBlock, CsBlock.class);
 				}
 			case NAMESPACE: // NAMESPACE default true
 				return AccessModifierEnum.PUBLIC;
 			default:
-				throw EnumUtil.unknownValue(currentBlock, CSharpBlock.class);
+				throw EnumUtil.unknownValue(currentBlock, CsBlock.class);
 		}
 	}
 

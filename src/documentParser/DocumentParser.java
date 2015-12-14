@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import parser.condition.MultiConditionParser;
-import parser.condition.Precondition;
+import parser.text.CharMultiConditionParser;
+import parser.text.CharPrecondition;
 import parser.textFragment.TextConsumer;
 import parser.textFragment.TextFragmentRef;
 import parser.textFragment.TextTransformer;
@@ -27,7 +27,7 @@ import codeParser.CodeFragmentType;
  * @since 2015-5-27
  */
 public class DocumentParser<T> {
-	private PairList<Precondition, TextTransformer<T>> parsers;
+	private PairList<CharPrecondition, TextTransformer<T>> parsers;
 
 
 	public DocumentParser() {
@@ -35,7 +35,7 @@ public class DocumentParser<T> {
 	}
 
 
-	public void addFragmentParser(Precondition fragmentParser, TextTransformer<T> handler) {
+	public void addFragmentParser(CharPrecondition fragmentParser, TextTransformer<T> handler) {
 		this.parsers.add(fragmentParser, handler);
 	}
 
@@ -50,7 +50,7 @@ public class DocumentParser<T> {
 	public <D extends DocumentFragment<S, T>, S> SimpleTree<D> parseDocument(TextParser input, D root, BiFunction<T, TextFragmentRef.Impl, D> docFragConstructor, Function<D, Boolean> isParent, IsParentChild<D> isInside) {
 		SimpleTreeImpl<D> tree = new SimpleTreeImpl<>(root);
 
-		List<Entry<Precondition, TextConsumer>> conditions = new ArrayList<>();
+		List<Entry<CharPrecondition, TextConsumer>> conditions = new ArrayList<>();
 
 		for(int i = 0, size = parsers.size(); i < size; i++) {
 			TextTransformer<T> transformer = parsers.getValue(i);
@@ -82,7 +82,7 @@ public class DocumentParser<T> {
 			}));
 		}
 
-		MultiConditionParser parser = new MultiConditionParser(conditions);
+		CharMultiConditionParser parser = new CharMultiConditionParser(conditions);
 
 		while(input.hasNext()) {
 			char ch = input.nextChar();

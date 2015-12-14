@@ -12,9 +12,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import parser.Inclusion;
-import parser.StringBoundedParserBuilder;
-import parser.condition.ParserCondition;
-import parser.condition.Precondition;
+import parser.text.CharParserCondition;
+import parser.text.CharPrecondition;
+import parser.text.StringBoundedParserBuilder;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.util.arrayUtils.ArrayUtil;
 import twg2.parser.textParser.TextParser;
@@ -99,16 +99,13 @@ public class ParserTest {
 		String[] strs = new String[] {   "\"a \\\" b \\\"", "\"\" !", "alpha", "\"a \n\\\"\\\" z\" echo" };
 		String[] expect = new String[] { "\"a \" b \"",       "\"\"",     "",      "\"a \n\"\" z\"" };
 
-		Precondition parser1 = new StringBoundedParserBuilder().addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE).build();
+		CharPrecondition parser1 = new StringBoundedParserBuilder().addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE).build();
 
 		Function<String, String> escSeqDecoder = EscapeSequences.unicodeEscapeDecoder();
 		CheckTask.assertTests(strs, expect, (s, i) -> {
-			if(i == 3) {
-				System.out.println();
-			}
 			dst.setLength(0);
 			//Assert.assertTrue("i=" + i + " first char '" + s.charAt(0) + "' of '" + s + "'", parser1.isMatch(s.charAt(0)));
-			ParserCondition cond = parser1.createParserCondition();
+			CharParserCondition cond = parser1.createParser();
 			cond.readConditional(TextParserImpl.of(s), dst);
 			return escSeqDecoder.apply(dst.toString());
 		});
@@ -247,6 +244,8 @@ public class ParserTest {
 
 	public static void main(String[] args) throws IOException {
 		ParserTest parserTest = new ParserTest();
+		new IdentifierParserTest().identifierWithGenericTypeParse();
+		new IdentifierParserTest().compoundIdentifierParse();
 		//parserTest.parseBlocksTest();
 		//parserTest.lineBufferTest();
 

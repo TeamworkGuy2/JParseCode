@@ -1,6 +1,6 @@
 package main;
 
-import intermAst.classes.IntermClassWithFieldsMethods;
+import intermAst.classes.IntermClassBlocks;
 import intermAst.project.ProjectClassSet;
 
 import java.io.IOException;
@@ -15,12 +15,12 @@ import twg2.io.files.FileVisitorUtil;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.simpleTree.SimpleTreeUtil;
-import baseAst.csharp.CSharpBlock;
+import baseAst.csharp.CsBlock;
 import codeParser.CodeFileSrc;
 import codeParser.CodeFragmentType;
 import codeParser.CodeLanguage;
 import codeParser.codeStats.ParseDirectoryCodeFiles;
-import codeParser.csharp.CSharpBlockExtractor;
+import codeParser.csharp.CsBlockExtractor;
 import documentParser.DocumentFragmentText;
 import documentParser.DocumentParser;
 
@@ -28,7 +28,7 @@ import documentParser.DocumentParser;
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class CSharpMain {
+public class CsMain {
 
 
 	public static void printParseFileInfo(String fileName, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
@@ -47,7 +47,7 @@ public class CSharpMain {
 			System.out.println("\n====\n" + DocumentParser.toSource(tree, parsedFile.getSrc(), false));
 		}
 
-		List<IntermClassWithFieldsMethods<CSharpBlock>> blockDeclarations = CSharpBlockExtractor.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc(), true, true, true);
+		List<IntermClassBlocks<CsBlock>> blockDeclarations = CsBlockExtractor.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc());
 
 		if(printBlockSignatures) {
 			System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
@@ -82,12 +82,12 @@ public class CSharpMain {
 	}
 
 
-	public static void parseFileSet(List<Path> files, ProjectClassSet<CSharpBlock> dstFileSet) throws IOException {
+	public static void parseFileSet(List<Path> files, ProjectClassSet<CsBlock> dstFileSet) throws IOException {
 		val parsedFiles = ParseDirectoryCodeFiles.parseFiles(files);
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);
-			List<IntermClassWithFieldsMethods<CSharpBlock>> blockDeclarations = CSharpBlockExtractor.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc(), true, true, true);
+			List<IntermClassBlocks<CsBlock>> blockDeclarations = CsBlockExtractor.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc());
 
 			for(val block : blockDeclarations) {
 				dstFileSet.addCompilationUnit(block.getSignature().getFullyQualifyingName(), block);

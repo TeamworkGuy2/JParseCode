@@ -1,14 +1,14 @@
 package baseAst.csharp;
 
 import baseAst.CompoundBlock;
-import codeParser.csharp.CSharpKeyword;
+import codeParser.csharp.CsKeyword;
 import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-6
  */
-public enum CSharpBlock implements CompoundBlock {
+public enum CsBlock implements CompoundBlock {
 	CLASS,
 	ENUM,
 	INTERFACE,
@@ -16,7 +16,12 @@ public enum CSharpBlock implements CompoundBlock {
 	STRUCT;
 
 
-	private CSharpBlock() {
+	private CsBlock() {
+	}
+
+
+	public final boolean canContainImports() {
+		return this == NAMESPACE;
 	}
 
 
@@ -32,8 +37,8 @@ public enum CSharpBlock implements CompoundBlock {
 	}
 
 
-	public static final CSharpBlock fromKeyword(CSharpKeyword keyword) {
-		CSharpBlock blockType = tryFromKeyword(keyword);
+	public static final CsBlock fromKeyword(CsKeyword keyword) {
+		CsBlock blockType = tryFromKeyword(keyword);
 		if(blockType == null) {
 			throw new IllegalArgumentException("C# keyword '" + keyword + "' is not a valid compound block type");
 		}
@@ -41,20 +46,20 @@ public enum CSharpBlock implements CompoundBlock {
 	}
 
 
-	public static final CSharpBlock tryFromKeyword(CSharpKeyword keyword) {
+	public static final CsBlock tryFromKeyword(CsKeyword keyword) {
 		switch(keyword) {
 		case CLASS:
-			return CSharpBlock.CLASS;
+			return CsBlock.CLASS;
 		case INTERFACE:
-			return CSharpBlock.INTERFACE;
+			return CsBlock.INTERFACE;
 		case ENUM:
-			return CSharpBlock.ENUM;
+			return CsBlock.ENUM;
 		case STRUCT:
-			return CSharpBlock.STRUCT;
+			return CsBlock.STRUCT;
 		case NAMESPACE:
-			return CSharpBlock.NAMESPACE;
+			return CsBlock.NAMESPACE;
 		default:
-			throw EnumUtil.unknownValue(keyword, CSharpKeyword.class);
+			throw EnumUtil.unknownValue(keyword, CsKeyword.class);
 		}
 	}
 

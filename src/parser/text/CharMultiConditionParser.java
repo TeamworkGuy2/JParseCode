@@ -1,4 +1,4 @@
-package parser.condition;
+package parser.text;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,27 +14,27 @@ import twg2.parser.textParser.TextParser;
  * @author TeamworkGuy2
  * @since 2015-5-29
  */
-public class MultiConditionParser {
-	private PairList<Precondition, TextConsumer> conditions = new PairList<>();
-	private PairList<Precondition, Entry<ParserCondition, TextConsumer>> curMatches = new PairList<>();
+public class CharMultiConditionParser {
+	private PairList<CharPrecondition, TextConsumer> conditions = new PairList<>();
+	private PairList<CharPrecondition, Entry<CharParserCondition, TextConsumer>> curMatches = new PairList<>();
 
 
-	public MultiConditionParser() {
+	public CharMultiConditionParser() {
 		this.reset();
 	}
 
 
 	@SafeVarargs
-	public MultiConditionParser(Entry<Precondition, TextConsumer>... conditions) {
-		for(Entry<Precondition, TextConsumer> cond : conditions) {
+	public CharMultiConditionParser(Entry<CharPrecondition, TextConsumer>... conditions) {
+		for(Entry<CharPrecondition, TextConsumer> cond : conditions) {
 			this.conditions.add(cond);
 		}
 		this.reset();
 	}
 
 
-	public MultiConditionParser(Collection<? extends Entry<Precondition, TextConsumer>> conditions) {
-		for(Entry<Precondition, TextConsumer> cond : conditions) {
+	public CharMultiConditionParser(Collection<? extends Entry<CharPrecondition, TextConsumer>> conditions) {
+		for(Entry<CharPrecondition, TextConsumer> cond : conditions) {
 			this.conditions.add(cond);
 		}
 		this.reset();
@@ -44,11 +44,11 @@ public class MultiConditionParser {
 	public boolean acceptNext(char ch, TextParser buf) {
 		// add conditions that match
 		for(int i = 0, size = conditions.size(); i < size; i++) {
-			Precondition cond = conditions.getKey(i);
+			CharPrecondition cond = conditions.getKey(i);
 			// as possible tokens are encountered (based on one char), add them to the list of current matches
 			if(cond.isMatch(ch)) {
 				if(cond.isCompound() || !curMatches.containsKey(cond)) {
-					ParserCondition parserCond = cond.createParserCondition();
+					CharParserCondition parserCond = cond.createParser();
 					curMatches.add(cond, Tuples.of(parserCond, conditions.getValue(i)));
 				}
 			}
@@ -58,9 +58,9 @@ public class MultiConditionParser {
 		// else remove it from the current set of matching parsers
 		// IMPORTANT: we loop backward so that more recently started parser can consume input first (this ensures that things like matching quote or parentheses are matched in order)
 		for(int i = curMatches.size() - 1; i > -1; i--) {
-			Precondition preCond = curMatches.getKey(i);
-			Entry<ParserCondition, TextConsumer> condEntry = curMatches.getValue(i);
-			ParserCondition cond = condEntry.getKey();
+			CharPrecondition preCond = curMatches.getKey(i);
+			Entry<CharParserCondition, TextConsumer> condEntry = curMatches.getValue(i);
+			CharParserCondition cond = condEntry.getKey();
 
 			cond.acceptNext(ch, buf);
 
@@ -76,7 +76,8 @@ public class MultiConditionParser {
 						TextFragmentRef frag = cond.getCompleteMatchedTextCoords();
 
 						// when a non-compound token finishes parsing, remove all other parsers that started parsing between the start and end point of the completed token
-						// TODO note: this does not prevent parsers from starting and completing tokens within the span of a non-compound token
+						// TODO note: this does not prevent parsers from starting and completing tokens within the span of a non-compound token,
+						// for example ', ' in Map<String, String>
 						if(!preCond.isCompound()) {
 							int removeCount = curMatches.size() - i - 1;
 							int ii = removeCount;
@@ -106,7 +107,7 @@ public class MultiConditionParser {
 	}
 
 
-	private static boolean allCompound(List<Precondition> conds, int off, int len) {
+	private static boolean allCompound(List<CharPrecondition> conds, int off, int len) {
 		if(len < 1) {
 			return true;
 		}

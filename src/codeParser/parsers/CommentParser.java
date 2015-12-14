@@ -3,8 +3,8 @@ package codeParser.parsers;
 import java.util.EnumSet;
 
 import parser.Inclusion;
-import parser.StringBoundedParserBuilder;
-import parser.condition.Precondition;
+import parser.text.CharPrecondition;
+import parser.text.StringBoundedParserBuilder;
 import codeParser.CommentStyle;
 
 /**
@@ -16,8 +16,8 @@ public final class CommentParser {
 	private CommentParser() { throw new AssertionError("cannot instantiate static class CommentParser"); }
 
 
-	public static final Precondition createCommentParserForJava() {
-		Precondition commentParser = new StringBoundedParserBuilder()
+	public static final CharPrecondition createCommentParserForJava() {
+		CharPrecondition commentParser = new StringBoundedParserBuilder()
 			.addStartEndMarkers("/*", "*/", Inclusion.INCLUDE)
 			.addStartEndMarkers("//", '\n', Inclusion.EXCLUDE)
 			.build();
@@ -25,7 +25,7 @@ public final class CommentParser {
 	}
 
 
-	public static final Precondition createCommentParser(EnumSet<CommentStyle> style) {
+	public static final CharPrecondition createCommentParser(EnumSet<CommentStyle> style) {
 		StringBoundedParserBuilder commentParser = new StringBoundedParserBuilder();
 		int markerCount = 0;
 

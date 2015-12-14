@@ -12,7 +12,7 @@ import baseAst.annotation.AnnotationSig;
  * @since 2015-12-3
  */
 @Accessors(fluent=true)
-public class CodeFileAst implements BaseBlock, ClassBlock, CodeBlock, MethodBlock, NamespaceBlock {
+public class CodeFileBlocks implements BaseBlock, ClassBlock, CodeBlock, MethodBlock, NamespaceBlock {
 	private @Getter String getSimpleName;
 	private @Getter List<String> getFullyQualifiedName;
 	private @Getter ScopeType parentScope;
@@ -35,7 +35,7 @@ public class CodeFileAst implements BaseBlock, ClassBlock, CodeBlock, MethodBloc
 	 * @param methodSubBlocks
 	 * @param codeSubBlocks
 	 */
-	public CodeFileAst(ScopeType parentScope, BaseBlock parent, ScopeType thisScope, String simpleName, List<String> fullyQualifiedName,
+	public CodeFileBlocks(ScopeType parentScope, BaseBlock parent, ScopeType thisScope, String simpleName, List<String> fullyQualifiedName,
 			List<BaseBlock> childs, List<ClassBlock> classSubBlocks, List<MethodBlock> methodSubBlocks, List<CodeBlock> codeSubBlocks) {
 		this.parentScope = parentScope;
 		this.parent = parent;

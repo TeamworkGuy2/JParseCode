@@ -6,8 +6,8 @@ import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
 
-import parser.condition.CharConditions;
-import parser.condition.ParserCondition;
+import parser.text.CharConditions;
+import parser.text.CharParserCondition;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.textParser.TextParserImpl;
 
@@ -30,7 +30,7 @@ public class CharConditionsTest {
 
 		Boolean[] expect = { true, true, true, false };
 
-		ParserCondition cond = CharConditions.startCharFactory().create(startMarkers);
+		CharParserCondition cond = CharConditions.startCharFactory().create(startMarkers);
 
 		int i = 0;
 		for(String testStr : testStrs) {
@@ -48,7 +48,7 @@ public class CharConditionsTest {
 	@Test
 	public void testEndCharCondition() {
 		String name = "EndCharCondition";
-		ParserCondition cond = CharConditions.endCharFactory().create(CharArrayList.of('\'', '"', '!'));
+		CharParserCondition cond = CharConditions.endCharFactory().create(CharArrayList.of('\'', '"', '!'));
 
 		parseTest(true, false, name, cond, "abc'");
 		parseTest(true, false, name, cond, "stuff\"");
@@ -61,7 +61,7 @@ public class CharConditionsTest {
 	public void testCharEndNotPrecededByCondition() {
 		String name = "EndNotPrecededByCondition";
 		val notPreced = CharArrayList.of('\\', '@');
-		ParserCondition cond = CharConditions.endCharNotPrecededByFactory().create(notPreced, CharArrayList.of('\'', '"', '!'));
+		CharParserCondition cond = CharConditions.endCharNotPrecededByFactory().create(notPreced, CharArrayList.of('\'', '"', '!'));
 
 		parseTest(false, false, name, cond, "abc@'");
 		parseTest(true, false, name, cond, "stuff\"");

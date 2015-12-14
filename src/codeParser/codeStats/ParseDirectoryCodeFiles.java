@@ -151,14 +151,14 @@ public class ParseDirectoryCodeFiles {
 			if(lang != null) {
 				val parseParams = new ParseInput(srcStr, null, fileName);
 				
-				CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFileInfo = null;
 				try {
-					parsedFileInfo = (CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>)lang.getParser().apply(parseParams);
+					@SuppressWarnings("unchecked")
+					CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFileInfo = (CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>)lang.getParser().apply(parseParams);
+
+					parsedFiles.add(parsedFileInfo);
 				} catch(Exception e) {
 					throw new RuntimeException(parseParams.toString(), e);
 				}
-
-				parsedFiles.add(parsedFileInfo);
 			}
 			else {
 				throw new IllegalArgumentException("unsupported file extension '" + fileExt + "' for parsing '" + fileName + "'");

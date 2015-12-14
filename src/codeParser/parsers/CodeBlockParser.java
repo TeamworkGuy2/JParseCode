@@ -1,8 +1,8 @@
 package codeParser.parsers;
 
 import parser.Inclusion;
-import parser.StringBoundedParserBuilder;
-import parser.condition.Precondition;
+import parser.text.CharPrecondition;
+import parser.text.StringBoundedParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -10,13 +10,13 @@ import parser.condition.Precondition;
  */
 public class CodeBlockParser {
 
-	public static Precondition createBlockParser() {
+	public static CharPrecondition createBlockParser() {
 		return createBlockParser('{', '}');
 	}
 
 
-	public static Precondition createBlockParser(char startChar, char endChar) {
-		Precondition commentParser = new StringBoundedParserBuilder()
+	public static CharPrecondition createBlockParser(char startChar, char endChar) {
+		CharPrecondition commentParser = new StringBoundedParserBuilder()
 			.addStartEndMarkers(startChar, endChar, Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();

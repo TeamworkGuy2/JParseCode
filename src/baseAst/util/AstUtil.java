@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-import baseAst.AstNodeConsumer;
 import lombok.val;
+import twg2.collections.util.arrayUtils.ArrayUtil;
 import twg2.treeLike.IndexedSubtreeConsumer;
 import twg2.treeLike.SubtreeConsumer;
 import twg2.treeLike.SubtreeTransformer;
@@ -15,9 +15,8 @@ import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
 import twg2.treeLike.parameters.IndexedTreeTraverseParameters;
 import twg2.treeLike.simpleTree.SimpleTree;
+import baseAst.AstNodeConsumer;
 import codeParser.CodeFragmentType;
-import codeParser.csharp.CSharpKeyword;
-import documentParser.DocumentFragment;
 import documentParser.DocumentFragmentRef;
 import documentParser.DocumentFragmentText;
 
@@ -28,11 +27,11 @@ import documentParser.DocumentFragmentText;
 public class AstUtil {
 
 	/** Visit the first level of child nodes in a {@link SimpleTree} of {@link DocumentFragmentText}.
-	 * @param subTree  the sub-tree to iterate over
+	 * @param tree  the sub-tree to iterate over
 	 * @param treeNodeConsumer  the consumer for each tree node visited
 	 */
-	public static final void forChildrenOnly(int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> subTree, AstNodeConsumer<CodeFragmentType> treeNodeConsumer) {
-		val children = subTree.getChildren();
+	public static final void forChildrenOnly(int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> tree, AstNodeConsumer<CodeFragmentType> treeNodeConsumer) {
+		val children = tree.getChildren();
 		for(int ii = 0, sizeI = children.size(); ii < sizeI; ii++) {
 			val child = children.get(ii);
 			val parent = child.getParent();
@@ -149,9 +148,12 @@ public class AstUtil {
 	}
 
 
-	public static final boolean blockContainsOnly(SimpleTree<DocumentFragmentText<CodeFragmentType>> block, BiPredicate<DocumentFragmentText<CodeFragmentType>, CodeFragmentType> cond, boolean emptyTreeValid) {
+	public static final boolean blockContainsOnly(SimpleTree<DocumentFragmentText<CodeFragmentType>> block, BiPredicate<DocumentFragmentText<CodeFragmentType>, CodeFragmentType> cond, boolean emptyTreeValid, CodeFragmentType... optionalAllows) {
 		if(block == null) {
 			return emptyTreeValid;
+		}
+		if(optionalAllows == null) {
+			optionalAllows = new CodeFragmentType[0];
 		}
 		val childs = block.getChildren();
 		if(childs.size() == 0) {
@@ -160,7 +162,7 @@ public class AstUtil {
 
 		for(val child : childs) {
 			val frag = child.getData();
-			if(!cond.test(frag, frag.getFragmentType())) {
+			if(ArrayUtil.indexOf(optionalAllows, frag.getFragmentType()) < 0 && !cond.test(frag, frag.getFragmentType())) {
 				return false;
 			}
 		}
@@ -176,62 +178,5 @@ public class AstUtil {
 	//private static final <U> U getIdxData(List<SimpleTree<U>> list, int i) {
 	//	return i < list.size() && i > -1 ? list.get(i).getData() : null;
 	//}
-
-
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1}
-	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1) {
-		return node != null && (node.getFragmentType() == type1);
-	}
-
-
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1 OR type2}
-	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1, CodeFragmentType type2) {
-		return node != null && (node.getFragmentType() == type1 || node.getFragmentType() == type2);
-	}
-
-
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1 OR type2 type3}
-	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1, CodeFragmentType type2, CodeFragmentType type3) {
-		return node != null && (node.getFragmentType() == type1 || node.getFragmentType() == type2 || node.getFragmentType() == type3);
-	}
-
-
-	/** Check if a {@link DocumentFragment} has a fragment type equal to any of {@code types}
-	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType... types) {
-		if(node == null) {
-			return false;
-		}
-		CodeFragmentType nodeType = node.getFragmentType();
-		for(CodeFragmentType type : types) {
-			if(nodeType != type) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CSharpKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.getSrcName().equals(node.getText()));
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CSharpKeyword keyword1, CSharpKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText())));
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CSharpKeyword keyword1, CSharpKeyword keyword2, CSharpKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText()) || keyword3.getSrcName().equals(node.getText())));
-	}
-
-
-	public static final boolean isBlock(DocumentFragmentText<CodeFragmentType> node, String blockSymbol) {
-		return node != null && node.getFragmentType() == CodeFragmentType.BLOCK && node.getText().startsWith(blockSymbol);
-	}
 
 }

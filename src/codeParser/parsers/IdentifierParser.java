@@ -4,12 +4,12 @@ import java.util.Arrays;
 
 import lombok.val;
 import parser.Inclusion;
-import parser.StringParserBuilder;
-import parser.condition.CharConditions;
-import parser.condition.ConditionPipeFilter;
-import parser.condition.ParserCondition;
-import parser.condition.Precondition;
-import parser.condition.PreconditionImpl;
+import parser.text.CharConditionPipe;
+import parser.text.CharConditions;
+import parser.text.CharParserCondition;
+import parser.text.CharPrecondition;
+import parser.text.CharPreconditionImpl;
+import parser.text.StringParserBuilder;
 import twg2.ranges.CharSearchSet;
 
 /**
@@ -19,14 +19,14 @@ import twg2.ranges.CharSearchSet;
 public class IdentifierParser {
 	static int genericTypeDepth = 2;
 
-	public static Precondition createIdentifierWithGenericTypeParser() {
-		Precondition identifierWithGenericTypeParser = new PreconditionImpl<>(false, GenericTypeParser.createGenericTypeStatementCondition(genericTypeDepth, IdentifierParser::createCompoundIdentifierCondition));
+	public static CharPrecondition createIdentifierWithGenericTypeParser() {
+		CharPrecondition identifierWithGenericTypeParser = new CharPreconditionImpl<>(false, GenericTypeParser.createGenericTypeStatementCondition(genericTypeDepth, IdentifierParser::createCompoundIdentifierCondition));
 		return identifierWithGenericTypeParser;
 	}
 
 
-	public static Precondition createIdentifierParser() {
-		Precondition identifierParser = new StringParserBuilder()
+	public static CharPrecondition createIdentifierParser() {
+		CharPrecondition identifierParser = new StringParserBuilder()
 			.addConditionMatcher(createIdentifierCondition())
 			.build();
 		return identifierParser;
@@ -37,14 +37,17 @@ public class IdentifierParser {
 	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'mySpecialLoopCount', '$thing', or '_stspr')
 	 */
 	public static CharConditions.BaseCharFilter createIdentifierCondition() {
-		CharSearchSet charSet = new CharSearchSet();
-		charSet.addChar('$');
-		charSet.addChar('_');
-		charSet.addRange('a', 'z');
-		charSet.addRange('A', 'Z');
+		CharSearchSet firstCharSet = new CharSearchSet();
+		firstCharSet.addChar('$');
+		firstCharSet.addChar('_');
+		firstCharSet.addRange('a', 'z');
+		firstCharSet.addRange('A', 'Z');
 
-		val cond = new CharConditions.BaseCharFilter(charSet::contains, charSet.toCharList().toArray(), Inclusion.INCLUDE, charSet);
-		CharConditions.setupContainsCharFilter(cond);
+		CharSearchSet charSet = firstCharSet.copy();
+		charSet.addRange('0', '9');
+
+		val cond = new CharConditions.BaseCharFilter(charSet::contains, firstCharSet::contains, charSet.toCharList().toArray(), Inclusion.INCLUDE, charSet);
+		CharConditions.setupContainsCharFirstSpecialFilter(cond);
 		return cond;
 	}
 
@@ -52,10 +55,10 @@ public class IdentifierParser {
 	/**
 	 * @return a compound identifier parser (i.e. can parse 'Aa.Bb.Cc' as one identifier token')
 	 */
-	public static ParserCondition createCompoundIdentifierCondition() {
+	public static CharParserCondition createCompoundIdentifierCondition() {
 		val identifierParser = Arrays.asList(IdentifierParser.createIdentifierCondition());
 		val separatorParser = Arrays.asList(CharConditions.charLiteralFactory().create('.'));
-		return ConditionPipeFilter.createPipeRepeatableSeparator(identifierParser, separatorParser);
+		return CharConditionPipe.createPipeRepeatableSeparator(identifierParser, separatorParser);
 	}
 
 }

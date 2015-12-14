@@ -11,41 +11,41 @@ import lombok.val;
 
 import org.junit.Test;
 
-import parser.condition.CharConditions;
-import parser.condition.ConditionPipeFilter;
-import parser.condition.ParserCondition;
-import parser.condition.StringConditions;
+import parser.text.CharConditionPipe;
+import parser.text.CharConditions;
+import parser.text.CharParserCondition;
+import parser.text.StringConditions;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-11-29
  */
-public class ConditionPipeFilterTest {
+public class CharConditionPipeFilterTest {
 
 	@Test
 	public void allrequiredTest() throws IOException {
 		val name = "AllRequired";
-		val condSet0 = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSet0 = new ArrayList<CharParserCondition>(Arrays.asList(
 				CharConditions.startCharFactory().create(new char[] { '<' }),
 				CharConditions.endCharFactory().create(new char[] { '>' })
 		));
 
-		val condSet1 = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSet1 = new ArrayList<CharParserCondition>(Arrays.asList(
 				StringConditions.stringLiteralFactory().create("test")
 		));
 
-		val condSet2 = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSet2 = new ArrayList<CharParserCondition>(Arrays.asList(
 				StringConditions.endStringFactory().create("!")
 		));
 
-		val condSets = new ArrayList<List<ParserCondition>>(Arrays.asList(
+		val condSets = new ArrayList<List<CharParserCondition>>(Arrays.asList(
 				condSet0,
 				condSet1,
 				condSet2
 		));
 
-		ConditionPipeFilter.BasePipeFilter<ParserCondition> pipeCond = new ConditionPipeFilter.PipeAllRequiredFilter<ParserCondition>(condSets);
-		// TODO testing ConditionPipeFilter.setupPipeAllRequiredFilter(pipeCond);
+		CharConditionPipe.BasePipe<CharParserCondition> pipeCond = new CharConditionPipe.AllRequired<CharParserCondition>(condSets);
+		// TODO testing CharConditionPipe.setupPipeAllRequiredFilter(pipeCond);
 
 		parseTest(false, false, name, pipeCond, "<abc>");
 
@@ -62,22 +62,22 @@ public class ConditionPipeFilterTest {
 	@Test
 	public void optionalSuffixTest() throws IOException {
 		val name = "OptionalSuffix";
-		val condSet0 = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSet0 = new ArrayList<CharParserCondition>(Arrays.asList(
 				CharConditions.startCharFactory().create(new char[] { '<' }),
 				CharConditions.endCharFactory().create(new char[] { '>' })
 		));
 
-		val condSetOptional = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSetOptional = new ArrayList<CharParserCondition>(Arrays.asList(
 				StringConditions.stringLiteralFactory().create("test")
 		));
 
-		val condSets = new ArrayList<List<ParserCondition>>(Arrays.asList(
+		val condSets = new ArrayList<List<CharParserCondition>>(Arrays.asList(
 				condSet0,
 				condSetOptional
 		));
 
-		ConditionPipeFilter.BasePipeFilter<ParserCondition> pipeCond = new ConditionPipeFilter.PipeOptionalSuffixFilter<ParserCondition>(condSets);
-		// TODO testing ConditionPipeFilter.setupPipeOptionalSuffixFilter(pipeCond);
+		CharConditionPipe.BasePipe<CharParserCondition> pipeCond = new CharConditionPipe.OptionalSuffix<CharParserCondition>(condSets);
+		// TODO testing CharConditionPipe.setupPipeOptionalSuffixFilter(pipeCond);
 
 		parseTest(true, false, name, pipeCond, "<abc>");
 
@@ -92,22 +92,22 @@ public class ConditionPipeFilterTest {
 	@Test
 	public void repeatableSeparatedText() {
 		val name = "RepeatableSeparator";
-		val condSet0 = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSet0 = new ArrayList<CharParserCondition>(Arrays.asList(
 				CharConditions.startCharFactory().create(new char[] { '<' }),
 				CharConditions.endCharFactory().create(new char[] { '>' })
 		));
 
-		val condSetOptional = new ArrayList<ParserCondition>(Arrays.asList(
+		val condSetOptional = new ArrayList<CharParserCondition>(Arrays.asList(
 				StringConditions.stringLiteralFactory().create(", ")
 		));
 
-		val condSets = new ArrayList<List<ParserCondition>>(Arrays.asList(
+		val condSets = new ArrayList<List<CharParserCondition>>(Arrays.asList(
 				condSet0,
 				condSetOptional
 		));
 
-		ConditionPipeFilter.BasePipeFilter<ParserCondition> pipeCond = new ConditionPipeFilter.PipeRepeatableSeparatorFilter<ParserCondition>(condSets);
-		// TODO testing ConditionPipeFilter.setupPipeRepeatableSeparatorFilter(pipeCond);
+		CharConditionPipe.BasePipe<CharParserCondition> pipeCond = new CharConditionPipe.RepeatableSeparator<CharParserCondition>(condSets);
+		// TODO testing CharConditionPipe.setupPipeRepeatableSeparatorFilter(pipeCond);
 
 		parseTest(true, false, name, pipeCond, "<abc>");
 

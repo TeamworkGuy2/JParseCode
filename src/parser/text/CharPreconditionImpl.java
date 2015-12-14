@@ -1,4 +1,4 @@
-package parser.condition;
+package parser.text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,20 +9,20 @@ import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharMapSorted;
 
-/** A collection of {@link ParserCondition ParserConditions}
+/** A collection of {@link CharParserCondition}
  * @author TeamworkGuy2
  * @since 2015-2-14
  */
-public class PreconditionImpl<P extends ParserCondition> implements Precondition {
+public class CharPreconditionImpl<P extends CharParserCondition> implements CharPrecondition {
 	private List<P> conditions;
 	private CharMapSorted<P> firstChars;
 	private CharList tmpChars = new CharArrayList();
-	private ParserCondition conditionSet;
+	private CharParserCondition conditionSet;
 	private @Getter boolean compound;
 
 
 	@SafeVarargs
-	public PreconditionImpl(boolean compound, P... parserConditions) {
+	public CharPreconditionImpl(boolean compound, P... parserConditions) {
 		this.compound = compound;
 		this.conditions = new ArrayList<>();
 		Collections.addAll(this.conditions, parserConditions);
@@ -34,7 +34,7 @@ public class PreconditionImpl<P extends ParserCondition> implements Precondition
 			addFirstChars(parserConditions[0], tmpChars, firstChars);
 		}
 		else {
-			this.conditionSet = Conditions.startFilterFactory().create(parserConditions);
+			this.conditionSet = CharCompoundConditions.startFilterFactory().create(parserConditions);
 
 			for(int i = 0, size = parserConditions.length; i < size; i++) {
 				addFirstChars(parserConditions[i], tmpChars, firstChars);
@@ -56,14 +56,14 @@ public class PreconditionImpl<P extends ParserCondition> implements Precondition
 
 
 	@Override
-	public ParserCondition createParserCondition() {
+	public CharParserCondition createParser() {
 		return conditionSet.copy();
 	}
 
 
-	private static final <P extends ParserCondition> void addFirstChars(P cond, CharList tmpChars, CharMapSorted<P> dstChars) {
-		if(cond instanceof ParserStartMark) {
-			((ParserStartMark)cond).getMatchFirstChars(tmpChars);
+	private static final <P extends CharParserCondition> void addFirstChars(P cond, CharList tmpChars, CharMapSorted<P> dstChars) {
+		if(cond instanceof ParserStartChars) {
+			((ParserStartChars)cond).getMatchFirstChars(tmpChars);
 		}
 		for(int ii = 0, sizeI = tmpChars.size(); ii < sizeI; ii++) {
 			dstChars.put(tmpChars.get(ii), cond);

@@ -1,7 +1,7 @@
 package codeParser;
 
 import lombok.Getter;
-import baseAst.block.CodeFileAst;
+import baseAst.block.CodeFileBlocks;
 import documentParser.DocumentFragmentText;
 
 /**
@@ -10,6 +10,6 @@ import documentParser.DocumentFragmentText;
  */
 public class CodeFileParsed<L extends CodeLanguage> {
 	private @Getter CodeFileSrc<DocumentFragmentText<CodeFragmentType>, L> codeFile;
-	private @Getter CodeFileAst parsedAst;
+	private @Getter CodeFileBlocks parsedAst;
 
 }

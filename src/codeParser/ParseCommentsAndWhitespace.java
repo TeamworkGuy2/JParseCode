@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import lombok.val;
-import parser.condition.Precondition;
+import parser.text.CharPrecondition;
 import parser.textFragment.TextFragmentRef;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.treeLike.TreeTraversalOrder;
@@ -32,8 +32,8 @@ public class ParseCommentsAndWhitespace {
 
 
 	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
-		Precondition stringParser = CodeStringParser.createStringParserForJavascript();
-		Precondition commentParser = CommentParser.createCommentParser(style);
+		CharPrecondition stringParser = CodeStringParser.createStringParserForJavascript();
+		CharPrecondition commentParser = CommentParser.createCommentParser(style);
 
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)

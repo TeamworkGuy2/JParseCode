@@ -8,7 +8,9 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
+import output.JsonWritableSig;
+import output.JsonWrite;
+import output.WriteSettings;
 import twg2.annotations.Immutable;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -23,7 +25,7 @@ import documentParser.DocumentFragmentText;
  */
 @Immutable
 @AllArgsConstructor
-public class IntermClassWithFieldsMethods<T_BLOCK extends CompoundBlock> {
+public class IntermClassBlocks<T_BLOCK extends CompoundBlock> implements JsonWritableSig {
 	private final @Getter IntermClassSig signature;
 	private final @Getter List<List<String>> usingStatements;
 	private final @Getter List<IntermFieldSig> fields;
@@ -32,39 +34,26 @@ public class IntermClassWithFieldsMethods<T_BLOCK extends CompoundBlock> {
 	private final @Getter T_BLOCK blockType;
 
 
-	public void toJson(Appendable dst) throws IOException {
+	@Override
+	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		dst.append("\"" + NameUtil.joinFqName(signature.getFullyQualifyingName()) + "\": {\n");
 
 		dst.append("\"classSignature\": ");
-		signature.toJson(dst);
+		signature.toJson(dst, st);
 		dst.append(",\n");
 
 		dst.append("\"blockType\": \"" + blockType + "\",\n");
 
 		dst.append("\"using\": [");
-		boolean notFirst = false;
-		for(val usingStatement : usingStatements) {
-			dst.append((notFirst ? ", " : "") + '"' + NameUtil.joinFqName(usingStatement) + '"');
-			notFirst = true;
-		}
+		JsonWrite.joinStrConsumer(usingStatements, ", ", dst, (us) -> dst.append('"' + NameUtil.joinFqName(us) + '"'));
 		dst.append("],\n");
 
 		dst.append("\"fields\": [");
-		notFirst = false;
-		for(val field : fields) {
-			dst.append((notFirst ? ", " : ""));
-			field.toJson(dst);
-			notFirst = true;
-		}
+		JsonWrite.joinStrConsumer(fields, ", ", dst, (f) -> f.toJson(dst, st));
 		dst.append("],\n");
 
 		dst.append("\"methods\": [");
-		notFirst = false;
-		for(val method : methods) {
-			dst.append((notFirst ? ", " : ""));
-			method.toJson(dst);
-			notFirst = true;
-		}
+		JsonWrite.joinStrConsumer(methods, ", ", dst, (m) -> m.toJson(dst, st));
 		dst.append("]\n");
 
 		dst.append("},\n");

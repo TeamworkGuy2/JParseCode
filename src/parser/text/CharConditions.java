@@ -1,4 +1,4 @@
-package parser.condition;
+package parser.text;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -18,34 +18,34 @@ import twg2.parser.textParserUtils.ReadIsMatching;
  * @since 2015-2-13
  */
 public class CharConditions {
-	private static ParserConditionFactory.CharFilterFactory<BaseCharFilter> charLiteralFactory = new ParserConditionFactory.CharFilterFactory<>(BaseCharFilter::new, CharConditions::setupCharLiteralFilter);
-	private static ParserConditionFactory.CharFilterFactory<BaseCharFilter> startCharFactory = new ParserConditionFactory.CharFilterFactory<>(BaseCharFilter::new, CharConditions::setupStartCharFilter);
-	private static ParserConditionFactory.CharFilterFactory<BaseCharFilter> containsCharFactory = new ParserConditionFactory.CharFilterFactory<>(BaseCharFilter::new, CharConditions::setupContainsCharFilter);
-	private static ParserConditionFactory.CharFilterFactory<BaseCharFilter> endCharFactory = new ParserConditionFactory.CharFilterFactory<>(BaseCharFilter::new, CharConditions::setupEndCharFilter);
-	private static ParserConditionFactory.CharAugmentedFilterFactory<BaseCharFilter> endNotPrecededByCharFactory = new ParserConditionFactory.CharAugmentedFilterFactory<>(BaseCharFilter::new, CharConditions::setupEndCharNotPrecededByFilter);
+	private static CharParserConditionFactory<BaseCharFilter> charLiteralFactory = new CharParserConditionFactory<>(BaseCharFilter::new, CharConditions::setupCharLiteralFilter);
+	private static CharParserConditionFactory<BaseCharFilter> startCharFactory = new CharParserConditionFactory<>(BaseCharFilter::new, CharConditions::setupStartCharFilter);
+	private static CharParserConditionFactory<BaseCharFilter> containsCharFactory = new CharParserConditionFactory<>(BaseCharFilter::new, CharConditions::setupContainsCharFilter);
+	private static CharParserConditionFactory<BaseCharFilter> endCharFactory = new CharParserConditionFactory<>(BaseCharFilter::new, CharConditions::setupEndCharFilter);
+	private static CharParserConditionFactory.CharMatchesList<BaseCharFilter> endNotPrecededByCharFactory = new CharParserConditionFactory.CharMatchesList<>(BaseCharFilter::new, CharConditions::setupEndCharNotPrecededByFilter);
 
 
-	public static ParserConditionFactory.CharFilterFactory<BaseCharFilter> charLiteralFactory() {
+	public static CharParserConditionFactory<BaseCharFilter> charLiteralFactory() {
 		return charLiteralFactory;
 	}
 
 
-	public static ParserConditionFactory.CharFilterFactory<BaseCharFilter> startCharFactory() {
+	public static CharParserConditionFactory<BaseCharFilter> startCharFactory() {
 		return startCharFactory;
 	}
 
 
-	public static ParserConditionFactory.CharFilterFactory<BaseCharFilter> containsCharFactory() {
+	public static CharParserConditionFactory<BaseCharFilter> containsCharFactory() {
 		return containsCharFactory;
 	}
 
 
-	public static ParserConditionFactory.CharFilterFactory<BaseCharFilter> endCharFactory() {
+	public static CharParserConditionFactory<BaseCharFilter> endCharFactory() {
 		return endCharFactory;
 	}
 
 
-	public static ParserConditionFactory.CharAugmentedFilterFactory<BaseCharFilter> endCharNotPrecededByFactory() {
+	public static CharParserConditionFactory.CharMatchesList<BaseCharFilter> endCharNotPrecededByFactory() {
 		return endNotPrecededByCharFactory;
 	}
 
@@ -55,7 +55,6 @@ public class CharConditions {
 	public static class Functionality {
 		Consumer<BaseCharFilter> copyFunc;
 		BiPredicates.CharObject<TextParser> acceptNextFunc;
-		Runnable resetFunc;
 	}
 
 
@@ -65,9 +64,8 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class BaseCharFilter implements ParserCondition.WithMarks {
+	public static class BaseCharFilter implements CharParserCondition.WithMarks {
 		char[] originalChars;
-		// TODO testing CharBag matchingChars;
 		boolean anyComplete = false;
 		boolean failed = false;
 		char acceptedChar = 0;
@@ -82,20 +80,20 @@ public class CharConditions {
 		StringBuilder dstBuf = new StringBuilder();
 		/** Sets up accept and reset functions given this object */
 		Predicates.Char charMatcher;
+		Predicates.Char firstCharMatcher;
 		Object toStringSrc;
 		Functionality funcs;
 
 
 		public BaseCharFilter(CharList chars, Inclusion includeCondMatchInRes) {
-			this(chars::contains, chars.toArray(), includeCondMatchInRes, null);
+			this(chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
 		}
 
 
-		public BaseCharFilter(Predicates.Char charMatcher, char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
-			// TODO testing this.originalChars = chars;
-			// TODO testing this.matchingChars = new CharBag(this.originalChars);
+		public BaseCharFilter(Predicates.Char charMatcher, Predicates.Char firstCharMatcher, char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			this.originalChars = matchChars;
 			this.charMatcher = charMatcher;
+			this.firstCharMatcher = firstCharMatcher;
 			this.anyComplete = false;
 			this.includeMatchInRes = includeCondMatchInRes;
 			this.funcs = new Functionality();
@@ -105,7 +103,7 @@ public class CharConditions {
 
 		@Override
 		public BaseCharFilter copy() {
-			BaseCharFilter copy = new BaseCharFilter(charMatcher, originalChars, includeMatchInRes, toStringSrc);
+			BaseCharFilter copy = new BaseCharFilter(charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			if(this.funcs.copyFunc != null) {
 				this.funcs.copyFunc.accept(copy);
 			}
@@ -162,7 +160,7 @@ public class CharConditions {
 
 
 		@Override
-		public ParserCondition recycle() {
+		public CharParserCondition recycle() {
 			this.reset();
 			return this;
 		}
@@ -170,8 +168,6 @@ public class CharConditions {
 
 		// package-private
 		void reset() {
-			// TODO testing matchingChars.clear();
-			// TODO testing matchingChars.addAll(originalChars);
 			anyComplete = false;
 			failed = false;
 			acceptedChar = 0;
@@ -180,10 +176,6 @@ public class CharConditions {
 			lastCharNotMatch = false;
 			coords = new TextFragmentRef.ImplMut();
 			dstBuf.setLength(0);
-
-			if(this.funcs.resetFunc != null) {
-				this.funcs.resetFunc.run();
-			}
 		}
 
 
@@ -215,7 +207,6 @@ public class CharConditions {
 		funcs.copyFunc = CharConditions::setupStartCharFilter;
 
 		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			// TODO testing CharList matchingChars = cond.matchingChars;
 			if(cond.anyComplete || cond.failed) {
 				cond.failed = true;
 				return false;
@@ -255,7 +246,6 @@ public class CharConditions {
 		funcs.copyFunc = CharConditions::setupContainsCharFilter;
 
 		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			// TODO testing CharList matchingChars = cond.matchingChars;
 			// fail if the condition is already complete
 			if(cond.anyComplete) {
 				cond.failed = true;
@@ -263,6 +253,47 @@ public class CharConditions {
 			}
 
 			if(cond.charMatcher.test(ch)) {
+				if(cond.matchCount == 0) {
+					cond.coords.setStart(buf);
+				}
+				cond.dstBuf.append(ch);
+				cond.acceptedChar = ch;
+				cond.acceptedCount++;
+				cond.matchCount++;
+				// this condition doesn't complete until the first non-matching character
+				if(!ReadIsMatching.isNext(buf, cond.charMatcher, 1)) {
+					cond.anyComplete = true;
+					cond.coords.setEnd(buf); // TODO somewhat inefficient, but we can't be sure that calls to this function are sequential parser positions, so we can't move this to the failure condition
+				}
+				return true;
+			}
+			else {
+				return false;
+			}
+		};
+
+		return cond;
+	}
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2015-12-13
+	 */
+	public static BaseCharFilter setupContainsCharFirstSpecialFilter(BaseCharFilter cond) {
+		val funcs = new Functionality();
+		cond.funcs = funcs;
+
+		funcs.copyFunc = CharConditions::setupContainsCharFirstSpecialFilter;
+
+		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
+			// fail if the condition is already complete
+			if(cond.anyComplete) {
+				cond.failed = true;
+				return false;
+			}
+
+			if(cond.matchCount == 0 ? cond.firstCharMatcher.test(ch) : cond.charMatcher.test(ch)) {
 				if(cond.matchCount == 0) {
 					cond.coords.setStart(buf);
 				}
@@ -297,7 +328,6 @@ public class CharConditions {
 		funcs.copyFunc = CharConditions::setupEndCharFilter;
 
 		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			// TODO testing CharList matchingChars = cond.matchingChars;
 			if(cond.anyComplete || cond.failed) {
 				cond.failed = true;
 				return false;
@@ -341,7 +371,6 @@ public class CharConditions {
 		};
 
 		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			// TODO testing CharList matchingChars = cond.matchingChars;
 			if(cond.anyComplete || cond.failed) {
 				cond.failed = true;
 				return false;

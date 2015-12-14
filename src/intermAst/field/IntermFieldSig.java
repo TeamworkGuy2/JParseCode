@@ -1,8 +1,13 @@
 package intermAst.field;
 
+import intermAst.type.TypeSig;
+
 import java.io.IOException;
 import java.util.List;
 
+import output.JsonWritableSig;
+import output.WriteSettings;
+import baseAst.annotation.AnnotationSig;
 import baseAst.util.NameUtil;
 import twg2.annotations.Immutable;
 import lombok.AllArgsConstructor;
@@ -14,16 +19,18 @@ import lombok.Getter;
  */
 @Immutable
 @AllArgsConstructor
-public class IntermFieldSig {
+public class IntermFieldSig implements JsonWritableSig {
 	private final @Getter String name;
 	private final @Getter List<String> fullyQualifyingName;
-	private final @Getter String fieldType;
+	private final @Getter TypeSig fieldType;
+	private final @Getter List<AnnotationSig> annotations;
 
 
-	public void toJson(Appendable dst) throws IOException {
+	@Override
+	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		dst.append("{ ");
-		dst.append("\"name\": \"" + NameUtil.joinFqName(fullyQualifyingName) + "\", ");
-		dst.append("\"type\": \"" + fieldType.replace('\n', ' ').replace("\"", "\\\"") + "\"");
+		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
+		dst.append("\"type\": \"" + fieldType + "\"");
 		dst.append(" }");
 	}
 

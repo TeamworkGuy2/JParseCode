@@ -1,19 +1,22 @@
 package codeParser.csharp;
 
 import intermAst.block.IntermBlock;
+import intermAst.classes.IntermClassBlocks;
 import intermAst.classes.IntermClassSig;
-import intermAst.classes.IntermClassWithFieldsMethods;
 import intermAst.field.IntermFieldSig;
 import intermAst.method.IntermMethodSig;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.val;
+import parser.condition.AstParserCondition;
 import twg2.treeLike.simpleTree.SimpleTree;
 import baseAst.AccessModifierEnum;
-import baseAst.csharp.CSharpAstUtil;
-import baseAst.csharp.CSharpBlock;
+import baseAst.csharp.CsAstUtil;
+import baseAst.csharp.CsBlock;
+import baseAst.util.AstFragType;
 import baseAst.util.AstUtil;
 import codeParser.CodeFragmentType;
 import codeParser.CodeLanguageOptions;
@@ -23,13 +26,13 @@ import documentParser.DocumentFragmentText;
  * @author TeamworkGuy2
  * @since 2015-12-5
  */
-public class CSharpBlockExtractor {
-	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CSharpAstUtil> lang = CodeLanguageOptions.C_SHARP;
-	private IntermBlock<CSharpBlock> parentScope;
-	List<IntermBlock<CSharpBlock>> blocks = new ArrayList<>();
+public class CsBlockExtractor {
+	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil> lang = CodeLanguageOptions.C_SHARP;
+	private IntermBlock<CsBlock> parentScope;
+	List<IntermBlock<CsBlock>> blocks = new ArrayList<>();
 
 
-	public CSharpBlockExtractor(IntermBlock<CSharpBlock> parentScope) {
+	public CsBlockExtractor(IntermBlock<CsBlock> parentScope) {
 		this.parentScope = parentScope;
 	}
 
@@ -38,22 +41,22 @@ public class CSharpBlockExtractor {
 			int idx, int siblingCount, int depth, List<SimpleTree<DocumentFragmentText<CodeFragmentType>>> siblings,
 			SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, DocumentFragmentText<CodeFragmentType> parent) {
 
-		if(AstUtil.isKeyword(token, CSharpKeyword.CLASS, CSharpKeyword.INTERFACE, CSharpKeyword.NAMESPACE)) {
+		if(AstFragType.isBlockKeyword(token)) {
 			SimpleTree<DocumentFragmentText<CodeFragmentType>> nextNode = AstUtil.getSibling(siblings, idx, 1);
 
 			// read a compound name (only needed for namespaces)
 			int i = idx + 1;
 			List<String> nameCompound = new ArrayList<>();
-			while(i < siblingCount && nextNode != null && nextNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !AstUtil.isBlock(nextNode.getData(), "{")) {
+			while(i < siblingCount && nextNode != null && nextNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !AstFragType.isBlock(nextNode.getData(), "{")) {
 				nameCompound.add(nextNode.getData().getText());
 				nextNode = siblings.get(i + 1);
 				i++;
 			}
 
 			// if the next token is an opening block, then this is probably a valid block declaration
-			if(AstUtil.isBlock(nextNode.getData(), "{")) {
+			if(AstFragType.isBlock(nextNode.getData(), "{")) {
 				val prevNode = AstUtil.getSibling(siblings, idx, -1);
-				CSharpBlock blockType = CSharpBlock.tryFromKeyword(CSharpKeyword.tryToKeyword(token.getText()));
+				CsBlock blockType = CsBlock.tryFromKeyword(CsKeyword.tryToKeyword(token.getText()));
 				val accessStr = prevNode != null ? prevNode.getData().getText() : null;
 				AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
 				blocks.add(new IntermBlock<>(new IntermClassSig(access, nameCompound, token.getText()), nextNode, blockType));
@@ -85,27 +88,27 @@ public class CSharpBlockExtractor {
 			int addBlockCount = 0;
 
 			// if this token is an opening block, then this is probably a valid block declaration
-			if(AstUtil.isBlock(token, "{")) {
+			if(AstFragType.isBlock(token, "{")) {
 				SimpleTree<DocumentFragmentText<CodeFragmentType>> prevNode = AstUtil.getSibling(children, ii, -1);
 
-				// TODO probably not needed since we have a compound name parser (2015-12-9), -- read a compound name backward (only needed for namespaces)
+				// read the identifier
 				int i = ii - 1;
-				List<String> nameCompound = new ArrayList<>();
-				while(i > 0 && prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !AstUtil.isKeyword(prevNode.getData(), CSharpKeyword.CLASS, CSharpKeyword.INTERFACE, CSharpKeyword.NAMESPACE)) {
-					nameCompound.add(0, prevNode.getData().getText());
+				String nameCompound = null;
+				if(i > 0 && prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !AstFragType.isBlockKeyword(prevNode.getData())) {
+					nameCompound = prevNode.getData().getText();
 					prevNode = children.get(i - 1);
 					i--;
 				}
 
-				if(prevNode != null && AstUtil.isKeyword(prevNode.getData(), CSharpKeyword.CLASS, CSharpKeyword.INTERFACE, CSharpKeyword.NAMESPACE)) {
-					addBlockCount = nameCompound.size();
+				if(nameCompound != null && prevNode != null && AstFragType.isBlockKeyword(prevNode.getData())) {
+					addBlockCount = 1;
 					val blockTypeStr = prevNode.getData().getText();
-					CSharpBlock blockType = CSharpBlock.tryFromKeyword(CSharpKeyword.tryToKeyword(blockTypeStr));
+					CsBlock blockType = CsBlock.tryFromKeyword(CsKeyword.tryToKeyword(blockTypeStr));
 					val accessModifierNode = AstUtil.getSibling(children, ii, -1);
 					val accessStr = accessModifierNode != null ? accessModifierNode.getData().getText() : null;
 					AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
 
-					nameScope.addAll(nameCompound);
+					nameScope.add(nameCompound);
 
 					blocks.add(new IntermBlock<>(new IntermClassSig(access, new ArrayList<>(nameScope), blockTypeStr), child, blockType));
 				}
@@ -122,29 +125,44 @@ public class CSharpBlockExtractor {
 
 
 	// TODO this only parses interface methods
-	public static List<IntermClassWithFieldsMethods<CSharpBlock>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree,
-			boolean parseUsingStatements, boolean parseFields, boolean parseMethods) {
-		List<IntermBlock<CSharpBlock>> blockDeclarations = CSharpBlockExtractor.extractBlocks(tokenTree, null);
-		List<IntermClassWithFieldsMethods<CSharpBlock>> resBlocks = new ArrayList<>();
+	public static List<IntermClassBlocks<CsBlock>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
+		List<IntermBlock<CsBlock>> blockDeclarations = CsBlockExtractor.extractBlocks(tokenTree, null);
 
-		List<List<String>> usingStatements = null;
-		if(parseUsingStatements) {
-			usingStatements = CSharpUsingStatementExtractor.extractUsingStatements(tokenTree);
-		}
+		List<IntermClassBlocks<CsBlock>> resBlocks = new ArrayList<>();
+
+		CsUsingStatementExtractor extractor = new CsUsingStatementExtractor();
+
+		runParsers(tokenTree, new ArrayList<>(Arrays.asList(extractor)));
+
+		List<List<String>> usingStatements = new ArrayList<>(extractor.getParserResult());
 
 		for(val block : blockDeclarations) {
 			List<IntermFieldSig> fields = null;
 			List<IntermMethodSig> intfMethods = null;
 
-			if(parseFields && block.getBlockType().canContainFields()) {
-				fields = CSharpDataModelFieldExtractor.extractDataModelFields(block.getBlockTree(), block);
+			CsAnnotationParser annotationExtractor = new CsAnnotationParser();
+			CsDataModelFieldExtractor fieldExtractor = new CsDataModelFieldExtractor(block, annotationExtractor);
+			CsInterfaceMethodExtractor methodExtractor = new CsInterfaceMethodExtractor(block, annotationExtractor);
+
+			val parsers = new ArrayList<>(Arrays.asList(annotationExtractor, fieldExtractor, methodExtractor));
+
+			extractor.recycle();
+			runParsers(block.getBlockTree(), new ArrayList<>(Arrays.asList(extractor)));
+
+			List<List<String>> tmpUsingStatements = extractor.getParserResult();
+			usingStatements.addAll(tmpUsingStatements);
+
+			runParsers(block.getBlockTree(), (List<AstParserCondition<?>>)(ArrayList)parsers);
+
+			if(block.getBlockType().canContainFields()) {
+				fields = fieldExtractor.getParserResult();
 			}
-			if(parseMethods && block.getBlockType().canContainMethods()) {
-				intfMethods = CSharpInterfaceMethodExtractor.extractInterfaceMethods(block.getBlockTree(), block);
+			if(block.getBlockType().canContainMethods()) {
+				intfMethods = methodExtractor.getParserResult();
 			}
 
-			if(block.getBlockType() != CSharpBlock.NAMESPACE) {
-				resBlocks.add(new IntermClassWithFieldsMethods<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockTree(), block.getBlockType()));
+			if(block.getBlockType() != CsBlock.NAMESPACE) {
+				resBlocks.add(new IntermClassBlocks<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockTree(), block.getBlockType()));
 			}
 		}
 
@@ -152,8 +170,37 @@ public class CSharpBlockExtractor {
 	}
 
 
-	public static List<IntermBlock<CSharpBlock>> extractBlocks(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree, IntermBlock<CSharpBlock> parentScope) {
-		CSharpBlockExtractor extractor = new CSharpBlockExtractor(parentScope);
+	public static void runParsers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tree, List<AstParserCondition<?>> parsers) {
+		val children = tree.getChildren();
+		val parserCount = parsers.size();
+
+		for(int i = 0, size = children.size(); i < size; i++) {
+			val child = children.get(i);
+
+			// loop over each parser and allow it to consume the token
+			for(int ii = 0; ii < parserCount; ii++) {
+				val parser = parsers.get(ii);
+				parser.acceptNext(child);
+
+				val complete = parser.isComplete();
+				val failed = parser.isFailed();
+				if(complete || failed) {
+					//val newParser = parser.copyOrReuse();
+					//parsers.set(ii, newParser);
+				}
+			}
+		}
+	}
+
+	//public static List<IntermFieldSig> extractDataModelFields(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree, IntermBlock<? extends CompoundBlock> parentBlock) {
+	//	CsDataModelFieldExtractor extractor = new CsDataModelFieldExtractor(parentBlock);
+	//	AstUtil.forChildrenOnly(0, tokenTree, extractor::extractDataModelFieldsIndexedTreeConsumer);
+	//	return extractor.fields;
+	//}
+
+
+	public static List<IntermBlock<CsBlock>> extractBlocks(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree, IntermBlock<CsBlock> parentScope) {
+		CsBlockExtractor extractor = new CsBlockExtractor(parentScope);
 		//AstUtil.forEach(parsedFile.getDoc(), extractor::extractDataModelFieldsIndexedSubTreeConsumer);
 		List<String> nameScope = new ArrayList<>();
 		extractor.extractDataModelFieldsFromTree(nameScope, tokenTree, 0, 0, 0, null);

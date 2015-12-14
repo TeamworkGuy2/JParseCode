@@ -1,4 +1,4 @@
-package parser.condition;
+package parser.text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import lombok.val;
 import parser.Inclusion;
+import parser.condition.ParserConditionFactory;
 import parser.textFragment.TextFragmentRef;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.util.arrayUtils.ArrayUtil;
@@ -53,7 +54,7 @@ public class StringConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class BaseStringFilter implements ParserCondition.WithMarks {
+	public static class BaseStringFilter implements CharParserCondition.WithMarks {
 		String[] originalStrs;
 		Bag<String> matchingStrs;
 		boolean anyComplete = false;
@@ -145,7 +146,7 @@ public class StringConditions {
 
 
 		@Override
-		public ParserCondition recycle() {
+		public CharParserCondition recycle() {
 			this.reset();
 			return this;
 		}

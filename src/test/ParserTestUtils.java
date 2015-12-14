@@ -1,8 +1,10 @@
 package test;
 
+import lombok.val;
+
 import org.junit.Assert;
 
-import parser.condition.ParserCondition;
+import parser.text.CharParserCondition;
 import twg2.parser.textParser.TextParserImpl;
 
 /**
@@ -12,15 +14,30 @@ import twg2.parser.textParser.TextParserImpl;
 public interface ParserTestUtils {
 
 	// Test also ensures that conditions work as expected when recycled (if possible) and when copied
-	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, ParserCondition cond, String src) {
+	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src) {
 		cond = cond.copyOrReuse();
-		_parseTest(expectComplete, expectFailed, name, cond, src);
+		_parseTest(expectComplete, expectFailed, name, cond, src, null);
 		cond = cond.copy();
-		_parseTest(expectComplete, expectFailed, name, cond, src);
+		_parseTest(expectComplete, expectFailed, name, cond, src, null);
 	}
 
 
-	public static void _parseTest(boolean expectComplete, boolean expectFailed, String name, ParserCondition cond, String src) {
+	/** If parsing is successfully, the result text should be identical to the src text
+	 */
+	public static void parseTestSameParsed(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src) {
+		parseTest(expectComplete, expectFailed, name, cond, src, src);
+	}
+
+
+	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src, String expectedParsedResult) {
+		cond = cond.copyOrReuse();
+		_parseTest(expectComplete, expectFailed, name, cond, src, expectedParsedResult);
+		cond = cond.copy();
+		_parseTest(expectComplete, expectFailed, name, cond, src, expectedParsedResult);
+	}
+
+
+	public static void _parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src, String srcExpect) {
 		TextParserImpl buf = TextParserImpl.of(src);
 
 		while(buf.hasNext()) {
@@ -28,8 +45,15 @@ public interface ParserTestUtils {
 			cond.acceptNext(ch, buf);
 		}
 
-		Assert.assertEquals(name + " '" + src + "' isComplete() ", expectComplete, cond.isComplete());
-		Assert.assertEquals(name + " '" + src + "' isFailed() ", expectFailed, cond.isFailed());
+		val isComplete = cond.isComplete();
+		Assert.assertEquals(name + " '" + src + "' isComplete() ", expectComplete, isComplete);
+		val isFailed = cond.isFailed();
+		Assert.assertEquals(name + " '" + src + "' isFailed() ", expectFailed, isFailed);
+
+		if(isComplete && srcExpect != null) {
+			val parsedText = cond.getCompleteMatchedTextCoords().getText(src);
+			Assert.assertEquals(srcExpect, parsedText);
+		}
 	}
 
 

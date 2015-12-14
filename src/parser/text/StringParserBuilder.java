@@ -1,20 +1,14 @@
-package parser;
+package parser.text;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import parser.condition.CharConditions;
-import parser.condition.ParserCondition;
-import parser.condition.Precondition;
-import parser.condition.PreconditionImpl;
-import parser.condition.StringConditions;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-6-25
  */
 public class StringParserBuilder {
-	private List<ParserCondition.WithMarks> stringFilters;
+	private List<CharParserCondition.WithMarks> stringFilters;
 
 
 	public StringParserBuilder() {
@@ -22,12 +16,12 @@ public class StringParserBuilder {
 	}
 
 
-	public Precondition build() {
-		ParserCondition.WithMarks[] conditions = new ParserCondition.WithMarks[stringFilters.size()];
+	public CharPrecondition build() {
+		CharParserCondition.WithMarks[] conditions = new CharParserCondition.WithMarks[stringFilters.size()];
 		for(int i = 0, size = stringFilters.size(); i < size; i++) {
 			conditions[i] = stringFilters.get(i);
 		}
-		return new PreconditionImpl<ParserCondition.WithMarks>(false, conditions);
+		return new CharPreconditionImpl<CharParserCondition.WithMarks>(false, conditions);
 	}
 
 
@@ -49,7 +43,7 @@ public class StringParserBuilder {
 	}
 
 
-	public StringParserBuilder addConditionMatcher(ParserCondition.WithMarks condition) {
+	public StringParserBuilder addConditionMatcher(CharParserCondition.WithMarks condition) {
 		this.stringFilters.add(condition);
 		return this;
 	}
