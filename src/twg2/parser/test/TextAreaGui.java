@@ -62,14 +62,14 @@ public class TextAreaGui {
 			public void windowClosing(WindowEvent e) { closingAction(); }
 		});
 
-		// Create and set the menu bar as well as the parser.main content pane
+		// Create and set the menu bar as well as the main content pane
 		// Create the menu bar program
 		this.menuBar = new BasicMenuBar();
 
 		SwingUtilities.invokeLater(() -> {
 			// Build the menu bard and set it as the frame's menu bar
 			mainFrame.setJMenuBar( menuBar.getMenuBar() );
-			// Builds the entire parser.main panel, including buttons, labels, and scroll panes, as well as assigning listeners
+			// Builds the entire main panel, including buttons, labels, and scroll panes, as well as assigning listeners
 			mainFrame.add( buildPanel() );
 			// Display the window.
 			mainFrame.pack(); // If size is not explicitly set using setSize or setBounds

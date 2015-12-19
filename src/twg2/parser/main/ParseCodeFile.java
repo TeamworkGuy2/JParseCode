@@ -31,12 +31,12 @@ public class ParseCodeFile {
 
 
 	public static void parseAndValidProjectFilesLinks() throws IOException {
-		//Path fileOrDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/powerscope/loki/CorningstoneApp/server/Entities");
-		Path fileOrDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/powerscope/loki/CorningstoneApp/server/Services");
+		//Path fileOrDir = Paths.get("Entities");
+		Path fileOrDir = Paths.get("Services");
 		int depth = 1;
 		val fileSet = new ProjectClassSet<CsBlock>();
 		val files = CsMain.getFilesByExtension(fileOrDir, depth, "cs");
-		//val files = Arrays.asList(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/powerscope/loki/CorningstoneApp/server/Entities/Messaging/SubmitBidRequest.cs"));
+		//val files = Arrays.asList(Paths.get("Request.cs"));
 		CsMain.parseFileSet(files, fileSet);
 
 		val writeSettings = new WriteSettings(true, false, false);

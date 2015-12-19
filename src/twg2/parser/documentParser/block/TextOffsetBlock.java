@@ -36,7 +36,7 @@ public class TextOffsetBlock implements TextBlock {
 
 	@Override
 	public List<TextBlock> getSubBlocks() {
-		throw new IllegalStateException("cannot get sub twg2.parser.documentParser.block from a text block");
+		throw new IllegalStateException("cannot get sub documentParser.block from a text block");
 	}
 
 
