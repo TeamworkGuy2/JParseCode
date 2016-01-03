@@ -3,12 +3,12 @@ package twg2.parser.text;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import streamUtils.StreamMap;
 import twg2.collections.util.dataStructures.Bag;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.ParserConditionFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
+import twg2.streams.StreamMap;
 import twg2.text.stringUtils.StringJoin;
 
 /**

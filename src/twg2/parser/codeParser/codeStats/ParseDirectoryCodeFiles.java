@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,13 +21,9 @@ import twg2.collections.util.ListUtil;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
-import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.ParseCommentsAndWhitespace;
-import twg2.parser.codeParser.ParseInput;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 
@@ -138,36 +133,6 @@ public class ParseDirectoryCodeFiles {
 	}
 
 
-	public static List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parseFiles(List<Path> files) throws IOException {
-		List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parsedFiles = new ArrayList<>();
-
-		for(Path path : files) {
-			File file = path.toFile();
-			String srcStr = StringReplace.replace(FileReadUtil.defaultInst.readString(new FileReader(file)), "\r\n", "\n");
-			String fileName = file.getName();
-			String fileExt = StringSplit.lastMatch(fileName, ".");
-			val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
-			if(lang != null) {
-				val parseParams = new ParseInput(srcStr, null, fileName);
-				
-				try {
-					@SuppressWarnings("unchecked")
-					CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFileInfo = (CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>)lang.getParser().apply(parseParams);
-
-					parsedFiles.add(parsedFileInfo);
-				} catch(Exception e) {
-					throw new RuntimeException(parseParams.toString(), e);
-				}
-			}
-			else {
-				throw new IllegalArgumentException("unsupported file extension '" + fileExt + "' for parsing '" + fileName + "'");
-			}
-		}
-
-		return parsedFiles;
-	}
-
-
 	public static ParseDirectoryCodeFiles parseFileStats(Path relativePath, List<Path> files) throws IOException {
 		List<ParsedFileStats> filesStats = new ArrayList<>();
 
@@ -189,25 +154,6 @@ public class ParseDirectoryCodeFiles {
 
 		ParseDirectoryCodeFiles parsedRes = new ParseDirectoryCodeFiles(relativePath, filesStats);
 		return parsedRes;
-	}
-
-
-	public static void main(String[] args) throws IOException {
-		Path oldProjDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/psor/ca");
-		Path newProjDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/ps/l/ca");
-
-		String[] oldProjFileTypes = { ".cs", ".js", ".json", ".html", ".css" };
-		val oldFiles = loadFiles(oldProjDir, oldProjFileTypes);
-		val results = parseFileStats(oldProjDir, oldFiles);
-
-		String[] newProjFileTypes = { ".cs", ".ts", ".json", ".html", ".css" };
-		//val newFiles = loadFiles(newProjDir, newProjFileTypes);
-		//val results = parseFiles(newProjDir, newFiles);
-
-		File dstLog = new File("C:/Users/TeamworkGuy2/Documents/parsed-file-stats.txt");
-
-		Json.getDefaultInst().setPrettyPrint(true);
-		Json.stringify(results, dstLog);
 	}
 
 }

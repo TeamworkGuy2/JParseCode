@@ -62,7 +62,7 @@ public class EclipseClasspathUtils {
 		File projects = new File("C:/Users/TeamworkGuy2/Documents/Java/Projects");
 		//List<String> expectImports = Arrays.asList("jdata_util.jar", "jtext_util.jar", "type_util.jar", "jstream_util.jar", "ranges_util.jar", "jcollection_util.jar", "jfunction_util.jar", "parser_string.jar");
 		//List<String> doesContain = Arrays.asList("io_util");
-		List<String> expectImports = Arrays.asList("parser_util.jar");
+		List<String> expectImports = Arrays.asList("jrange.jar");
 		List<String> doesContain = Arrays.asList("");
 
 		PairList<String, List<String>> res = getProjectsContainingLibsMissingLibs(projects, null, expectImports, doesContain);

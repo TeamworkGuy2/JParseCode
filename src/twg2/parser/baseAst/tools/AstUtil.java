@@ -1,4 +1,4 @@
-package twg2.parser.baseAst.util;
+package twg2.parser.baseAst.tools;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 import lombok.val;
-import twg2.collections.util.arrayUtils.ArrayUtil;
+import twg2.arrays.ArrayUtil;
 import twg2.parser.baseAst.AstNodeConsumer;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.DocumentFragmentRef;

@@ -11,8 +11,8 @@ import java.util.function.Function;
 import org.junit.Assert;
 import org.junit.Test;
 
+import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.IntArrayList;
-import twg2.collections.util.arrayUtils.ArrayUtil;
 import twg2.parser.Inclusion;
 import twg2.parser.documentParser.block.IntermediateBlock;
 import twg2.parser.documentParser.block.ParseBlocks;

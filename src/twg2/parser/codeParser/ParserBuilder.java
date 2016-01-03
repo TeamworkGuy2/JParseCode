@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import streamUtils.EnhancedIterator;
-import streamUtils.StringLineSupplier;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.documentParser.DocumentParser;
 import twg2.parser.text.CharPrecondition;
@@ -13,6 +11,8 @@ import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.textParser.TextParserImpl;
+import twg2.streams.EnhancedIterator;
+import twg2.streams.StringLineSupplier;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

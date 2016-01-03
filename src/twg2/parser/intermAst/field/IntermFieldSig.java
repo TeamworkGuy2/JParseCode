@@ -3,14 +3,14 @@ package twg2.parser.intermAst.field;
 import java.io.IOException;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.parser.baseAst.annotation.AnnotationSig;
-import twg2.parser.baseAst.util.NameUtil;
+import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 /**
  * @author TeamworkGuy2

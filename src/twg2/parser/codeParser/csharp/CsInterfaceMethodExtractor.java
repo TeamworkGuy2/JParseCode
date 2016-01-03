@@ -5,12 +5,13 @@ import java.util.List;
 
 import lombok.val;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.util.AstFragType;
-import twg2.parser.baseAst.util.NameUtil;
+import twg2.parser.baseAst.tools.AstFragType;
+import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.condition.AstParserCondition;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.block.IntermBlock;
+import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.method.IntermMethodSig;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -31,7 +32,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 	}
 
 
-	IntermBlock<? extends CompoundBlock> parentBlock;
+	IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock;
 	CsAnnotationParser annotationParser;
 	String methodName;
 	TypeSig returnTypeSig;
@@ -40,7 +41,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 	State state = State.INIT;
 
 
-	public CsInterfaceMethodExtractor(IntermBlock<? extends CompoundBlock> parentBlock, CsAnnotationParser annotationParser) {
+	public CsInterfaceMethodExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationParser annotationParser) {
 		this.methods = new ArrayList<>();
 		this.parentBlock = parentBlock;
 		this.annotationParser = annotationParser;

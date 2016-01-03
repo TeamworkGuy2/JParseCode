@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
+import lombok.Getter;
+import lombok.val;
 import twg2.parser.baseAst.LanguageAstUtil;
 import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.codeParser.csharp.CsClassParser;
 import twg2.parser.documentParser.DocumentFragmentText;
-import lombok.Getter;
-import lombok.val;
 
 /**
  * @author TeamworkGuy2

@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
-import twg2.parser.baseAst.util.NameUtil;
+import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 

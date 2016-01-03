@@ -1,4 +1,4 @@
-package twg2.parser.baseAst.util;
+package twg2.parser.baseAst.tools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,11 @@ public class NameUtil {
 	public static String joinFqName(List<String> names) {
 		String name = StringJoin.join(names, ".");
 		return name;
+	}
+
+
+	public static String appendToFqName(String existingName, String nextPart) {
+		return (existingName != null && existingName.length() > 0) ? existingName + "." + nextPart : nextPart;
 	}
 
 }

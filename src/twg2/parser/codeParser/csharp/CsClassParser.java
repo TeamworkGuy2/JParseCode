@@ -64,6 +64,7 @@ public class CsClassParser {
 			.addCharLiteralMarker('-')
 			.addCharLiteralMarker('=')
 			.addCharLiteralMarker('?')
+			.addCharLiteralMarker(':')
 			.build();
 		return operatorParser;
 	}

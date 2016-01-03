@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 import lombok.val;
+import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.CharList;
-import twg2.collections.util.arrayUtils.ArrayUtil;
 import twg2.collections.util.dataStructures.Bag;
 import twg2.functions.BiPredicates;
 import twg2.parser.Inclusion;

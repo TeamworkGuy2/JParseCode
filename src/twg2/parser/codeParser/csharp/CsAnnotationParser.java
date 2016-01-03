@@ -7,8 +7,8 @@ import java.util.Map;
 
 import lombok.val;
 import twg2.parser.baseAst.annotation.AnnotationSig;
-import twg2.parser.baseAst.util.AstFragType;
-import twg2.parser.baseAst.util.NameUtil;
+import twg2.parser.baseAst.tools.AstFragType;
+import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.condition.AstParserCondition;
 import twg2.parser.documentParser.DocumentFragmentText;

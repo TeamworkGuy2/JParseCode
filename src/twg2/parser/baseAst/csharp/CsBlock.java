@@ -9,14 +9,25 @@ import dataUtils.EnumUtil;
  * @since 2015-12-6
  */
 public enum CsBlock implements CompoundBlock {
-	CLASS,
-	ENUM,
-	INTERFACE,
-	NAMESPACE,
-	STRUCT;
+	CLASS(false, false),
+	ENUM(false, false),
+	INTERFACE(false, true),
+	NAMESPACE(false, false),
+	STRUCT(false, false);
 
 
-	private CsBlock() {
+	final boolean isClass;
+	final boolean isInterface;
+
+	private CsBlock(boolean isClass, boolean isInterface) {
+		this.isClass = isClass;
+		this.isInterface = isInterface;
+	}
+
+
+	@Override
+	public boolean isInterface() {
+		return isInterface;
 	}
 
 

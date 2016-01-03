@@ -10,4 +10,6 @@ public interface CompoundBlock {
 
 	public boolean canContainMethods();
 
+	public boolean isInterface();
+
 }
