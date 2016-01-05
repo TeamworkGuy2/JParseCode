@@ -1,7 +1,6 @@
 package twg2.parser.baseAst.tools;
 
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.documentParser.DocumentFragment;
 import twg2.parser.documentParser.DocumentFragmentText;
 
@@ -66,35 +65,6 @@ public class AstFragType {
 
 	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD);
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.getSrcName().equals(node.getText()));
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText())));
-	}
-
-
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText()) || keyword3.getSrcName().equals(node.getText())));
-	}
-
-
-	public static final boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-				(CsKeyword.CLASS.getSrcName().equals(node.getText()) || CsKeyword.INTERFACE.getSrcName().equals(node.getText()) || CsKeyword.NAMESPACE.getSrcName().equals(node.getText())));
-	}
-
-
-	public static final boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-		String text = null;
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-				(CsKeyword.PUBLIC.getSrcName().equals((text = node.getText())) || CsKeyword.PROTECTED.getSrcName().equals(text) || CsKeyword.INTERNAL.getSrcName().equals(text) || CsKeyword.PRIVATE.getSrcName().equals(text) ||
-				CsKeyword.ABSTRACT.getSrcName().equals(text) || CsKeyword.SEALED.getSrcName().equals(text) || CsKeyword.STATIC.getSrcName().equals(text)));
 	}
 
 

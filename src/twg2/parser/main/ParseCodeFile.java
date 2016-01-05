@@ -12,8 +12,6 @@ import java.util.List;
 import lombok.val;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
-import twg2.parser.baseAst.csharp.CsBlock;
-import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
@@ -21,10 +19,6 @@ import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.project.ProjectClassSet;
-import twg2.parser.output.WriteSettings;
-import twg2.text.stringUtils.StringJoin;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 
@@ -44,7 +38,7 @@ public class ParseCodeFile {
 			String fileExt = StringSplit.lastMatch(fileName, ".");
 			val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
 			if(lang != null) {
-				val parsedFileInfo = parseCode(fileName, lang, srcStr);
+				val parsedFileInfo = parseCode(file.toString(), lang, srcStr);
 				parsedFiles.add(parsedFileInfo);
 			}
 			else {
@@ -97,36 +91,6 @@ public class ParseCodeFile {
 			val parsedFile = parsedFiles.get(i);
 			CsMain.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
 		}
-	}
-
-
-	public static void parseAndValidProjectCsClasses() throws IOException {
-		Path fileOrDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/powerscope/loki/CorningstoneApp/server/Entities"); //("/server/Entities");
-		//Path fileOrDir = Paths.get("/server/Services");
-		int depth = 3;
-		val fileSet = new ProjectClassSet<IntermClass.SimpleImpl<CsBlock>>();
-		val files = CsMain.getFilesByExtension(fileOrDir, depth, "cs");
-		//val files = Arrays.asList(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/powerscope/loki/CorningstoneApp/server/Entities/Searching/CustomerUserSearchCriteria.cs")); //("/server/Entities/Messaging/SubmitBidRequest.cs"));
-		List<List<String>> missingNamespaces = new ArrayList<>();
-		CsMain.parseFileSet(files, fileSet);
-		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
-
-		val writeSettings = new WriteSettings(true, false, false);
-		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));
-		for(val classSig : res) {
-			classSig.toJson(System.out, writeSettings);
-		}
-		System.out.println("\n");
-		System.out.println("files (" + files.size() + "): " + StringJoin.Objects.join(files, "\n"));
-		String[] nonSystemMissingNamespaces = missingNamespaces.stream().filter((ns) -> !"System".equals(ns.get(0))).map((ns) -> NameUtil.joinFqName(ns)).toArray((n) -> new String[n]);
-		System.out.println("missing non-system namespaces: (" + nonSystemMissingNamespaces.length + "): " + Arrays.toString(nonSystemMissingNamespaces));
-	}
-
-
-	public static void main(String[] args) throws IOException {
-		//parseAndPrintCSharpFileInfo();
-		//parseAndPrintFileStats();
-		parseAndValidProjectCsClasses();
 	}
 
 }

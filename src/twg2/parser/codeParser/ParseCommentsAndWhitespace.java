@@ -24,21 +24,21 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class ParseCommentsAndWhitespace {
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String fileExtension, String src) throws IOException {
+	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, String src) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
-		return buildCommentsAndWhitespaceTree(commentStyle, src);
+		return buildCommentsAndWhitespaceTree(commentStyle, src, srcName);
 	}
 
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src) throws IOException {
+	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
 		CharPrecondition stringParser = CodeStringParser.createStringParserForJavascript();
 		CharPrecondition commentParser = CommentParser.createCommentParser(style);
 
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)
 			.addConstParser(stringParser, CodeFragmentType.STRING);
-		return parser.buildAndParse(src, null);
+		return parser.buildAndParse(src, null, srcName);
 	}
 
 

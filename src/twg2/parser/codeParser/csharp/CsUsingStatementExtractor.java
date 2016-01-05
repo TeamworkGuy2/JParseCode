@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.condition.AstParserCondition;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -25,6 +27,8 @@ public class CsUsingStatementExtractor implements AstParserCondition<List<List<S
 	}
 
 
+	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil> lang = CodeLanguageOptions.C_SHARP;
+
 	List<List<String>> usingStatements = new ArrayList<>();
 	State state = State.INIT;
 
@@ -32,7 +36,7 @@ public class CsUsingStatementExtractor implements AstParserCondition<List<List<S
 	@Override
 	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
 		if(state != State.FOUND_USING) {
-			if(AstFragType.isKeyword(tokenNode.getData(), CsKeyword.USING)) {
+			if(lang.getAstUtil().getChecker().isKeyword(tokenNode.getData(), CsKeyword.USING)) {
 				state = State.FOUND_USING;
 			}
 		}

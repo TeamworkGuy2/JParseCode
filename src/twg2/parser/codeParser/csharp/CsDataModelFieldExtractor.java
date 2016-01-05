@@ -34,15 +34,15 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 
 
 	IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock;
-	CsAnnotationParser annotationParser;
+	CsAnnotationExtractor annotationParser;
 	List<IntermFieldSig> fields = new ArrayList<>();
-	TypeSig fieldTypeSig;
+	TypeSig.Simple fieldTypeSig;
 	String fieldName;
-	CsDataTypeParser typeParser = new CsDataTypeParser(false);
+	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(false);
 	State state = State.INIT;
 
 
-	public CsDataModelFieldExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationParser annotationParser) {
+	public CsDataModelFieldExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
 		this.parentBlock = parentBlock;
 		this.annotationParser = annotationParser;
 	}
@@ -54,7 +54,7 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 			state = State.INIT;
 		}
 
-		if(state == State.INIT && CsDataTypeParser.isPossiblyType(tokenNode, false)) {
+		if(state == State.INIT && CsDataTypeExtractor.isPossiblyType(tokenNode, false)) {
 			state = State.FINDING_DATA_TYPE;
 			val res = updateAndCheckTypeParser(tokenNode);
 			return res;

@@ -3,6 +3,8 @@ package twg2.parser.intermAst.classes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -12,7 +14,9 @@ import twg2.annotations.Immutable;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.csharp.CsDataTypeExtractor;
 import twg2.parser.intermAst.project.ProjectClassSet;
+import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
@@ -32,10 +36,10 @@ public interface IntermClassSig extends JsonWritableSig {
 	public String getSimpleName();
 
 
-	/** Resolves the {@link IntermClassSig.SimpleNameImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
+	/** Resolves the {@link IntermClassSig.SimpleImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
-	public static <T_CLASS extends IntermClass<? extends IntermClassSig.SimpleNameImpl, ? extends CompoundBlock>> IntermClassSig.ResolvedImpl resolveFrom(T_CLASS intermClass,
-			ProjectClassSet<? extends T_CLASS> projFiles, CompoundBlock defaultBlockType, List<List<String>> missingNamespacesDst) {
+	public static <T_ID, T_CLASS extends IntermClass.SimpleImpl<? extends CompoundBlock>> IntermClassSig.ResolvedImpl resolveClassSigFrom(T_CLASS intermClass,
+			ProjectClassSet<T_ID, ? extends T_CLASS> projFiles, CompoundBlock defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 		List<List<String>> resolvedCompilationUnitNames = new ArrayList<>();
 		List<CompoundBlock> resolvedCompilationUnitBlockTypes = new ArrayList<>();
 		val classSig = intermClass.getSignature();
@@ -43,7 +47,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 		if(classExtendImplementNames != null) {
 			for(val simpleName : classExtendImplementNames) {
-				val resolvedClass = projFiles.resolveSimpleName(simpleName, intermClass.getUsingStatements(), missingNamespacesDst);
+				val resolvedClass = projFiles.resolveSimpleNameToClass(simpleName, intermClass.getUsingStatements(), missingNamespacesDst);
 				if(resolvedClass != null) {
 					resolvedCompilationUnitBlockTypes.add(resolvedClass.getBlockType());
 					resolvedCompilationUnitNames.add(resolvedClass.getSignature().getFullyQualifyingName());
@@ -78,7 +82,12 @@ public interface IntermClassSig extends JsonWritableSig {
 			}
 		}
 
-		val res = new IntermClassSig.ResolvedImpl(classSig.getAccessModifier(), classSig.getFullyQualifyingName(), classSig.getDeclarationType(),
+		TypeSig.Simple genericClassParams = CsDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(classSig.getFullyQualifyingName()));
+		TypeSig.Resolved resolvedClassParams = TypeSig.resolveFrom(genericClassParams, intermClass.getUsingStatements(), projFiles, missingNamespacesDst);
+		val classFqName = resolvedClassParams.getFullyQualifyingName();
+		val classParams = resolvedClassParams.isGeneric() ? resolvedClassParams.getGenericParams() : Collections.<TypeSig.Resolved>emptyList();
+
+		val res = new IntermClassSig.ResolvedImpl(classSig.getAccessModifier(), classFqName, classParams, classSig.getDeclarationType(),
 				extendClassFullyQualifyingName, implementInterfaceFullyQualifyingNames);
 		return res;
 	}
@@ -88,7 +97,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 	@Immutable
 	@AllArgsConstructor
-	public static class SimpleNameImpl implements IntermClassSig {
+	public static class SimpleImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
 		private final @Getter List<String> fullyQualifyingName;
 		private final @Getter String declarationType;
@@ -105,12 +114,19 @@ public interface IntermClassSig extends JsonWritableSig {
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append("{ ");
 			dst.append("\"access\": \"" + accessModifier + "\", ");
-			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
-			dst.append("\"declarationType\": \"" + declarationType + "\", ");
+			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\"");
 
-			dst.append("\"extendImplementClassNames\": [");
-			JsonWrite.joinStrConsumer(extendImplementSimpleNames, ", ", dst, (n) -> dst.append('"' + n + '"'));
-			dst.append("] ");
+			if(declarationType != null) {
+				dst.append(", ");
+				dst.append("\"declarationType\": \"" + declarationType + "\"");
+			}
+
+			if(extendImplementSimpleNames.size() > 0) {
+				dst.append(", ");
+				dst.append("\"extendImplementClassNames\": [");
+				JsonWrite.joinStrConsumer(extendImplementSimpleNames, ", ", dst, (n) -> dst.append('"' + n + '"'));
+				dst.append("] ");
+			}
 
 			dst.append(" }");
 		}
@@ -135,6 +151,7 @@ public interface IntermClassSig extends JsonWritableSig {
 	public static class ResolvedImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
 		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<TypeSig.Resolved> genericParams;
 		private final @Getter String declarationType;
 		private final @Getter List<String> extendClassFullyQualifyingName;
 		private final @Getter List<List<String>> implementInterfaceFullyQualifyingNames;
@@ -151,14 +168,28 @@ public interface IntermClassSig extends JsonWritableSig {
 			dst.append("{ ");
 			dst.append("\"access\": \"" + accessModifier + "\", ");
 			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
-			dst.append("\"declarationType\": \"" + declarationType + "\", ");
-			dst.append("\"extendClassName\": \"" + (extendClassFullyQualifyingName != null ? NameUtil.joinFqName(extendClassFullyQualifyingName) : "") + "\", ");
+			dst.append("\"declarationType\": \"" + declarationType + "\"");
 
-			dst.append("\"implementClassNames\": [");
-			if(implementInterfaceFullyQualifyingNames != null) {
-				JsonWrite.joinStrConsumer(implementInterfaceFullyQualifyingNames, ", ", dst, (ns) -> dst.append('"' + NameUtil.joinFqName(ns) + '"'));
+			if(genericParams != null && genericParams.size() > 0) {
+				dst.append(", ");
+				dst.append("\"genericParameters\": [");
+				JsonWrite.joinStrConsumer(genericParams, ", ", dst, (p) -> p.toJson(dst, st));
+				dst.append("]");
 			}
-			dst.append("] ");
+
+			if(extendClassFullyQualifyingName != null) {
+				dst.append(", ");
+				dst.append("\"extendClassName\": \"" + NameUtil.joinFqName(extendClassFullyQualifyingName) + "\"");
+			}
+
+			if(implementInterfaceFullyQualifyingNames.size() > 0) {
+				dst.append(", ");
+				dst.append("\"implementClassNames\": [");
+				if(implementInterfaceFullyQualifyingNames != null) {
+					JsonWrite.joinStrConsumer(implementInterfaceFullyQualifyingNames, ", ", dst, (ns) -> dst.append('"' + NameUtil.joinFqName(ns) + '"'));
+				}
+				dst.append("] ");
+			}
 
 			dst.append(" }");
 		}

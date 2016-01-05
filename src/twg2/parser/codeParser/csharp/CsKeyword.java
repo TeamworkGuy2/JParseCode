@@ -177,8 +177,8 @@ public enum CsKeyword {
 	 * @return true for any string which is a type keyword (i.e. {@link #isType(String)}) or any non-keyword strings,
 	 * returns false for any other keywords 
 	 */
-	public static boolean isNotNonTypeKeyword(String str) {
-		return Arrays.binarySearch(keywords, str) < 0 || Arrays.binarySearch(types, str) > -1;
+	public static boolean isDataTypeKeyword(String str) {
+		return Arrays.binarySearch(types, str) > -1;
 	}
 
 }

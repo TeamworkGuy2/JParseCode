@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.val;
-import twg2.parser.baseAst.annotation.AnnotationSig;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.condition.AstParserCondition;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.text.stringUtils.StringTrim;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-public class CsAnnotationParser implements AstParserCondition<List<AnnotationSig>> {
+public class CsAnnotationExtractor implements AstParserCondition<List<AnnotationSig>> {
 
 	static enum State {
 		INIT,
@@ -112,15 +112,15 @@ public class CsAnnotationParser implements AstParserCondition<List<AnnotationSig
 
 
 	@Override
-	public CsAnnotationParser recycle() {
+	public CsAnnotationExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public CsAnnotationParser copy() {
-		val copy = new CsAnnotationParser();
+	public CsAnnotationExtractor copy() {
+		val copy = new CsAnnotationExtractor();
 		return copy;
 	}
 

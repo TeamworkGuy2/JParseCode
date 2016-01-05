@@ -21,13 +21,14 @@ public class DocumentParserTest {
 
 	//@Test
 	public void testCommentWhitespaceParserDoubleQuotes(EnumSet<CommentStyle> style) throws IOException {
+		String srcNameBase = "TestCommentWhitespaceParserDoubleQuotes";
 		String src = "/*line one is a comment*/\n" +
 				"// line two also\n" +
 				"\t\n" +
 				"line 3 // end of line comment\n" +
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n";
-		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src);
+		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src, srcNameBase + "1");
 
 		// TODO debugging
 		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
@@ -36,6 +37,7 @@ public class DocumentParserTest {
 
 	//@Test
 	public void testCommentWhitespaceParserDoubleAndSingleQuotes(EnumSet<CommentStyle> style) throws IOException {
+		String srcNameBase = "TestCommentWhitespaceParserDoubleAndSingleQuotes";
 		String src = "/*line one is a comment*/\n" +
 				"// line two also\n" +
 				"\t\n" +
@@ -43,7 +45,7 @@ public class DocumentParserTest {
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n" +
 				"'last \\'line\\' string' ending";
-		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src);
+		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src, srcNameBase + "1");
 
 		// TODO debugging
 		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
@@ -53,7 +55,7 @@ public class DocumentParserTest {
 	public ParsedFileStats parseFileWhitespaceComments(EnumSet<CommentStyle> style) throws IOException {
 		Path file = Paths.get("src/twg2/parser/documentParser/blocks/ParseBlocks.java");
 		String src = StringJoin.join(Files.readAllLines(file), "\n");
-		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src);
+		val parserRes = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTree(style, src, file.toFile().getName());
 
 		return ParseCommentsAndWhitespace.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src.length(), parserRes.getLines(), parserRes.getDoc());
 	}

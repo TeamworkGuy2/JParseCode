@@ -8,13 +8,15 @@ import twg2.treeLike.simpleTree.SimpleTree;
 /**
  * @author TeamworkGuy2
  * @since 2015-11-22
- * @param <T> the type of {@link SimpleTree} data stored in this code file's parsed {@link #getDoc()} structure
+ * @param <T_TREE> the type of {@link SimpleTree} data stored in this code file's parsed {@link #getDoc()} structure
+ * @param <T_LANG> the code language of the source file
  */
-public class CodeFileSrc<T, L extends CodeLanguage> {
-	@Getter SimpleTree<T> doc;
+public class CodeFileSrc<T_TREE, T_LANG extends CodeLanguage> {
+	@Getter SimpleTree<T_TREE> doc;
+	@Getter String srcName;
 	@Getter String src;
 	@Getter List<String> lines;
-	@Getter L language;
+	@Getter T_LANG language;
 
 
 	/**
@@ -23,8 +25,9 @@ public class CodeFileSrc<T, L extends CodeLanguage> {
 	 * @param lines
 	 * @param language optional
 	 */
-	public CodeFileSrc(SimpleTree<T> doc, String src, List<String> lines, L language) {
+	public CodeFileSrc(SimpleTree<T_TREE> doc, String srcName, String src, List<String> lines, T_LANG language) {
 		this.doc = doc;
+		this.srcName = srcName;
 		this.src = src;
 		this.lines = lines;
 		this.language = language;

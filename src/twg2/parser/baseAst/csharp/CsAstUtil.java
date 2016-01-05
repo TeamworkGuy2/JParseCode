@@ -2,16 +2,21 @@ package twg2.parser.baseAst.csharp;
 
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
+import twg2.parser.baseAst.AstTypeChecker;
 import twg2.parser.baseAst.LanguageAstUtil;
+import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.CodeLanguageOptions;
+import twg2.parser.codeParser.csharp.CsBlock;
+import twg2.parser.codeParser.csharp.CsKeyword;
+import twg2.parser.documentParser.DocumentFragmentText;
 import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-6
  */
-public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlock>, LanguageAstUtil {
+public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlock>, AstTypeChecker<CsKeyword>, LanguageAstUtil {
 
 	@Override
 	public CodeLanguage getLanguage() {
@@ -21,6 +26,12 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 
 	@Override
 	public CsAstUtil getAccessModifierParser() {
+		return this;
+	}
+
+
+	@Override
+	public AstTypeChecker<CsKeyword> getChecker() {
 		return this;
 	}
 
@@ -91,6 +102,40 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 			return AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL;
 		}
 		return null;
+	}
+
+
+	@Override
+	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1) {
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.getSrcName().equals(node.getText()));
+	}
+
+
+	@Override
+	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2) {
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText())));
+	}
+
+
+	@Override
+	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText()) || keyword3.getSrcName().equals(node.getText())));
+	}
+
+
+	@Override
+	public boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
+				(CsKeyword.CLASS.getSrcName().equals(node.getText()) || CsKeyword.INTERFACE.getSrcName().equals(node.getText()) || CsKeyword.NAMESPACE.getSrcName().equals(node.getText())));
+	}
+
+
+	@Override
+	public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+		String text = null;
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
+				(CsKeyword.PUBLIC.getSrcName().equals((text = node.getText())) || CsKeyword.PROTECTED.getSrcName().equals(text) || CsKeyword.INTERNAL.getSrcName().equals(text) || CsKeyword.PRIVATE.getSrcName().equals(text) ||
+				CsKeyword.ABSTRACT.getSrcName().equals(text) || CsKeyword.SEALED.getSrcName().equals(text) || CsKeyword.STATIC.getSrcName().equals(text)));
 	}
 
 }

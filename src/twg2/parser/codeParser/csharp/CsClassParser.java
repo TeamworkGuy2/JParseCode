@@ -38,7 +38,7 @@ public class CsClassParser {
 				})
 				.addConstParser(createOperatorParser(), CodeFragmentType.OPERATOR)
 				.addConstParser(createSeparatorParser(), CodeFragmentType.SEPARATOR);
-			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP);
+			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP, params.getFileName());
 		} catch(Exception e) {
 			if(params.getErrorHandler() != null) {
 				params.getErrorHandler().accept(e);

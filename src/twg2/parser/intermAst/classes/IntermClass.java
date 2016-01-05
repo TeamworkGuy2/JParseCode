@@ -3,16 +3,18 @@ package twg2.parser.intermAst.classes;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.classes.IntermClassSig.SimpleNameImpl;
 import twg2.parser.intermAst.field.IntermFieldSig;
+import twg2.parser.intermAst.field.ResolvedFieldSig;
 import twg2.parser.intermAst.method.IntermMethodSig;
+import twg2.parser.intermAst.method.IntermParameterSig;
+import twg2.parser.intermAst.method.ResolvedParameterSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
@@ -23,15 +25,13 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public interface IntermClass<T_SIG extends IntermClassSig, T_BLOCK extends CompoundBlock> extends JsonWritableSig {
+public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends JsonWritableSig, T_BLOCK extends CompoundBlock> extends JsonWritableSig {
 
 	public T_SIG getSignature();
 
 	public List<List<String>> getUsingStatements();
 
-	public List<IntermFieldSig> getFields();
-
-	public List<IntermMethodSig> getMethods();
+	public List<T_METHOD> getMethods();
 
 	public SimpleTree<DocumentFragmentText<CodeFragmentType>> getBlockTree();
 
@@ -45,14 +45,29 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_BLOCK extends Compo
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	@AllArgsConstructor
-	public static class Impl<T_SIG extends IntermClassSig, T_BLOCK extends CompoundBlock> implements IntermClass<T_SIG, T_BLOCK> {
+	public static class Impl<T_SIG extends IntermClassSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends CompoundBlock> implements IntermClass<T_SIG, T_METHOD, T_BLOCK> {
 		private final @Getter T_SIG signature;
 		private final @Getter List<List<String>> usingStatements;
-		private final @Getter List<IntermFieldSig> fields;
-		private final @Getter List<IntermMethodSig> methods;
+		private final @Getter List<T_FIELD> fields;
+		private final @Getter List<T_METHOD> methods;
 		private final @Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree;
 		private final @Getter T_BLOCK blockType;
+
+
+		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods,
+				SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
+			@SuppressWarnings("unchecked")
+			val fieldsCast = (List<T_FIELD>)fields;
+			@SuppressWarnings("unchecked")
+			val methodsCast = (List<T_METHOD>)methods;
+
+			this.signature = signature;
+			this.usingStatements = usingStatements;
+			this.fields = fieldsCast;
+			this.methods = methodsCast;
+			this.blockTree = blockTree;
+			this.blockType = blockType;
+		}
 
 
 		@Override
@@ -96,10 +111,10 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_BLOCK extends Compo
 	 * @since 2016-1-2
 	 */
 	@Immutable
-	public static class SimpleImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.SimpleNameImpl, T_BLOCK> {
+	public static class SimpleImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.SimpleImpl, IntermFieldSig, IntermMethodSig.SimpleImpl, IntermParameterSig, T_BLOCK> {
 
-		public SimpleImpl(SimpleNameImpl signature, List<List<String>> usingStatements, List<IntermFieldSig> fields,
-				List<IntermMethodSig> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
+		public SimpleImpl(IntermClassSig.SimpleImpl signature, List<List<String>> usingStatements, List<? extends IntermFieldSig> fields,
+				List<? extends IntermMethodSig.SimpleImpl> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, blockTree, blockType);
 		}
 		
@@ -113,10 +128,10 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_BLOCK extends Compo
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	public static class ResolvedImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.ResolvedImpl, T_BLOCK> {
+	public static class ResolvedImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.ResolvedImpl, ResolvedFieldSig, IntermMethodSig.ResolvedImpl, ResolvedParameterSig, T_BLOCK> {
 
-		public ResolvedImpl(IntermClassSig.ResolvedImpl signature, List<List<String>> usingStatements, List<IntermFieldSig> fields,
-				List<IntermMethodSig> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
+		public ResolvedImpl(IntermClassSig.ResolvedImpl signature, List<List<String>> usingStatements, List<? extends ResolvedFieldSig> fields,
+				List<? extends IntermMethodSig.ResolvedImpl> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, blockTree, blockType);
 		}
 		

@@ -1,4 +1,4 @@
-package twg2.parser.baseAst.annotation;
+package twg2.parser.intermAst.annotation;
 
 import java.io.IOException;
 import java.util.List;

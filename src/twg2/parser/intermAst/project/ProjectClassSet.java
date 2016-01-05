@@ -1,52 +1,60 @@
 package twg2.parser.intermAst.project;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import lombok.val;
+import twg2.collections.tuple.Tuples;
+import twg2.collections.util.ListUtil;
+import twg2.collections.util.dataStructures.PairList;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
+import twg2.parser.intermAst.field.IntermFieldSig;
+import twg2.parser.intermAst.method.IntermMethodSig;
+import twg2.parser.output.JsonWritableSig;
 
 /** A group of classes/interfaces representing all of the compilation units in a project.
  * Provides {@link #resolveSimpleName(String, List, List)} for resolving simple names to fully qualifying names
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class ProjectClassSet<T_CLASS extends IntermClass<? extends IntermClassSig, ? extends CompoundBlock>> {
-	private Map<String, T_CLASS> compilationUnitsByFullyQualifyingName = new HashMap<>();
-	private Map<String, List<T_CLASS>> compilationUnitsByNamespaces = new HashMap<>();
+public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermClassSig, ? extends JsonWritableSig, ? extends CompoundBlock>> {
+	private Map<String, Entry<T_ID, T_CLASS>> compilationUnitsByFullyQualifyingName = new HashMap<>();
+	private Map<String, PairList<T_ID, T_CLASS>> compilationUnitsByNamespaces = new HashMap<>();
 
 
-	public <_T_CLASS extends T_CLASS> void addCompilationUnit(List<String> fullyQualifyingName, _T_CLASS classUnit) {
+	public <_T_CLASS extends T_CLASS> void addCompilationUnit(List<String> fullyQualifyingName, T_ID src, _T_CLASS classUnit) {
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
-		compilationUnitsByFullyQualifyingName.put(fullName, classUnit);
+		compilationUnitsByFullyQualifyingName.put(fullName, Tuples.of(src, classUnit));
 
 		// loop through the fully qualifying name parts and add the new compilation unit to each namespace set
 		String partialName = "";
 		for(String namePart : fullyQualifyingName) {
 			partialName = NameUtil.appendToFqName(partialName, namePart);
-			List<T_CLASS> nsCompilationUnits = compilationUnitsByNamespaces.get(partialName);
+			PairList<T_ID, T_CLASS> nsCompilationUnits = compilationUnitsByNamespaces.get(partialName);
 			if(nsCompilationUnits == null) {
-				compilationUnitsByNamespaces.put(partialName, nsCompilationUnits = new ArrayList<>());
+				compilationUnitsByNamespaces.put(partialName, nsCompilationUnits = new PairList<>());
 			}
-			nsCompilationUnits.add(classUnit);
+			nsCompilationUnits.add(src, classUnit);
 		}
 	}
 
 
 	public T_CLASS getCompilationUnit(List<String> fullyQualifyingName) {
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
-		return compilationUnitsByFullyQualifyingName.get(fullName);
+		return compilationUnitsByFullyQualifyingName.get(fullName).getValue();
 	}
 
 
-	public List<T_CLASS> getCompilationUnitsStartWith(List<String> startOfFullyQualifyingName) {
+	public List<Entry<T_ID, T_CLASS>> getCompilationUnitsStartWith(List<String> startOfFullyQualifyingName) {
 		String startName = NameUtil.joinFqName(startOfFullyQualifyingName);
-		List<T_CLASS> resBlocks = new ArrayList<>();
+		List<Entry<T_ID, T_CLASS>> resBlocks = new ArrayList<>();
 
 		for(val entry : compilationUnitsByFullyQualifyingName.entrySet()) {
 			if(entry.getKey().startsWith(startName)) {
@@ -66,7 +74,7 @@ public class ProjectClassSet<T_CLASS extends IntermClass<? extends IntermClassSi
 	 * @param missingNamespacesDst option (can be null), if provided, when this project class set contains noe entries for one of the {@code namespaces},
 	 * the namespace is added this {@code missingNamespacesDst} parameter, else thrown an {@link IllegalStateException}
 	 */
-	public T_CLASS resolveSimpleName(String simpleName, List<List<String>> namespaces, List<List<String>> missingNamespacesDst) {
+	public T_CLASS resolveSimpleNameToClass(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
 		T_CLASS matchingCompilationUnit = null;
 		for(val namespace : namespaces) {
 			val nsName = NameUtil.joinFqName(namespace);
@@ -83,11 +91,11 @@ public class ProjectClassSet<T_CLASS extends IntermClass<? extends IntermClassSi
 
 			if(nsCompilationUnits != null) {
 				for(val nsCompilationUnit : nsCompilationUnits) {
-					if(nsCompilationUnit.getSignature().getSimpleName().equals(simpleName)) {
+					if(nsCompilationUnit.getValue().getSignature().getSimpleName().equals(simpleName)) {
 						if(matchingCompilationUnit != null) {
-							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit + "]");
+							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getValue() + "]");
 						}
-						matchingCompilationUnit = nsCompilationUnit;
+						matchingCompilationUnit = nsCompilationUnit.getValue();
 					}
 				}
 			}
@@ -96,18 +104,30 @@ public class ProjectClassSet<T_CLASS extends IntermClass<? extends IntermClassSi
 	}
 
 
+	public List<String> resolveSimpleName(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
+		val resolvedClass = resolveSimpleNameToClass(simpleName, namespaces, missingNamespacesDst);
+		return resolvedClass != null ? resolvedClass.getSignature().getFullyQualifyingName() : null;
+	}
+
+
 	/** Resolve all the simple names in each of the input project class set's compilation units and return a new project class set containing all the resulting compilation units with fully qualifying names.<br>
 	 * Some namespaces may not be found and some simple names may not be resolvable, these issues can be tracked and returned via optional destination parameters.
 	 * If these optional parameters are null, errors are thrown instead
 	 */
-	public static <_T_BLOCK extends CompoundBlock> ProjectClassSet<IntermClass.ResolvedImpl<_T_BLOCK>> resolveClasses(ProjectClassSet<? extends IntermClass<? extends IntermClassSig.SimpleNameImpl, _T_BLOCK>> projFiles,
-			_T_BLOCK defaultBlockType, List<List<String>> missingNamespacesDst) {
-		ProjectClassSet<IntermClass.ResolvedImpl<_T_BLOCK>> resFiles = new ProjectClassSet<>();
+	public static <_T_ID, T_CLASS extends IntermClass.SimpleImpl<_T_BLOCK>, _T_BLOCK extends CompoundBlock> ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resolveClasses(ProjectClassSet<_T_ID, T_CLASS> projFiles,
+			_T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+		ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resFiles = new ProjectClassSet<>();
+
+		// TODO annotations and class names need type signature and generic type parsing
+
 		for(val fileEntry : projFiles.compilationUnitsByFullyQualifyingName.entrySet()) {
-			val file = fileEntry.getValue();
-			val resSig = IntermClassSig.resolveFrom(file, projFiles, defaultBlockType, missingNamespacesDst);
-			val resClass = new IntermClass.ResolvedImpl<>(resSig, file.getUsingStatements(), file.getFields(), file.getMethods(), file.getBlockTree(), file.getBlockType());
-			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), resClass);
+			val file = fileEntry.getValue().getValue();
+			val resSig = IntermClassSig.resolveClassSigFrom(file, projFiles, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom((IntermMethodSig.SimpleImpl)mthd, file.getUsingStatements(), projFiles, missingNamespacesDst));
+			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file.getUsingStatements(), projFiles, missingNamespacesDst));
+			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, file.getUsingStatements(), resFields, resMethods, file.getBlockTree(), file.getBlockType());
+
+			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), fileEntry.getValue().getKey(), resClass);
 		}
 		return resFiles;
 	}

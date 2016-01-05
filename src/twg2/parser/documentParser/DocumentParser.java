@@ -76,9 +76,6 @@ public class DocumentParser<T> {
 					// add after checking for children, so that this fragment does not include itself as one of it's children
 					tree.addChild(docFrag);
 				}
-
-				// TODO debugging
-				//System.out.println("parsed element: " + elemType + ", " + textFragment);
 			}));
 		}
 

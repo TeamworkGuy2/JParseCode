@@ -43,9 +43,10 @@ public class ParserBuilder {
 	/** Parse a source string using the parsers added via ({@link #addParser(CharPrecondition, TextTransformer)} and {@link #addConstParser(CharPrecondition, CodeFragmentType)})
 	 * @param src the source string
 	 * @param language optional
+	 * @param srcName optional
 	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
 	 */
-	public <L extends CodeLanguage> CodeFileSrc<DocumentFragmentText<CodeFragmentType>, L> buildAndParse(String src, L language) {
+	public <L extends CodeLanguage> CodeFileSrc<DocumentFragmentText<CodeFragmentType>, L> buildAndParse(String src, L language, String srcName) {
 		List<String> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
@@ -71,7 +72,7 @@ public class ParserBuilder {
 		docTextFragment.setLineEnd(input.getLineNumber() - 1);
 		docTextFragment.setColumnEnd(input.getColumnNumber() - 1);
 
-		return new CodeFileSrc<>(docTree, src, lines, language);
+		return new CodeFileSrc<>(docTree, srcName, src, lines, language);
 	}
 
 }

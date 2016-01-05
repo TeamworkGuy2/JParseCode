@@ -138,15 +138,16 @@ public class ParseDirectoryCodeFiles {
 
 		for(Path path : files) {
 			File file = path.toFile();
+			String fullFileName = file.getName();
 			String srcStr = StringReplace.replace(FileReadUtil.defaultInst.readString(new FileReader(file)), "\r\n", "\n");
-			String fileExt = StringSplit.lastMatch(file.getName(), ".");
-			if("json".equals(fileExt)) {
+			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");
+			if("json".equals(fileNameExt.getValue())) {
 				int lineCount = StringSplit.countMatches(srcStr, "\n");
 				val parsedStats = new ParsedFileStats(file.toString(), srcStr.length(), 0, 0, lineCount);
 				filesStats.add(parsedStats);
 			}
 			else {
-				val parsedFileInfo = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTreeFromFileExtension(fileExt, srcStr);
+				val parsedFileInfo = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), srcStr);
 				val parsedStats = ParseCommentsAndWhitespace.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), srcStr.length(), parsedFileInfo.getLines(), parsedFileInfo.getDoc());
 				filesStats.add(parsedStats);
 			}

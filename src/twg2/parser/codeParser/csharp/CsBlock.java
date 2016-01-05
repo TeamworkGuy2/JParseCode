@@ -1,7 +1,6 @@
-package twg2.parser.baseAst.csharp;
+package twg2.parser.codeParser.csharp;
 
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.codeParser.csharp.CsKeyword;
 import dataUtils.EnumUtil;
 
 /**

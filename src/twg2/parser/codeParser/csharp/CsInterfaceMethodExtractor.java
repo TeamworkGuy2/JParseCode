@@ -20,7 +20,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class CsInterfaceMethodExtractor implements AstParserCondition<List<IntermMethodSig>> {
+public class CsInterfaceMethodExtractor implements AstParserCondition<List<IntermMethodSig.SimpleImpl>> {
 
 	static enum State {
 		INIT,
@@ -33,15 +33,20 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 
 
 	IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock;
-	CsAnnotationParser annotationParser;
+	CsAnnotationExtractor annotationParser;
 	String methodName;
-	TypeSig returnTypeSig;
-	List<IntermMethodSig> methods = new ArrayList<>();
-	CsDataTypeParser typeParser = new CsDataTypeParser(true);
+	TypeSig.Simple returnTypeSig;
+	List<IntermMethodSig.SimpleImpl> methods = new ArrayList<>();
+	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(true);
 	State state = State.INIT;
 
 
-	public CsInterfaceMethodExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationParser annotationParser) {
+	/**
+	 * @param parentBlock
+	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
+	 * the annotation parser should already contain results (i.e. {@link AstParserCondition#getParserResult()}) for the method's annotations
+	 */
+	public CsInterfaceMethodExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
 		this.methods = new ArrayList<>();
 		this.parentBlock = parentBlock;
 		this.annotationParser = annotationParser;
@@ -54,7 +59,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 			state = State.INIT;
 		}
 
-		if(state == State.INIT && CsDataTypeParser.isPossiblyType(tokenNode, true)) {
+		if(state == State.INIT && CsDataTypeExtractor.isPossiblyType(tokenNode, true)) {
 			state = State.FINDING_RETURN_TYPE;
 			updateAndCheckTypeParser(tokenNode);
 			return state == State.FINDING_NAME;
@@ -87,7 +92,8 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 				val annotations = new ArrayList<>(annotationParser.getParserResult());
 				annotationParser.recycle();
 
-				methods.add(new IntermMethodSig(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullyQualifyingName(), methodName), tokenNode.getData().getText(), returnTypeSig, annotations));
+				val params = CsMethodParametersParser.extractParamsFromSignature(tokenNode);
+				methods.add(new IntermMethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullyQualifyingName(), methodName), params, returnTypeSig, annotations));
 				return true;
 			}
 			state = State.FAILED;
@@ -102,6 +108,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 		boolean failed = typeParser.isFailed();
 		if(complete) {
 			returnTypeSig = typeParser.getParserResult();
+
 			typeParser = typeParser.recycle();
 			state = State.FINDING_NAME;
 		}
@@ -114,7 +121,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 
 
 	@Override
-	public List<IntermMethodSig> getParserResult() {
+	public List<IntermMethodSig.SimpleImpl> getParserResult() {
 		return methods;
 	}
 
