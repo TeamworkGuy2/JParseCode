@@ -45,7 +45,8 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	public static class Impl<T_SIG extends IntermClassSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends CompoundBlock> implements IntermClass<T_SIG, T_METHOD, T_BLOCK> {
+	public static class Impl<T_SIG extends IntermClassSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends CompoundBlock>
+			implements IntermClass<T_SIG, T_METHOD, T_BLOCK> {
 		private final @Getter T_SIG signature;
 		private final @Getter List<List<String>> usingStatements;
 		private final @Getter List<T_FIELD> fields;
@@ -72,7 +73,7 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			dst.append("\"" + NameUtil.joinFqName(signature.getFullyQualifyingName()) + "\": {\n");
+			dst.append("{\n");
 
 			dst.append("\"classSignature\": ");
 			signature.toJson(dst, st);

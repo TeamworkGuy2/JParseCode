@@ -32,8 +32,9 @@ public enum TypeSig {
 			List<List<String>> namespaces, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
-		List<TypeSig.Resolved> childSigs = new ArrayList<>();
+		List<TypeSig.Resolved> childSigs = Collections.emptyList();
 		if(intermSig.isGeneric()) {
+			childSigs = new ArrayList<>();
 			for(val childSig : intermSig.getGenericParams()) {
 				TypeSig.Resolved resolvedChildSig = resolveFrom(childSig, namespaces, projFiles, missingNamespacesDst);
 				childSigs.add(resolvedChildSig);

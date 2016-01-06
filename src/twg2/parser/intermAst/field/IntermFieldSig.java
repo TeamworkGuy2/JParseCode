@@ -30,12 +30,6 @@ public class IntermFieldSig implements JsonWritableSig {
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
-
-		// TODO debugging
-		if(this.fieldType.getTypeName().contains("??")) {
-			System.out.println();
-		}
-
 		dst.append("{ ");
 		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
 		dst.append("\"type\": \"" + fieldType + "\"");

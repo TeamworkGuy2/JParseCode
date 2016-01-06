@@ -12,9 +12,9 @@ import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.condition.AstParserCondition;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.field.IntermFieldSig;
 import twg2.parser.intermAst.type.TypeSig;
+import twg2.parser.output.JsonWritableSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -33,7 +33,7 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 	}
 
 
-	IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock;
+	IntermBlock<? extends JsonWritableSig, ? extends CompoundBlock> parentBlock;
 	CsAnnotationExtractor annotationParser;
 	List<IntermFieldSig> fields = new ArrayList<>();
 	TypeSig.Simple fieldTypeSig;
@@ -42,7 +42,7 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 	State state = State.INIT;
 
 
-	public CsDataModelFieldExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
+	public CsDataModelFieldExtractor(IntermBlock<? extends JsonWritableSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
 		this.parentBlock = parentBlock;
 		this.annotationParser = annotationParser;
 	}

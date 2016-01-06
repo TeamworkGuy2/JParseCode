@@ -75,7 +75,6 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 			}
 			this.state = State.COMPLETE;
 			this.type = CsDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""));
-
 			prevNodeWasBlockId = lang.getAstUtil().getChecker().isBlockKeyword(tokenNode.getData());
 			return isNullable;
 		}

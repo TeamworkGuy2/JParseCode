@@ -2,6 +2,7 @@ package twg2.parser.codeParser.csharp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -10,6 +11,7 @@ import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
+import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
@@ -20,6 +22,7 @@ import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.field.IntermFieldSig;
 import twg2.parser.intermAst.method.IntermMethodSig;
+import twg2.parser.intermAst.type.TypeSig;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -76,7 +79,11 @@ public class CsBlockParser {
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(access, new ArrayList<>(nameScope), blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						val blockGenericTypesSig = CsDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope));
+						val blockGenericTypes = blockGenericTypesSig.isGeneric() ? blockGenericTypesSig.getGenericParams() : Collections.<TypeSig.Simple>emptyList();
+						val blockFqName = NameUtil.splitFqName(blockGenericTypesSig.getTypeName());
+
+						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(access, blockFqName, blockGenericTypes, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);
@@ -192,7 +199,7 @@ public class CsBlockParser {
 			List<List<String>> tmpUsingStatements = usingStatementExtractor.getParserResult();
 			usingStatements.addAll(tmpUsingStatements);
 
-			runParsers(block.getBlockTree(), (List<AstParserCondition<?>>)(ArrayList)parsers);
+			runParsers(block.getBlockTree(), (List<? extends AstParserCondition<?>>)parsers);
 
 			if(block.getBlockType().canContainFields()) {
 				fields = fieldExtractor.getParserResult();
@@ -210,7 +217,7 @@ public class CsBlockParser {
 	}
 
 
-	public static void runParsers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tree, List<AstParserCondition<?>> parsers) {
+	public static void runParsers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tree, List<? extends AstParserCondition<?>> parsers) {
 		val children = tree.getChildren();
 		val parserCount = parsers.size();
 

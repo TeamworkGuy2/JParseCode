@@ -20,7 +20,7 @@ import twg2.parser.intermAst.method.IntermMethodSig;
 import twg2.parser.output.JsonWritableSig;
 
 /** A group of classes/interfaces representing all of the compilation units in a project.
- * Provides {@link #resolveSimpleName(String, List, List)} for resolving simple names to fully qualifying names
+ * Provides {@link #resolveSimpleName(String, List, Collection)} for resolving simple names to fully qualifying names
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
@@ -91,7 +91,8 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 
 			if(nsCompilationUnits != null) {
 				for(val nsCompilationUnit : nsCompilationUnits) {
-					if(nsCompilationUnit.getValue().getSignature().getSimpleName().equals(simpleName)) {
+					val compilationUnitSimpleName = nsCompilationUnit.getValue().getSignature().getSimpleName();
+					if(compilationUnitSimpleName.equals(simpleName)) {
 						if(matchingCompilationUnit != null) {
 							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getValue() + "]");
 						}
@@ -114,18 +115,22 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 	 * Some namespaces may not be found and some simple names may not be resolvable, these issues can be tracked and returned via optional destination parameters.
 	 * If these optional parameters are null, errors are thrown instead
 	 */
-	public static <_T_ID, T_CLASS extends IntermClass.SimpleImpl<_T_BLOCK>, _T_BLOCK extends CompoundBlock> ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resolveClasses(ProjectClassSet<_T_ID, T_CLASS> projFiles,
+	public static <_T_ID, _T_BLOCK extends CompoundBlock> ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resolveClasses(ProjectClassSet<_T_ID, ? extends IntermClass.SimpleImpl<_T_BLOCK>> projFiles,
 			_T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+		@SuppressWarnings("unchecked")
+		val projFilesCast = ((ProjectClassSet<_T_ID, IntermClass.SimpleImpl<_T_BLOCK>>)projFiles);
+
 		ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resFiles = new ProjectClassSet<>();
 
 		// TODO annotations and class names need type signature and generic type parsing
 
-		for(val fileEntry : projFiles.compilationUnitsByFullyQualifyingName.entrySet()) {
+		for(val fileEntry : projFilesCast.compilationUnitsByFullyQualifyingName.entrySet()) {
 			val file = fileEntry.getValue().getValue();
-			val resSig = IntermClassSig.resolveClassSigFrom(file, projFiles, defaultBlockType, missingNamespacesDst);
-			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom((IntermMethodSig.SimpleImpl)mthd, file.getUsingStatements(), projFiles, missingNamespacesDst));
-			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file.getUsingStatements(), projFiles, missingNamespacesDst));
-			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, file.getUsingStatements(), resFields, resMethods, file.getBlockTree(), file.getBlockType());
+			val namespaces = file.getUsingStatements();
+			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), namespaces, projFilesCast, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, namespaces, projFilesCast, missingNamespacesDst));
+			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, namespaces, projFilesCast, missingNamespacesDst));
+			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockTree(), file.getBlockType());
 
 			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), fileEntry.getValue().getKey(), resClass);
 		}
