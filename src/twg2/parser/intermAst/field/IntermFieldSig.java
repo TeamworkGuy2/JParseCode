@@ -7,8 +7,10 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
+import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.intermAst.annotation.AnnotationSig;
+import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.intermAst.type.TypeSig;
@@ -45,11 +47,11 @@ public class IntermFieldSig implements JsonWritableSig {
 
 	/** Resolves simple name fields from {@link IntermFieldSig} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
-	public static <T_FIELD extends IntermFieldSig> ResolvedFieldSig resolveFrom(T_FIELD intermField,
-			List<List<String>> namespaces, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+	public static <T_FIELD extends IntermFieldSig> ResolvedFieldSig resolveFrom(T_FIELD intermField, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
+			ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
-		TypeSig.Resolved resolvedFieldType = TypeSig.resolveFrom(intermField.getFieldType(), namespaces, projFiles, missingNamespacesDst);
+		TypeSig.Resolved resolvedFieldType = TypeSig.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);
 
 		return new ResolvedFieldSig(intermField.getName(), intermField.getFullyQualifyingName(), resolvedFieldType, intermField.getAnnotations());
 	}

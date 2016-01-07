@@ -8,9 +8,11 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.csharp.CsDataTypeExtractor;
 import twg2.parser.intermAst.annotation.AnnotationSig;
+import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.intermAst.type.TypeSig;
@@ -29,7 +31,7 @@ public enum IntermMethodSig {
 	/** Resolves simple name fields from {@link IntermMethodSig.SimpleImpl} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
 	public static <T_METHOD extends IntermMethodSig.SimpleImpl> IntermMethodSig.ResolvedImpl resolveFrom(T_METHOD intermMethod,
-			List<List<String>> namespaces, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+			IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<ResolvedParameterSig> resolvedParamSigs = new ArrayList<>();
@@ -38,13 +40,13 @@ public enum IntermMethodSig {
 		val paramSigs = intermMethod.getParamSigs();
 		for(val paramSig : paramSigs) {
 			TypeSig.Simple genericParamType = CsDataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName());
-			TypeSig.Resolved resolvedParamType = TypeSig.resolveFrom(genericParamType, namespaces, projFiles, missingNamespacesDst);
+			TypeSig.Resolved resolvedParamType = TypeSig.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
 
 			val newParamSig = new ResolvedParameterSig(paramSig.getName(), resolvedParamType, paramSig.isOptional(), paramSig.getDefaultValue());
 			resolvedParamSigs.add(newParamSig);
 		}
 
-		TypeSig.Resolved resolvedReturnType = TypeSig.resolveFrom(intermMethod.getReturnType(), namespaces, projFiles, missingNamespacesDst);
+		TypeSig.Resolved resolvedReturnType = TypeSig.resolveFrom(intermMethod.getReturnType(), namespaceClass, projFiles, missingNamespacesDst);
 
 		return new IntermMethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullyQualifyingName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAnnotations());
 	}

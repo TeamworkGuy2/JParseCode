@@ -10,8 +10,10 @@ import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.collections.util.ListBuilder;
+import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.csharp.CsKeyword;
+import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.output.JsonWritableSig;
@@ -28,20 +30,20 @@ public enum TypeSig {
 
 	/** Resolves simple name fields from {@link TypeSig.Simple} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
-	public static TypeSig.Resolved resolveFrom(TypeSig.Simple intermSig,
-			List<List<String>> namespaces, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+	public static TypeSig.Resolved resolveFrom(TypeSig.Simple intermSig, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
+			ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<TypeSig.Resolved> childSigs = Collections.emptyList();
 		if(intermSig.isGeneric()) {
 			childSigs = new ArrayList<>();
 			for(val childSig : intermSig.getGenericParams()) {
-				TypeSig.Resolved resolvedChildSig = resolveFrom(childSig, namespaces, projFiles, missingNamespacesDst);
+				TypeSig.Resolved resolvedChildSig = resolveFrom(childSig, namespaceClass, projFiles, missingNamespacesDst);
 				childSigs.add(resolvedChildSig);
 			}
 		}
 
-		List<String> resolvedType = projFiles.resolveSimpleName(intermSig.getTypeName(), namespaces, missingNamespacesDst);
+		List<String> resolvedType = projFiles.resolveSimpleName(intermSig.getTypeName(), namespaceClass, missingNamespacesDst);
 
 		if(resolvedType == null) {
 			resolvedType = ListBuilder.newMutable(intermSig.getTypeName());

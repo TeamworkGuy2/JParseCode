@@ -105,8 +105,61 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 	}
 
 
+	public T_CLASS resolveSimpleNameToClassSingleNamespace(String simpleName, List<String> namespace, Collection<List<String>> missingNamespacesDst) {
+		T_CLASS matchingCompilationUnit = null;
+		val nsName = NameUtil.joinFqName(namespace);
+		val nsCompilationUnits = compilationUnitsByNamespaces.get(nsName);
+
+		if(nsCompilationUnits == null) {
+			if(missingNamespacesDst != null) {
+				missingNamespacesDst.add(namespace);
+			}
+			else {
+				throw new IllegalStateException("could not find namespace '" + nsName + "'");
+			}
+		}
+
+		if(nsCompilationUnits != null) {
+			for(val nsCompilationUnit : nsCompilationUnits) {
+				val compilationUnitSimpleName = nsCompilationUnit.getValue().getSignature().getSimpleName();
+				if(compilationUnitSimpleName.equals(simpleName)) {
+					if(matchingCompilationUnit != null) {
+						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getValue() + "]");
+					}
+					matchingCompilationUnit = nsCompilationUnit.getValue();
+				}
+			}
+		}
+		return matchingCompilationUnit;
+	}
+
+
 	public List<String> resolveSimpleName(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
 		val resolvedClass = resolveSimpleNameToClass(simpleName, namespaces, missingNamespacesDst);
+		return resolvedClass != null ? resolvedClass.getSignature().getFullyQualifyingName() : null;
+	}
+
+
+	public T_CLASS resolveSimpleNameToClass(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
+		// try resolve using the class' imports
+		T_CLASS resolvedClass = resolveSimpleNameToClass(simpleName, classScope.getUsingStatements(), missingNamespacesDst);
+
+		IntermClassSig.SimpleImpl classSig = classScope.getSignature();
+
+		// try resolve using the class' parent package/namespace
+		if(resolvedClass == null) {
+			resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, NameUtil.allExceptLastFqName(classSig.getFullyQualifyingName()), missingNamespacesDst);
+		}
+		// TODO support resolution of types that are generic class params
+		//if(resolvedClass == null && classSig.isGeneric()) {
+		//	resolvedClass = resolveSimpleNameToClass(simpleName, Arrays.asList(classSig.getGenericParams().get(0)), missingNamespacesDst);
+		//}
+		return resolvedClass;
+	}
+
+
+	public List<String> resolveSimpleName(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
+		val resolvedClass = resolveSimpleNameToClass(simpleName, classScope, missingNamespacesDst);
 		return resolvedClass != null ? resolvedClass.getSignature().getFullyQualifyingName() : null;
 	}
 
@@ -127,9 +180,9 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 		for(val fileEntry : projFilesCast.compilationUnitsByFullyQualifyingName.entrySet()) {
 			val file = fileEntry.getValue().getValue();
 			val namespaces = file.getUsingStatements();
-			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), namespaces, projFilesCast, defaultBlockType, missingNamespacesDst);
-			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, namespaces, projFilesCast, missingNamespacesDst));
-			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, namespaces, projFilesCast, missingNamespacesDst));
+			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), file, projFilesCast, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, file, projFilesCast, missingNamespacesDst));
+			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFilesCast, missingNamespacesDst));
 			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockTree(), file.getBlockType());
 
 			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), fileEntry.getValue().getKey(), resClass);

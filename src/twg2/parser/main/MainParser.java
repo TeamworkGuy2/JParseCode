@@ -52,7 +52,7 @@ public class MainParser {
 		List<IntermClass.ResolvedImpl<CsBlock>> resClasses = new ArrayList<>();
 
 		// fill indices with null so we can random access any valid index
-		for(int i = 0, size = files2Order.size(); i < size; i++) {
+		for(int i = 0, size = files1Order.size(); i < size; i++) {
 			resFiles.add(null);
 			resClasses.add(null);
 		}
@@ -60,11 +60,12 @@ public class MainParser {
 		for(val classInfo : res) {
 			String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullyQualifyingName());
 			int idx = -1;
-			if((idx = files2Order.indexOf(classFqName)) > -1) {
+			if((idx = files1Order.indexOf(classFqName)) > -1) {
 				resClasses.set(idx, classInfo.getValue());
 				resFiles.set(idx, classInfo.getKey().getSrcName());
 			}
 		}
+		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
 
 		for(val classInfo : resClasses) {
 			System.out.print("\"" + NameUtil.joinFqName(classInfo.getSignature().getFullyQualifyingName()) + "\": ");
