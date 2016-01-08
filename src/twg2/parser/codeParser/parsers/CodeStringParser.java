@@ -14,9 +14,9 @@ public final class CodeStringParser {
 
 
 	public static final CharPrecondition createStringParserForJava() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder()
-			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
-			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
+		CharPrecondition stringParser = new StringBoundedParserBuilder("Java string")
+			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
+			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
 		return stringParser;
 	}
@@ -24,18 +24,18 @@ public final class CodeStringParser {
 
 	// TODO make parser work with all types of C# string literals
 	public static final CharPrecondition createStringParserForCSharp() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder()
-			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
-			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
+		CharPrecondition stringParser = new StringBoundedParserBuilder("C# string")
+			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
+			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
 		return stringParser;
 	}
 
 
 	public static final CharPrecondition createStringParserForJavascript() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder()
-			.addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE)
-			.addStartEndNotPrecededByMarkers('\'', '\\', '\'', Inclusion.INCLUDE)
+		CharPrecondition stringParser = new StringBoundedParserBuilder("JS string")
+			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
+			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
 		return stringParser;
 	}

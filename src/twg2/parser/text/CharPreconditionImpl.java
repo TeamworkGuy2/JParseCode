@@ -22,7 +22,7 @@ public class CharPreconditionImpl<P extends CharParserCondition> implements Char
 
 
 	@SafeVarargs
-	public CharPreconditionImpl(boolean compound, P... parserConditions) {
+	public CharPreconditionImpl(String name, boolean compound, P... parserConditions) {
 		this.compound = compound;
 		this.conditions = new ArrayList<>();
 		Collections.addAll(this.conditions, parserConditions);
@@ -34,7 +34,7 @@ public class CharPreconditionImpl<P extends CharParserCondition> implements Char
 			addFirstChars(parserConditions[0], tmpChars, firstChars);
 		}
 		else {
-			this.conditionSet = CharCompoundConditions.startFilterFactory().create(parserConditions);
+			this.conditionSet = new CharCompoundConditions.StartFilter(name, false, parserConditions);
 
 			for(int i = 0, size = parserConditions.length; i < size; i++) {
 				addFirstChars(parserConditions[i], tmpChars, firstChars);

@@ -1,10 +1,9 @@
 package twg2.parser.test;
 
-import java.util.Arrays;
-
 import org.junit.Assert;
 import org.junit.Test;
 
+import twg2.parser.Inclusion;
 import twg2.parser.text.CharParserCondition;
 import twg2.parser.text.StringConditions;
 import twg2.parser.textParser.TextParserImpl;
@@ -30,7 +29,7 @@ public class StringConditionsTest {
 
 		Boolean[] expect = { true, true, true, false };
 
-		CharParserCondition cond = StringConditions.startStringFactory().create(startMarkers);
+		CharParserCondition cond = new StringConditions.StartStringFilter("testStartStringCondition", startMarkers, Inclusion.INCLUDE);
 
 		int i = 0;
 		for(String testStr : testStrs) {
@@ -64,7 +63,7 @@ public class StringConditionsTest {
 
 		Boolean[] expect = { true, true, true, false };
 
-		CharParserCondition cond = StringConditions.endStringFactory().create(Arrays.asList(endMarkers));
+		CharParserCondition cond = new StringConditions.EndStringFilter("testEndStringCondition", endMarkers, Inclusion.INCLUDE);
 
 		int i = 0;
 		for(String testStr : testStrs) {

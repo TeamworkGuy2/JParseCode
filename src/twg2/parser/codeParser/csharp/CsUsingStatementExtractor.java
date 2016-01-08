@@ -31,6 +31,13 @@ public class CsUsingStatementExtractor implements AstParserCondition<List<List<S
 
 	List<List<String>> usingStatements = new ArrayList<>();
 	State state = State.INIT;
+	String name = "C# import statement";
+
+
+	@Override
+	public String name() {
+		return name;
+	}
 
 
 	@Override

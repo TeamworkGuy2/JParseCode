@@ -49,8 +49,8 @@ public class CsClassParser {
 
 
 	static CharPrecondition createAnnotationParser() {
-		CharPrecondition annotationParser = new StringBoundedParserBuilder()
-			.addStartEndNotPrecededByMarkers('[', '[', ']', Inclusion.INCLUDE)
+		CharPrecondition annotationParser = new StringBoundedParserBuilder("C# annotation")
+			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();
 		return annotationParser;
@@ -59,12 +59,12 @@ public class CsClassParser {
 
 	// TODO only partially implemented
 	static CharPrecondition createOperatorParser() {
-		CharPrecondition operatorParser = new StringParserBuilder()
-			.addCharLiteralMarker('+')
-			.addCharLiteralMarker('-')
-			.addCharLiteralMarker('=')
-			.addCharLiteralMarker('?')
-			.addCharLiteralMarker(':')
+		CharPrecondition operatorParser = new StringParserBuilder("C# operator")
+			.addCharLiteralMarker("+", '+')
+			.addCharLiteralMarker("-", '-')
+			.addCharLiteralMarker("=", '=')
+			.addCharLiteralMarker("?", '?')
+			.addCharLiteralMarker(":", ':')
 			.build();
 		return operatorParser;
 	}
@@ -72,9 +72,9 @@ public class CsClassParser {
 
 	// TODO couldn't get this working with identifier parser which needs to parse ', ' in strings like 'Map<String, String>'
 	static CharPrecondition createSeparatorParser() {
-		CharPrecondition annotationParser = new StringBoundedParserBuilder()
+		CharPrecondition annotationParser = new StringBoundedParserBuilder(";")
 			//.addCharLiteralMarker(',')
-			.addCharLiteralMarker(';')
+			.addCharLiteralMarker(";", ';')
 			.isCompound(false)
 			.build();
 		return annotationParser;

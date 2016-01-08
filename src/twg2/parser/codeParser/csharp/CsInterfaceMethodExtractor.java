@@ -39,6 +39,13 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 	List<IntermMethodSig.SimpleImpl> methods = new ArrayList<>();
 	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(true);
 	State state = State.INIT;
+	String name = "C# method signature";
+
+
+	@Override
+	public String name() {
+		return name;
+	}
 
 
 	/**

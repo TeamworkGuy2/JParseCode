@@ -26,6 +26,13 @@ public class CsAnnotationExtractor implements AstParserCondition<List<Annotation
 
 	List<AnnotationSig> annotations = new ArrayList<>();
 	State state = State.INIT;
+	String name = "C# annotation";
+
+
+	@Override
+	public String name() {
+		return name;
+	}
 
 
 	@Override

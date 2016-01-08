@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 import lombok.val;
+import twg2.collections.primitiveCollections.CharArrayList;
+import twg2.parser.Inclusion;
 import twg2.parser.text.CharConditionPipe;
 import twg2.parser.text.CharConditions;
 import twg2.parser.text.CharParserCondition;
@@ -30,15 +32,15 @@ public class GenericTypeParser {
 
 		val requiredParser = Arrays.asList(singleIdentifierParserConstructor.get());
 		// TODO only matches generic types in the format '<a, b>', allow whitespace between '<'/'>' and after ','
-		val optionalParser = Arrays.asList(CharConditionPipe.createPipeAllRequired(Arrays.asList(
-			CharConditions.charLiteralFactory().create('<'),
-			CharConditionPipe.createPipeRepeatableSeparator(
+		val optionalParser = Arrays.asList(CharConditionPipe.createPipeAllRequired("generic type signature", Arrays.asList(
+			new CharConditions.CharLiteralFilter("<", CharArrayList.of('<'), Inclusion.INCLUDE),
+			CharConditionPipe.createPipeRepeatableSeparator("generic type params",
 				Arrays.asList(nestedGenericTypeIdentifierCond),
-				Arrays.asList(StringConditions.stringLiteralFactory().create(", "))
+				Arrays.asList(new StringConditions.StringLiteralFilter("separator", new String[] { ", " }, Inclusion.INCLUDE))
 			),
-			CharConditions.charLiteralFactory().create('>')
+			new CharConditions.CharLiteralFilter(">", CharArrayList.of('>'), Inclusion.INCLUDE)
 		)));
-		return CharConditionPipe.createPipeOptionalSuffix(requiredParser, optionalParser);
+		return CharConditionPipe.createPipeOptionalSuffix("type parser", requiredParser, optionalParser);
 	}
 
 }

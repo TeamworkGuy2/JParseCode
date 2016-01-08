@@ -15,6 +15,8 @@ import twg2.parser.text.CharMultiConditionParser;
  */
 public interface ParserCondition {
 
+	public String name();
+
 	/**
 	 * @return true if this precondition filter has been successfully completed/matched, false if not
 	 * @see #isFailed()

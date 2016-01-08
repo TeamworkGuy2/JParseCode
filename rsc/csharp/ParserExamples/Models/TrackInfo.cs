@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace ParserTools.Entities {
+namespace ParserExamples.Models {
 
     /// <summary>
     /// A class representing a Track.

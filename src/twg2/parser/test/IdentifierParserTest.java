@@ -29,6 +29,7 @@ public class IdentifierParserTest {
 		parseTestSameParsed(true, false, name, cond, "thing<abc, _def<sub>>");
 		parseTestSameParsed(true, false, name, cond, "thing<abc, _def<sub, wub, tub>>");
 		parseTestSameParsed(true, false, name, cond, "Modified<A, B>");
+		parseTestSameParsed(true, false, name, cond, "Result<IDictionary<AaInfo, IList<BbInfo>>>");
 	}
 
 

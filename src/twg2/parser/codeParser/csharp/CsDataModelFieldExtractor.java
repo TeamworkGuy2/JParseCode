@@ -40,11 +40,18 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 	String fieldName;
 	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(false);
 	State state = State.INIT;
+	String name = "C# field";
 
 
 	public CsDataModelFieldExtractor(IntermBlock<? extends JsonWritableSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
 		this.parentBlock = parentBlock;
 		this.annotationParser = annotationParser;
+	}
+
+
+	@Override
+	public String name() {
+		return name;
 	}
 
 

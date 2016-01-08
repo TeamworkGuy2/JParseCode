@@ -66,6 +66,7 @@ public class CharMultiConditionParser {
 
 			boolean complete = cond.isComplete();
 			boolean failed = cond.isFailed();
+
 			if(complete || failed) {
 				// call the consumer/listener when the token is done being parsed AND no in-flight conditions are compound
 				// (a non-compound conditions that started parsing before this condition may or may not complete successfully)

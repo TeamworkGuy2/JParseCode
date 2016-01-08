@@ -24,7 +24,7 @@ import twg2.parser.main.ParseCodeFile;
  */
 public class CodeParserCsClassTest {
 	@Parameter
-	private CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/TrackInfo.cs"))).get(0);
+	private CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs"))).get(0);
 
 
 	public CodeParserCsClassTest() throws IOException {

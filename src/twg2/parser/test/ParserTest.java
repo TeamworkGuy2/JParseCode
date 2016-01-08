@@ -99,7 +99,7 @@ public class ParserTest {
 		String[] strs = new String[] {   "\"a \\\" b \\\"", "\"\" !", "alpha", "\"a \n\\\"\\\" z\" echo" };
 		String[] expect = new String[] { "\"a \" b \"",       "\"\"",     "",      "\"a \n\"\" z\"" };
 
-		CharPrecondition parser1 = new StringBoundedParserBuilder().addStartEndNotPrecededByMarkers('"', '\\', '"', Inclusion.INCLUDE).build();
+		CharPrecondition parser1 = new StringBoundedParserBuilder("stringBoundedSegmentParserTest").addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE).build();
 
 		Function<String, String> escSeqDecoder = EscapeSequences.unicodeEscapeDecoder();
 		CheckTask.assertTests(strs, expect, (s, i) -> {

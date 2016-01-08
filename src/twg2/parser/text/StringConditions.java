@@ -2,15 +2,12 @@ package twg2.parser.text;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.util.dataStructures.Bag;
-import twg2.functions.BiPredicates;
 import twg2.parser.Inclusion;
-import twg2.parser.condition.ParserConditionFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 
@@ -19,42 +16,13 @@ import twg2.parser.textParser.TextParser;
  * @since 2015-2-13
  */
 public class StringConditions {
-	private static ParserConditionFactory<BaseStringFilter, String> stringLiteralFactory = new ParserConditionFactory<>(BaseStringFilter::new, StringConditions::setupStringLiteralFilter);
-	private static ParserConditionFactory<BaseStringFilter, String> startStringFactory = new ParserConditionFactory<>(BaseStringFilter::new, StringConditions::setupStartStringFilter);
-	private static ParserConditionFactory<BaseStringFilter, String> endStringFactory = new ParserConditionFactory<>(BaseStringFilter::new, StringConditions::setupEndStringFilter);
-
-
-	public static ParserConditionFactory<BaseStringFilter, String> stringLiteralFactory() {
-		return stringLiteralFactory;
-	}
-
-
-	public static ParserConditionFactory<BaseStringFilter, String> startStringFactory() {
-		return startStringFactory;
-	}
-
-
-	public static ParserConditionFactory<BaseStringFilter, String> endStringFactory() {
-		return endStringFactory;
-	}
-
-
-
-
-	public static class Functionality {
-		Consumer<BaseStringFilter> copyFunc;
-		BiPredicates.CharObject<TextParser> acceptNextFunc;
-		Runnable resetFunc;
-	}
-
-
 
 
 	/**
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class BaseStringFilter implements CharParserCondition.WithMarks {
+	public static abstract class BaseStringFilter implements CharParserCondition.WithMarks {
 		String[] originalStrs;
 		Bag<String> matchingStrs;
 		boolean anyComplete = false;
@@ -66,32 +34,28 @@ public class StringConditions {
 		Inclusion includeMatchInRes;
 		StringBuilder dstBuf = new StringBuilder();
 		TextFragmentRef.ImplMut coords = new TextFragmentRef.ImplMut();
-		/** Sets up accept and reset functions given this object */
-		Functionality funcs;
+		String name;
 
 
 		// package-private
-		BaseStringFilter(Collection<String> strs, Inclusion includeCondMatchInRes) {
-			this(strs.toArray(ArrayUtil.EMPTY_STRING_ARRAY), includeCondMatchInRes);
+		BaseStringFilter(String name, Collection<String> strs, Inclusion includeCondMatchInRes) {
+			this(name, strs.toArray(ArrayUtil.EMPTY_STRING_ARRAY), includeCondMatchInRes);
 		}
 
 
 		// package-private
-		BaseStringFilter(String[] strs, Inclusion includeCondMatchInRes) {
+		BaseStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			this.originalStrs = strs;
 			this.matchingStrs = new Bag<String>(this.originalStrs, 0, this.originalStrs.length);
 			this.anyComplete = false;
 			this.includeMatchInRes = includeCondMatchInRes;
+			this.name = name;
 		}
 
 
 		@Override
-		public BaseStringFilter copy() {
-			BaseStringFilter copy = new BaseStringFilter(originalStrs, includeMatchInRes);
-			if(this.funcs.copyFunc != null) {
-				this.funcs.copyFunc.accept(copy);
-			}
-			return copy;
+		public String name() {
+			return name;
 		}
 
 
@@ -118,12 +82,6 @@ public class StringConditions {
 			for(int i = 0, size = originalStrs.length; i < size; i++) {
 				dst.add(originalStrs[i].charAt(0));
 			}
-		}
-
-
-		@Override
-		public boolean acceptNext(char ch, TextParser buf) {
-			return this.funcs.acceptNextFunc.test(ch, buf);
 		}
 
 
@@ -161,10 +119,6 @@ public class StringConditions {
 			coords = new TextFragmentRef.ImplMut();
 			acceptedCount = 0;
 			matchCount = 0;
-
-			if(this.funcs.resetFunc != null) {
-				this.funcs.resetFunc.run();
-			}
 		}
 
 
@@ -173,32 +127,56 @@ public class StringConditions {
 			return "one " + Arrays.toString(this.originalStrs);
 		}
 
+
+		public static BaseStringFilter copyTo(BaseStringFilter src, BaseStringFilter dst) {
+			dst.originalStrs = src.originalStrs;
+			dst.includeMatchInRes = src.includeMatchInRes;
+			return dst;
+		}
+
 	}
+
+
 
 
 	/**
 	 */
-	public static BaseStringFilter setupStringLiteralFilter(BaseStringFilter cond) {
-		return setupStartStringFilter(cond);
+	public static class StringLiteralFilter extends StartStringFilter {
+
+		public StringLiteralFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+			super(name, strs, includeCondMatchInRes);
+		}
+
+
+		@Override
+		public StringLiteralFilter copy() {
+			val copy = new StringLiteralFilter(name, originalStrs, includeMatchInRes);
+			return copy;
+		}
+
 	}
+
+
 
 
 	/**
 	 */
-	public static BaseStringFilter setupStartStringFilter(BaseStringFilter cond) {
-		val funcs = new Functionality();
-		cond.funcs = funcs;
+	public static class StartStringFilter extends BaseStringFilter {
 
-		funcs.copyFunc = StringConditions::setupStartStringFilter;
+		public StartStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+			super(name, strs, includeCondMatchInRes);
+		}
 
-		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			int off = cond.dstBuf.length();
-			if(cond.acceptedCount > off) {
-				cond.failed = true;
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			int off = super.dstBuf.length();
+			if(super.acceptedCount > off) {
+				super.failed = true;
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<String> matchingStrs = cond.matchingStrs;
+			Bag<String> matchingStrs = super.matchingStrs;
 			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
 			for(int i = matchingStrs.size() - 1; i > -1; i--) {
 				String strI = matchingStrs.get(i);
@@ -211,7 +189,7 @@ public class StringConditions {
 					else {
 						anyFound = true;
 						if(strILen == off + 1) {
-							cond.anyComplete = true;
+							super.anyComplete = true;
 						}
 					}
 				}
@@ -221,44 +199,54 @@ public class StringConditions {
 			}
 
 			if(anyFound) {
-				if(cond.acceptedCount == 0) {
-					cond.coords.setStart(buf);
+				if(super.acceptedCount == 0) {
+					super.coords.setStart(buf);
 				}
-				cond.acceptedCount++;
-				cond.matchCount++;
-				cond.dstBuf.append(ch);
-				if(cond.anyComplete) {
-					cond.coords.setEnd(buf);
+				super.acceptedCount++;
+				super.matchCount++;
+				super.dstBuf.append(ch);
+				if(super.anyComplete) {
+					super.coords.setEnd(buf);
 				}
 				return true;
 			}
 			else {
-				cond.failed = true;
-				cond.anyComplete = false;
+				super.failed = true;
+				super.anyComplete = false;
 				return false;
 			}
-		};
+		}
 
-		return cond;
+
+		@Override
+		public CharParserCondition copy() {
+			val copy = new StartStringFilter(super.name, super.originalStrs, super.includeMatchInRes);
+			return copy;
+		}
+
 	}
+
+
 
 
 	/**
 	 */
-	public static BaseStringFilter setupEndStringFilter(BaseStringFilter cond) {
-		val funcs = new Functionality();
-		cond.funcs = funcs;
+	public static class EndStringFilter extends BaseStringFilter {
 
-		funcs.copyFunc = StringConditions::setupEndStringFilter;
+		public EndStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+			super(name, strs, includeCondMatchInRes);
+		}
 
-		funcs.acceptNextFunc = (char ch, TextParser buf) -> {
-			int off = cond.dstBuf.length();
-			if(cond.isComplete()) {
-				cond.failed = true;
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			int off = super.dstBuf.length();
+			if(super.isComplete()) {
+				super.failed = true;
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<String> matchingStrs = cond.matchingStrs;
+			Bag<String> matchingStrs = super.matchingStrs;
 			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
 			for(int i = matchingStrs.size() - 1; i > -1; i--) {
 				String strI = matchingStrs.get(i);
@@ -271,7 +259,7 @@ public class StringConditions {
 					else {
 						anyFound = true;
 						if(strILen == off + 1) {
-							cond.anyComplete = true;
+							super.anyComplete = true;
 						}
 					}
 				}
@@ -280,25 +268,31 @@ public class StringConditions {
 				}
 			}
 
-			cond.matchCount++;
+			super.matchCount++;
 
 			if(anyFound) {
-				if(cond.acceptedCount == 0) {
-					cond.coords.setStart(buf);
+				if(super.acceptedCount == 0) {
+					super.coords.setStart(buf);
 				}
-				cond.acceptedCount++;
-				cond.dstBuf.append(ch);
-				if(cond.anyComplete) {
-					cond.coords.setEnd(buf);
+				super.acceptedCount++;
+				super.dstBuf.append(ch);
+				if(super.anyComplete) {
+					super.coords.setEnd(buf);
 				}
 			}
 			else {
-				cond.reset();
+				super.reset();
 			}
 			return true;
-		};
+		}
 
-		return cond;
+
+		@Override
+		public EndStringFilter copy() {
+			val copy = new EndStringFilter(super.name, super.originalStrs, super.includeMatchInRes);
+			return copy;
+		}
+
 	}
 
 }

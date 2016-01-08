@@ -28,11 +28,6 @@ public class MainParser {
 
 
 	public static void parseAndValidProjectCsClasses() throws IOException {
-		val files1Order = Arrays.asList(
-		);
-		val files2Order = Arrays.asList(
-		);
-
 		val fileSet = new ProjectClassSet<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, IntermClass.SimpleImpl<CsBlock>>();
 		val files1 = CsMain.getFilesByExtension(Paths.get("/server/Services"), 1, "cs");
 		val files2 = CsMain.getFilesByExtension(Paths.get("/server/Entities"), 3, "cs");
@@ -45,25 +40,17 @@ public class MainParser {
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
 		val writeSettings = new WriteSettings(true, false, false);
-		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));
+		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
 
 		// get a subset of all the parsed files
 		List<String> resFiles = new ArrayList<>();
 		List<IntermClass.ResolvedImpl<CsBlock>> resClasses = new ArrayList<>();
 
 		// fill indices with null so we can random access any valid index
-		for(int i = 0, size = files1Order.size(); i < size; i++) {
-			resFiles.add(null);
-			resClasses.add(null);
-		}
-
 		for(val classInfo : res) {
-			String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullyQualifyingName());
-			int idx = -1;
-			if((idx = files1Order.indexOf(classFqName)) > -1) {
-				resClasses.set(idx, classInfo.getValue());
-				resFiles.set(idx, classInfo.getKey().getSrcName());
-			}
+			//String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullyQualifyingName());
+			resClasses.add(classInfo.getValue());
+			resFiles.add(classInfo.getKey().getSrcName());
 		}
 		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
 

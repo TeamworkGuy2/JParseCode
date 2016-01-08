@@ -39,6 +39,7 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 	private State state = State.INIT;
 	private boolean allowVoid;
 	private boolean prevNodeWasBlockId;
+	private String name = "C# data type";
 
 
 	/**
@@ -46,6 +47,12 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 	 */
 	public CsDataTypeExtractor(boolean allowVoid) {
 		this.allowVoid = allowVoid;
+	}
+
+
+	@Override
+	public String name() {
+		return name;
 	}
 
 

@@ -1,14 +1,11 @@
 package twg2.parser.text;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 
+import lombok.val;
 import twg2.collections.util.dataStructures.Bag;
-import twg2.functions.BiPredicates;
-import twg2.parser.condition.ParserConditionFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
-import twg2.streams.StreamMap;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -16,33 +13,13 @@ import twg2.text.stringUtils.StringJoin;
  * @since 2015-3-07
  */
 public class CharCompoundConditions {
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> filterFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupFilter);
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> startFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupStartFilter);
-	private static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> endFactory = new ParserConditionFactory.CompoundFactory<>(BaseFilter::new, CharCompoundConditions::setupEndFilter);
-
-
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> filterFactory() {
-		return filterFactory;
-	}
-
-
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> startFilterFactory() {
-		return startFactory;
-	}
-
-
-	public static ParserConditionFactory.CompoundFactory<BaseFilter, CharParserCondition> endFilterFactory() {
-		return endFactory;
-	}
-
-
 
 
 	/** A collection of {@link CharParserCondition ParserConditions}
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class BaseFilter implements CharParserCondition {
+	public static abstract class BaseFilter implements CharParserCondition {
 		CharParserCondition[] originalConds;
 		Bag<CharParserCondition> matchingConds;
 		boolean anyComplete = false;
@@ -50,32 +27,36 @@ public class CharCompoundConditions {
 		int acceptedCount;
 		StringBuilder dstBuf = new StringBuilder();
 		TextFragmentRef.ImplMut coords = new TextFragmentRef.ImplMut();
-		/** Sets up accept and reset functions given this object */
-		Consumer<BaseFilter> copyFunc;
-		BiPredicates.CharObject<TextParser> acceptNextFunc;
 		Runnable resetFunc;
+		String name;
 
 
-		public BaseFilter(Collection<CharParserCondition> conds) {
-			this(conds.toArray(new CharParserCondition[conds.size()]));
+		public BaseFilter(String name, boolean doCopyConds, Collection<CharParserCondition> conds) {
+			this(name, doCopyConds, conds.toArray(new CharParserCondition[conds.size()]));
 		}
 
 
 		@SafeVarargs
-		public BaseFilter(CharParserCondition... conds) {
+		public BaseFilter(String name, boolean doCopyConds, CharParserCondition... conds) {
 			this.originalConds = conds;
-			this.matchingConds = new Bag<>(this.originalConds, 0, this.originalConds.length);
+
+			CharParserCondition[] copyConds = conds;
+			if(doCopyConds) {
+				copyConds = new CharParserCondition[conds.length];
+				for(int i = 0, size = conds.length; i < size; i++) {
+					copyConds[i] = conds[i].copy();
+				}
+			}
+
+			this.matchingConds = new Bag<>(copyConds, 0, copyConds.length);
 			this.anyComplete = false;
+			this.name = name;
 		}
 
 
 		@Override
-		public CharParserCondition copy() {
-			BaseFilter copy = new BaseFilter(StreamMap.map(originalConds, (c) -> c.copy()));
-			if(copyFunc != null) {
-				copyFunc.accept(copy);
-			}
-			return copy;
+		public String name() {
+			return name;
 		}
 
 
@@ -122,12 +103,6 @@ public class CharCompoundConditions {
 		}
 
 
-		@Override
-		public boolean acceptNext(char ch, TextParser buf) {
-			return acceptNextFunc.test(ch, buf);
-		}
-
-
 		// package-private
 		void reset() {
 			matchingConds.clearAndAddAll(originalConds);
@@ -157,8 +132,19 @@ public class CharCompoundConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-6-26
 	 */
-	public static BaseFilter setupFilter(BaseFilter cond) {
-		return setupStartFilter(cond);
+	public static class Filter extends StartFilter {
+
+		public Filter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+			super(name, doCopyConds, conds);
+		}
+
+
+		@Override
+		public Filter copy() {
+			val copy = new Filter(name, true, originalConds);
+			return copy;
+		}
+
 	}
 
 
@@ -166,17 +152,22 @@ public class CharCompoundConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
-	public static BaseFilter setupStartFilter(BaseFilter cond) {
-		cond.copyFunc = CharCompoundConditions::setupStartFilter;
+	public static class StartFilter extends BaseFilter {
 
-		cond.acceptNextFunc = (char ch, TextParser buf) -> {
-			int off = cond.dstBuf.length();
-			if(cond.acceptedCount > off) {
-				cond.failed = true;
+		public StartFilter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+			super(name, doCopyConds, conds);
+		}
+
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			int off = super.dstBuf.length();
+			if(super.acceptedCount > off) {
+				super.failed = true;
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<CharParserCondition> matchingConds = cond.matchingConds;
+			Bag<CharParserCondition> matchingConds = super.matchingConds;
 			CharParserCondition condI = null;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
@@ -188,7 +179,7 @@ public class CharCompoundConditions {
 					else {
 						anyFound = true;
 						if(condI.isComplete()) {
-							cond.anyComplete = true;
+							super.anyComplete = true;
 						}
 					}
 				}
@@ -198,13 +189,13 @@ public class CharCompoundConditions {
 			}
 
 			if(anyFound) {
-				if(cond.acceptedCount == 0) {
-					cond.coords.setStart(buf);
+				if(super.acceptedCount == 0) {
+					super.coords.setStart(buf);
 				}
-				cond.acceptedCount++;
-				cond.dstBuf.append(ch);
-				if(cond.anyComplete) {
-					cond.coords.setEnd(buf);
+				super.acceptedCount++;
+				super.dstBuf.append(ch);
+				if(super.anyComplete) {
+					super.coords.setEnd(buf);
 				}
 
 				// TODO debugging - ensure that this compound condition ends up with the same parsed text fragment as the sub-conditions
@@ -215,30 +206,43 @@ public class CharCompoundConditions {
 				return true;
 			}
 			else {
-				cond.failed = true;
-				cond.anyComplete = false;
+				super.failed = true;
+				super.anyComplete = false;
 				return false;
 			}
-		};
+		}
 
-		return cond;
+
+		@Override
+		public StartFilter copy() {
+			val copy = new StartFilter(super.name, true, super.originalConds);
+			return copy;
+		}
+
 	}
+
+
 
 
 	/** Accept input until a full match for this parse condition is encountered
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
-	public static BaseFilter setupEndFilter(BaseFilter cond) {
-		cond.copyFunc = CharCompoundConditions::setupEndFilter;
+	public static class EndFilter extends BaseFilter {
 
-		cond.acceptNextFunc = (char ch, TextParser buf) -> {
-			if(cond.isComplete()) {
-				cond.failed = true;
+		public EndFilter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+			super(name, doCopyConds, conds);
+		}
+
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			if(super.isComplete()) {
+				super.failed = true;
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<CharParserCondition> matchingConds = cond.matchingConds;
+			Bag<CharParserCondition> matchingConds = super.matchingConds;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
 				CharParserCondition condI = matchingConds.get(i);
@@ -249,7 +253,7 @@ public class CharCompoundConditions {
 					else {
 						anyFound = true;
 						if(condI.isComplete()) {
-							cond.anyComplete = true;
+							super.anyComplete = true;
 						}
 					}
 				}
@@ -259,22 +263,28 @@ public class CharCompoundConditions {
 			}
 
 			if(anyFound) {
-				if(cond.acceptedCount == 0) {
-					cond.coords.setStart(buf);
+				if(super.acceptedCount == 0) {
+					super.coords.setStart(buf);
 				}
-				cond.acceptedCount++;
-				cond.dstBuf.append(ch);
-				if(cond.anyComplete) {
-					cond.coords.setEnd(buf);
+				super.acceptedCount++;
+				super.dstBuf.append(ch);
+				if(super.anyComplete) {
+					super.coords.setEnd(buf);
 				}
 			}
 			else {
-				cond.reset();
+				super.reset();
 			}
 			return true;
-		};
+		}
 
-		return cond;
+
+		@Override
+		public EndFilter copy() {
+			val copy = new EndFilter(this.name, true, this.originalConds);
+			return copy;
+		}
+
 	}
 
 }

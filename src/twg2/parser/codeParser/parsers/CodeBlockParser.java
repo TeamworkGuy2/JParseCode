@@ -16,8 +16,8 @@ public class CodeBlockParser {
 
 
 	public static CharPrecondition createBlockParser(char startChar, char endChar) {
-		CharPrecondition commentParser = new StringBoundedParserBuilder()
-			.addStartEndMarkers(startChar, endChar, Inclusion.INCLUDE)
+		CharPrecondition commentParser = new StringBoundedParserBuilder("block")
+			.addStartEndMarkers("block " + startChar + " " + endChar, startChar, endChar, Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();
 		return commentParser;
