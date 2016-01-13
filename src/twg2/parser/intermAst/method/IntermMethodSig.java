@@ -31,7 +31,7 @@ public enum IntermMethodSig {
 	/** Resolves simple name fields from {@link IntermMethodSig.SimpleImpl} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
 	public static <T_METHOD extends IntermMethodSig.SimpleImpl> IntermMethodSig.ResolvedImpl resolveFrom(T_METHOD intermMethod,
-			IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass, ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+			IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass, ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<ResolvedParameterSig> resolvedParamSigs = new ArrayList<>();

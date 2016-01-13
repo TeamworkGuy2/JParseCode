@@ -13,12 +13,10 @@ import lombok.val;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 
@@ -28,8 +26,8 @@ import twg2.text.stringUtils.StringSplit;
  */
 public class ParseCodeFile {
 
-	public static List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parseFiles(List<Path> files) throws IOException {
-		List<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>> parsedFiles = new ArrayList<>();
+	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files) throws IOException {
+		List<CodeFileSrc<CodeLanguage>> parsedFiles = new ArrayList<>();
 
 		for(Path path : files) {
 			File file = path.toFile();
@@ -50,11 +48,11 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parseCode(String fileName, CodeLanguage lang, String srcStr) {
+	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, String srcStr) {
 		val parseParams = new ParseInput(srcStr, null, fileName);
 		try {
 			@SuppressWarnings("unchecked")
-			CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFileInfo = (CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>)lang.getParser().apply(parseParams);
+			CodeFileSrc<CodeLanguage> parsedFileInfo = (CodeFileSrc<CodeLanguage>)lang.getParser().apply(parseParams);
 			return parsedFileInfo;
 		} catch(Exception e) {
 			throw new RuntimeException(parseParams.toString(), e);
@@ -89,7 +87,7 @@ public class ParseCodeFile {
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);
-			CsMain.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
+			ParserMain.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
 		}
 	}
 

@@ -69,6 +69,14 @@ public class EclipseClasspathFile implements Xmlable {
 			return CLASS_PATH_ENTRY_KEY + " " + kind + ": " + path + (sourcePath != null ? (", " + sourcePath) : "");
 		}
 
+
+		/**
+		 * @return true if the class path entry is a library resource, false if not
+		 */
+		public static final boolean isLib(ClassPathEntry cpEntry) {
+			return cpEntry.kind != null && "lib".equals(cpEntry.kind);
+		}
+
 	}
 
 

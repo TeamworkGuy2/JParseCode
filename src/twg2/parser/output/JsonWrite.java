@@ -26,7 +26,7 @@ public class JsonWrite {
 
 
 	// ==== Consumer ====
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, ConsumerIo<T> toString) throws IOException {
+	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, ConsumerIo<T> toString) {
 		try {
 			joinStrConsumer(objs, delimiter, (Appendable)dst, toString);
 		} catch(IOException ioe) {
@@ -52,7 +52,7 @@ public class JsonWrite {
 	}
 
 
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, BiConsumerIo<T, Appendable> toString) throws IOException {
+	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, BiConsumerIo<T, Appendable> toString) {
 		try {
 			joinStrConsumer(objs, delimiter, (Appendable)dst, toString);
 		} catch(IOException ioe) {

@@ -7,8 +7,7 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-util/jar/jtext_util.jar" sourcepath="/JTextUtility"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdata-util/jar/jdata_util.jar" sourcepath="/JDataUtility"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TestUtil"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-util/jar/jcollection_util.jar" sourcepath="/JCollectionUtility"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/jar/data_transfer.jar" sourcepath="/DataTransfer/src"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-util/jar/jcollection_util.jar" sourcepath="/JCollectionUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jprimitive-collections/jar/jprimitive_collections.jar" sourcepath="/JPrimitiveCollections"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Lombok"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jsimple-types/jar/jsimple_types.jar" sourcepath="/JSimpleTypes/src"/>
@@ -23,5 +22,6 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/jar/jfile_io.jar" sourcepath="/JFileIo"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TemplateUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/jar/jtree_walker.jar" sourcepath="/JTreeWalker"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/jar/data_transfer.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

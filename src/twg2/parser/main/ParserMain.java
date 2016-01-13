@@ -9,14 +9,12 @@ import java.util.List;
 
 import lombok.val;
 import twg2.io.files.FileVisitorUtil;
+import twg2.parser.baseAst.CompoundBlock;
+import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
-import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.codeParser.csharp.CsBlockParser;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.documentParser.DocumentParser;
-import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.TreeTraversalOrder;
@@ -26,10 +24,10 @@ import twg2.treeLike.simpleTree.SimpleTreeUtil;
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class CsMain {
+public class ParserMain {
 
 
-	public static void printParseFileInfo(String fileName, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
+	public static void printParseFileInfo(String fileName, CodeFileSrc<CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
 			boolean printBlockSignatures, boolean printFieldSignatures, boolean printMethodSignatures) {
 		val tree = parsedFile.getDoc();
 
@@ -45,13 +43,15 @@ public class CsMain {
 			System.out.println("\n====\n" + DocumentParser.toSource(tree, parsedFile.getSrc(), false));
 		}
 
-		List<IntermClass.SimpleImpl<CsBlock>> blockDeclarations = CsBlockParser.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc());
+		@SuppressWarnings("unchecked")
+		val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 		if(printBlockSignatures) {
 			System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
 		}
 
-		for(val block : blockDeclarations) {
+		for(val blockInfo : blockDeclarations) {
+			val block = blockInfo.getValue();
 			System.out.println("\n==== Block: \n" + block.getSignature());
 			if(printFieldSignatures) {
 				if(block.getBlockType().canContainFields()) {
@@ -71,7 +71,9 @@ public class CsMain {
 
 	public static List<Path> getFilesByExtension(Path fileOrDir, int depth, String... extensions) throws IOException {
 		val fileFilterBldr = new FileVisitorUtil.Builder();
-		fileFilterBldr.getVisitFileFilter().addFileExtensionFilters(true, extensions);
+		if(extensions.length > 0) {
+			fileFilterBldr.getVisitFileFilter().addFileExtensionFilters(true, extensions);
+		}
 		fileFilterBldr.getVisitFileFilter().setTrackMatches(true);
 		val fileFilterCache = fileFilterBldr.build();
 		Files.walkFileTree(fileOrDir, EnumSet.noneOf(FileVisitOption.class), depth, fileFilterCache.getFileVisitor());
@@ -80,15 +82,21 @@ public class CsMain {
 	}
 
 
-	public static void parseFileSet(List<Path> files, ProjectClassSet<? super CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, ? super IntermClass.SimpleImpl<CsBlock>> dstFileSet) throws IOException {
+	public static <T_BLOCK extends CompoundBlock> void parseFileSet(List<Path> files, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet) throws IOException {
+		@SuppressWarnings("unchecked")
+		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> dstFileSetCast = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>)dstFileSet;
+
 		val parsedFiles = ParseCodeFile.parseFiles(files);
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);
-			List<IntermClass.SimpleImpl<CsBlock>> blockDeclarations = CsBlockParser.extractBlockFieldsAndInterfaceMethods(parsedFile.getDoc());
+			@SuppressWarnings("unchecked")
+			val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 			for(val block : blockDeclarations) {
-				dstFileSet.addCompilationUnit(block.getSignature().getFullyQualifyingName(), parsedFile, block);
+				//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+				val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+				dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullyQualifyingName(), fileParsed);
 			}
 		}
 	}

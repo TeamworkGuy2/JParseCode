@@ -3,16 +3,17 @@ package twg2.parser.codeParser;
 import java.util.List;
 
 import lombok.Getter;
+import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-/**
+/** All the information resulting from building a source string into an AST.
+ * Contains an {@link DocumentFragmentText} AST tree, source name, source string, source string as list of lines, and a language.
  * @author TeamworkGuy2
  * @since 2015-11-22
- * @param <T_TREE> the type of {@link SimpleTree} data stored in this code file's parsed {@link #getDoc()} structure
  * @param <T_LANG> the code language of the source file
  */
-public class CodeFileSrc<T_TREE, T_LANG extends CodeLanguage> {
-	@Getter SimpleTree<T_TREE> doc;
+public class CodeFileSrc<T_LANG extends CodeLanguage> {
+	@Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> doc;
 	@Getter String srcName;
 	@Getter String src;
 	@Getter List<String> lines;
@@ -25,7 +26,7 @@ public class CodeFileSrc<T_TREE, T_LANG extends CodeLanguage> {
 	 * @param lines
 	 * @param language optional
 	 */
-	public CodeFileSrc(SimpleTree<T_TREE> doc, String srcName, String src, List<String> lines, T_LANG language) {
+	public CodeFileSrc(SimpleTree<DocumentFragmentText<CodeFragmentType>> doc, String srcName, String src, List<String> lines, T_LANG language) {
 		this.doc = doc;
 		this.srcName = srcName;
 		this.src = src;

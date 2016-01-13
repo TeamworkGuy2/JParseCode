@@ -8,30 +8,32 @@ import java.util.function.Function;
 
 import lombok.Getter;
 import lombok.val;
+import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.LanguageAstUtil;
 import twg2.parser.baseAst.csharp.CsAstUtil;
+import twg2.parser.codeParser.csharp.CsBlock;
+import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.csharp.CsClassParser;
-import twg2.parser.documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-9-19
  */
-public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends LanguageAstUtil> implements CodeLanguage {
+public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends LanguageAstUtil, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> implements CodeLanguage {
 
-	public static class CSharp extends CodeLanguageOptions<CSharp, CsAstUtil> {
-		CSharp(String displayName, CsAstUtil astUtil, Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CSharp>> parser, String... fileExtensions) {
-			super(displayName, astUtil, parser, fileExtensions);
+	public static class CSharp extends CodeLanguageOptions<CSharp, CsAstUtil, AstExtractor<CsBlock>> {
+		CSharp(String displayName, CsAstUtil astUtil, Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, String... fileExtensions) {
+			super(displayName, astUtil, parser, extractor, fileExtensions);
 		}
 
 	}
 
 
-	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> JAVA = new CodeLanguageOptions<>("Java", null, null, "java");
-	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> JAVASCRIPT = new CodeLanguageOptions<>("Javascript", null, null, "js", "ts");
-	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsClassParser::parse, "cs");
-	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> CSS = new CodeLanguageOptions<>("CSS", (LanguageAstUtil)null, null, "css");
-	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil> XML = new CodeLanguageOptions<>("XML", null, null, "html", "xml");
+	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil, AstExtractor<CompoundBlock>> JAVA = new CodeLanguageOptions<>("Java", (LanguageAstUtil)null, null, null, "java");
+	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil, AstExtractor<CompoundBlock>> JAVASCRIPT = new CodeLanguageOptions<>("Javascript", (LanguageAstUtil)null, null, null, "js", "ts");
+	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsClassParser::parse, new CsBlockParser(), "cs");
+	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil, AstExtractor<CompoundBlock>> CSS = new CodeLanguageOptions<>("CSS", (LanguageAstUtil)null, null, null, "css");
+	public static final CodeLanguageOptions<CodeLanguage, LanguageAstUtil, AstExtractor<CompoundBlock>> XML = new CodeLanguageOptions<>("XML", (LanguageAstUtil)null, null, null, "html", "xml");
 
 	private static CopyOnWriteArrayList<CodeLanguage> values;
 
@@ -47,18 +49,19 @@ public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends
 
 
 	final String displayName;
-	@Getter final Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, T_LANG>> parser;
+	@Getter final Function<ParseInput, CodeFileSrc<T_LANG>> parser;
 	@Getter final List<String> fileExtensions;
 	@Getter final T_AST_UTIL astUtil;
+	@Getter final T_AST_EXTRACTOR extractor;
 
 
 	// package-private
-	CodeLanguageOptions(String displayName, T_AST_UTIL astUtil,
-			Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, T_LANG>> parser, String... fileExtensions) {
+	CodeLanguageOptions(String displayName, T_AST_UTIL astUtil, Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
 		this.displayName = displayName;
 		this.parser = parser;
 		this.fileExtensions = new ArrayList<>(Arrays.asList(fileExtensions));
 		this.astUtil = astUtil;
+		this.extractor = extractor;
 	}
 
 
@@ -85,9 +88,9 @@ public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends
 	 * @param fileExtensions a list of file extensions associated with this language
 	 * @return a new {@link CodeLanguage} instance
 	 */
-	public static <_T_LANG extends CodeLanguage, _T_AST_UTIL extends LanguageAstUtil> CodeLanguage registerCodeLanguage(String displayName, _T_AST_UTIL astUtil,
-			Function<ParseInput, CodeFileSrc<DocumentFragmentText<CodeFragmentType>, _T_LANG>> parser, String... fileExtensions) {
-		val inst = new CodeLanguageOptions<>(displayName, astUtil, parser, fileExtensions);
+	public static <_T_LANG extends CodeLanguage, _T_AST_UTIL extends LanguageAstUtil, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> CodeLanguage registerCodeLanguage(String displayName, _T_AST_UTIL astUtil,
+			Function<ParseInput, CodeFileSrc<_T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
+		val inst = new CodeLanguageOptions<>(displayName, astUtil, parser, extractor, fileExtensions);
 		_registerNewLanguage(inst);
 		return inst;
 	}
@@ -116,7 +119,7 @@ public class CodeLanguageOptions<T_LANG extends CodeLanguage, T_AST_UTIL extends
 	}
 
 
-	private static final void _registerNewLanguage(CodeLanguageOptions<? extends CodeLanguage, ? extends LanguageAstUtil> inst) {
+	private static final void _registerNewLanguage(CodeLanguageOptions<? extends CodeLanguage, ? extends LanguageAstUtil, ? extends AstExtractor<? extends CompoundBlock>> inst) {
 		values.add(inst);
 	}
 

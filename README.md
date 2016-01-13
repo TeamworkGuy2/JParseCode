@@ -1,7 +1,8 @@
 ParserToolsTmp
 ==============
+version: 0.2.0
 
-In progress parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser) and half a dozen other utility libraries. 
+In progress parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
 ####The goal:
 * A competent source code parser that can turn C#, Java, or JavaScript/TypeScript code into a simple AST like structure ('competent' meaning this project aims to support common use cases, not every syntatic feature of the supported languages). 

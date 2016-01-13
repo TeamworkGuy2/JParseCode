@@ -31,7 +31,7 @@ public enum TypeSig {
 	/** Resolves simple name fields from {@link TypeSig.Simple} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
 	public static TypeSig.Resolved resolveFrom(TypeSig.Simple intermSig, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
-			ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+			ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<TypeSig.Resolved> childSigs = Collections.emptyList();

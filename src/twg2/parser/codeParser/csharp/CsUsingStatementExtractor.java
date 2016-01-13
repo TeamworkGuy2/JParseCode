@@ -7,6 +7,7 @@ import lombok.val;
 import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.condition.AstParserCondition;
@@ -27,7 +28,7 @@ public class CsUsingStatementExtractor implements AstParserCondition<List<List<S
 	}
 
 
-	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil> lang = CodeLanguageOptions.C_SHARP;
+	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil, AstExtractor<CsBlock>> lang = CodeLanguageOptions.C_SHARP;
 
 	List<List<String>> usingStatements = new ArrayList<>();
 	State state = State.INIT;

@@ -8,8 +8,6 @@ import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.field.IntermFieldSig;
 import twg2.parser.intermAst.field.ResolvedFieldSig;
 import twg2.parser.intermAst.method.IntermMethodSig;
@@ -19,7 +17,6 @@ import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringJoin;
-import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
@@ -32,8 +29,6 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 	public List<List<String>> getUsingStatements();
 
 	public List<T_METHOD> getMethods();
-
-	public SimpleTree<DocumentFragmentText<CodeFragmentType>> getBlockTree();
 
 	public T_BLOCK getBlockType();
 
@@ -51,12 +46,10 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 		private final @Getter List<List<String>> usingStatements;
 		private final @Getter List<T_FIELD> fields;
 		private final @Getter List<T_METHOD> methods;
-		private final @Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree;
 		private final @Getter T_BLOCK blockType;
 
 
-		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods,
-				SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
+		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods, T_BLOCK blockType) {
 			@SuppressWarnings("unchecked")
 			val fieldsCast = (List<T_FIELD>)fields;
 			@SuppressWarnings("unchecked")
@@ -66,7 +59,6 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 			this.usingStatements = usingStatements;
 			this.fields = fieldsCast;
 			this.methods = methodsCast;
-			this.blockTree = blockTree;
 			this.blockType = blockType;
 		}
 
@@ -93,7 +85,7 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 			JsonWrite.joinStrConsumer(methods, ", ", dst, (m) -> m.toJson(dst, st));
 			dst.append("]\n");
 
-			dst.append("},\n");
+			dst.append("}");
 		}
 
 
@@ -115,8 +107,8 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 	public static class SimpleImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.SimpleImpl, IntermFieldSig, IntermMethodSig.SimpleImpl, IntermParameterSig, T_BLOCK> {
 
 		public SimpleImpl(IntermClassSig.SimpleImpl signature, List<List<String>> usingStatements, List<? extends IntermFieldSig> fields,
-				List<? extends IntermMethodSig.SimpleImpl> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
-			super(signature, usingStatements, fields, methods, blockTree, blockType);
+				List<? extends IntermMethodSig.SimpleImpl> methods, T_BLOCK blockType) {
+			super(signature, usingStatements, fields, methods, blockType);
 		}
 		
 	}
@@ -132,8 +124,8 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 	public static class ResolvedImpl<T_BLOCK extends CompoundBlock> extends Impl<IntermClassSig.ResolvedImpl, ResolvedFieldSig, IntermMethodSig.ResolvedImpl, ResolvedParameterSig, T_BLOCK> {
 
 		public ResolvedImpl(IntermClassSig.ResolvedImpl signature, List<List<String>> usingStatements, List<? extends ResolvedFieldSig> fields,
-				List<? extends IntermMethodSig.ResolvedImpl> methods, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
-			super(signature, usingStatements, fields, methods, blockTree, blockType);
+				List<? extends IntermMethodSig.ResolvedImpl> methods, T_BLOCK blockType) {
+			super(signature, usingStatements, fields, methods, blockType);
 		}
 		
 	}

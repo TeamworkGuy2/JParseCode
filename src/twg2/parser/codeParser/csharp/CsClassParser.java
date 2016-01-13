@@ -12,7 +12,6 @@ import twg2.parser.codeParser.parsers.CodeBlockParser;
 import twg2.parser.codeParser.parsers.CodeStringParser;
 import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.codeParser.parsers.IdentifierParser;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.text.CharPrecondition;
 import twg2.parser.text.StringBoundedParserBuilder;
 import twg2.parser.text.StringParserBuilder;
@@ -23,7 +22,7 @@ import twg2.parser.text.StringParserBuilder;
  */
 public class CsClassParser {
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguageOptions.CSharp> parse(ParseInput params) {
+	public static CodeFileSrc<CodeLanguageOptions.CSharp> parse(ParseInput params) {
 		try {
 			val identifierParser = IdentifierParser.createIdentifierWithGenericTypeParser();
 

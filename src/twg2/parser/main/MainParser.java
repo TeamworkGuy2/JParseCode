@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 
 import lombok.val;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.output.WriteSettings;
@@ -28,18 +27,17 @@ public class MainParser {
 
 
 	public static void parseAndValidProjectCsClasses() throws IOException {
-		val fileSet = new ProjectClassSet<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, IntermClass.SimpleImpl<CsBlock>>();
-		val files1 = CsMain.getFilesByExtension(Paths.get("/server/Services"), 1, "cs");
-		val files2 = CsMain.getFilesByExtension(Paths.get("/server/Entities"), 3, "cs");
+		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
+		val files1 = ParserMain.getFilesByExtension(Paths.get("/server/Services"), 1, "cs");
+		val files2 = ParserMain.getFilesByExtension(Paths.get("/server/Entities"), 3, "cs");
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		val files = new ArrayList<Path>();
 		files.addAll(files1);
 		files.addAll(files2);
-		CsMain.parseFileSet(files, fileSet);
+		ParserMain.parseFileSet(files, fileSet);
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
-		val writeSettings = new WriteSettings(true, false, false);
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
 
 		// get a subset of all the parsed files
@@ -49,10 +47,12 @@ public class MainParser {
 		// fill indices with null so we can random access any valid index
 		for(val classInfo : res) {
 			//String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullyQualifyingName());
-			resClasses.add(classInfo.getValue());
-			resFiles.add(classInfo.getKey().getSrcName());
+			resClasses.add(classInfo.getParsedClass());
+			resFiles.add(classInfo.getId().getSrcName());
 		}
 		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
+
+		val writeSettings = new WriteSettings(true, false, false);
 
 		for(val classInfo : resClasses) {
 			System.out.print("\"" + NameUtil.joinFqName(classInfo.getSignature().getFullyQualifyingName()) + "\": ");
@@ -67,9 +67,15 @@ public class MainParser {
 
 
 	public static void main(String[] args) throws IOException {
-		//parseAndPrintCSharpFileInfo();
-		//parseAndPrintFileStats();
-		parseAndValidProjectCsClasses();
+		if(args.length > 0) {
+			val parserWorkflow = ParserWorkflow.parseArgs(args);
+			parserWorkflow.run(Level.INFO);
+		}
+		else {
+			//parseAndPrintCSharpFileInfo();
+			//parseAndPrintFileStats();
+			parseAndValidProjectCsClasses();
+		}
 	}
 
 }

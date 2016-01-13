@@ -24,14 +24,14 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class ParseCommentsAndWhitespace {
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, String src) throws IOException {
+	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, String src) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
 		return buildCommentsAndWhitespaceTree(commentStyle, src, srcName);
 	}
 
 
-	public static CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
+	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
 		CharPrecondition stringParser = CodeStringParser.createStringParserForJavascript();
 		CharPrecondition commentParser = CommentParser.createCommentParser(style);
 

@@ -48,7 +48,7 @@ public class IntermFieldSig implements JsonWritableSig {
 	/** Resolves simple name fields from {@link IntermFieldSig} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
 	public static <T_FIELD extends IntermFieldSig> ResolvedFieldSig resolveFrom(T_FIELD intermField, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
-			ProjectClassSet<?, ?> projFiles, Collection<List<String>> missingNamespacesDst) {
+			ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		TypeSig.Resolved resolvedFieldType = TypeSig.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);

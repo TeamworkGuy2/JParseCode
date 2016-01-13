@@ -5,14 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import lombok.val;
-import twg2.collections.tuple.Tuples;
 import twg2.collections.util.ListUtil;
-import twg2.collections.util.dataStructures.PairList;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.field.IntermFieldSig;
@@ -24,37 +22,37 @@ import twg2.parser.output.JsonWritableSig;
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermClassSig, ? extends JsonWritableSig, ? extends CompoundBlock>> {
-	private Map<String, Entry<T_ID, T_CLASS>> compilationUnitsByFullyQualifyingName = new HashMap<>();
-	private Map<String, PairList<T_ID, T_CLASS>> compilationUnitsByNamespaces = new HashMap<>();
+public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extends IntermClass<? extends IntermClassSig, ? extends JsonWritableSig, T_BLOCK>, T_CODE_FILE extends CodeFileParsed<? extends T_ID, ? extends T_CLASS>> {
+	Map<String, T_CODE_FILE> compilationUnitsByFullyQualifyingName = new HashMap<>();
+	Map<String, List<T_CODE_FILE>> compilationUnitsByNamespaces = new HashMap<>();
 
 
-	public <_T_CLASS extends T_CLASS> void addCompilationUnit(List<String> fullyQualifyingName, T_ID src, _T_CLASS classUnit) {
+	public void addCompilationUnit(List<String> fullyQualifyingName, T_CODE_FILE classUnit) {
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
-		compilationUnitsByFullyQualifyingName.put(fullName, Tuples.of(src, classUnit));
+		compilationUnitsByFullyQualifyingName.put(fullName, classUnit);
 
 		// loop through the fully qualifying name parts and add the new compilation unit to each namespace set
 		String partialName = "";
 		for(String namePart : fullyQualifyingName) {
 			partialName = NameUtil.appendToFqName(partialName, namePart);
-			PairList<T_ID, T_CLASS> nsCompilationUnits = compilationUnitsByNamespaces.get(partialName);
+			List<T_CODE_FILE> nsCompilationUnits = compilationUnitsByNamespaces.get(partialName);
 			if(nsCompilationUnits == null) {
-				compilationUnitsByNamespaces.put(partialName, nsCompilationUnits = new PairList<>());
+				compilationUnitsByNamespaces.put(partialName, nsCompilationUnits = new ArrayList<>());
 			}
-			nsCompilationUnits.add(src, classUnit);
+			nsCompilationUnits.add(classUnit);
 		}
 	}
 
 
 	public T_CLASS getCompilationUnit(List<String> fullyQualifyingName) {
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
-		return compilationUnitsByFullyQualifyingName.get(fullName).getValue();
+		return compilationUnitsByFullyQualifyingName.get(fullName).getParsedClass();
 	}
 
 
-	public List<Entry<T_ID, T_CLASS>> getCompilationUnitsStartWith(List<String> startOfFullyQualifyingName) {
+	public List<T_CODE_FILE> getCompilationUnitsStartWith(List<String> startOfFullyQualifyingName) {
 		String startName = NameUtil.joinFqName(startOfFullyQualifyingName);
-		List<Entry<T_ID, T_CLASS>> resBlocks = new ArrayList<>();
+		List<T_CODE_FILE> resBlocks = new ArrayList<>();
 
 		for(val entry : compilationUnitsByFullyQualifyingName.entrySet()) {
 			if(entry.getKey().startsWith(startName)) {
@@ -76,6 +74,7 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 	 */
 	public T_CLASS resolveSimpleNameToClass(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
 		T_CLASS matchingCompilationUnit = null;
+
 		for(val namespace : namespaces) {
 			val nsName = NameUtil.joinFqName(namespace);
 			val nsCompilationUnits = compilationUnitsByNamespaces.get(nsName);
@@ -91,16 +90,17 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 
 			if(nsCompilationUnits != null) {
 				for(val nsCompilationUnit : nsCompilationUnits) {
-					val compilationUnitSimpleName = nsCompilationUnit.getValue().getSignature().getSimpleName();
+					val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
 					if(compilationUnitSimpleName.equals(simpleName)) {
 						if(matchingCompilationUnit != null) {
-							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getValue() + "]");
+							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getParsedClass() + "]");
 						}
-						matchingCompilationUnit = nsCompilationUnit.getValue();
+						matchingCompilationUnit = nsCompilationUnit.getParsedClass();
 					}
 				}
 			}
 		}
+
 		return matchingCompilationUnit;
 	}
 
@@ -121,12 +121,12 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 
 		if(nsCompilationUnits != null) {
 			for(val nsCompilationUnit : nsCompilationUnits) {
-				val compilationUnitSimpleName = nsCompilationUnit.getValue().getSignature().getSimpleName();
+				val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
 				if(compilationUnitSimpleName.equals(simpleName)) {
 					if(matchingCompilationUnit != null) {
-						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getValue() + "]");
+						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getParsedClass() + "]");
 					}
-					matchingCompilationUnit = nsCompilationUnit.getValue();
+					matchingCompilationUnit = nsCompilationUnit.getParsedClass();
 				}
 			}
 		}
@@ -164,28 +164,51 @@ public class ProjectClassSet<T_ID, T_CLASS extends IntermClass<? extends IntermC
 	}
 
 
+
+
+	public static class Simple<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, IntermClass.SimpleImpl<T_BLOCK>, CodeFileParsed.Simple<T_ID, T_BLOCK>> {
+
+		@Override
+		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Simple<T_ID, T_BLOCK> classUnit) {
+			super.addCompilationUnit(fullyQualifyingName, classUnit);
+		}
+
+	}
+
+
+
+
+	public static class Resolved<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, IntermClass.ResolvedImpl<T_BLOCK>, CodeFileParsed.Resolved<T_ID, T_BLOCK>> {
+
+		@Override
+		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Resolved<T_ID, T_BLOCK> classUnit) {
+			super.addCompilationUnit(fullyQualifyingName, classUnit);
+		}
+
+	}
+
+
+
+
 	/** Resolve all the simple names in each of the input project class set's compilation units and return a new project class set containing all the resulting compilation units with fully qualifying names.<br>
 	 * Some namespaces may not be found and some simple names may not be resolvable, these issues can be tracked and returned via optional destination parameters.
 	 * If these optional parameters are null, errors are thrown instead
 	 */
-	public static <_T_ID, _T_BLOCK extends CompoundBlock> ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resolveClasses(ProjectClassSet<_T_ID, ? extends IntermClass.SimpleImpl<_T_BLOCK>> projFiles,
-			_T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
-		@SuppressWarnings("unchecked")
-		val projFilesCast = ((ProjectClassSet<_T_ID, IntermClass.SimpleImpl<_T_BLOCK>>)projFiles);
+	public static <_T_ID, _T_BLOCK extends CompoundBlock> ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resolveClasses(ProjectClassSet.Simple<_T_ID, _T_BLOCK> projFiles, _T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 
-		ProjectClassSet<_T_ID, IntermClass.ResolvedImpl<_T_BLOCK>> resFiles = new ProjectClassSet<>();
+		ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resFiles = new ProjectClassSet.Resolved<>();
 
 		// TODO annotations and class names need type signature and generic type parsing
 
-		for(val fileEntry : projFilesCast.compilationUnitsByFullyQualifyingName.entrySet()) {
-			val file = fileEntry.getValue().getValue();
+		for(val fileEntry : projFiles.compilationUnitsByFullyQualifyingName.entrySet()) {
+			val file = fileEntry.getValue().getParsedClass();
 			val namespaces = file.getUsingStatements();
-			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), file, projFilesCast, defaultBlockType, missingNamespacesDst);
-			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, file, projFilesCast, missingNamespacesDst));
-			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFilesCast, missingNamespacesDst));
-			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockTree(), file.getBlockType());
+			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, file, projFiles, missingNamespacesDst));
+			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFiles, missingNamespacesDst));
+			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockType());
 
-			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), fileEntry.getValue().getKey(), resClass);
+			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), new CodeFileParsed.Resolved<_T_ID, _T_BLOCK>(fileEntry.getValue().getId(), resClass, fileEntry.getValue().getAstTree()));
 		}
 		return resFiles;
 	}

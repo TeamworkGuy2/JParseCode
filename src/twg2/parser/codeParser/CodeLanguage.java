@@ -3,8 +3,8 @@ package twg2.parser.codeParser;
 import java.util.List;
 import java.util.function.Function;
 
+import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.LanguageAstUtil;
-import twg2.parser.documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
@@ -18,6 +18,8 @@ public interface CodeLanguage {
 
 	public List<String> getFileExtensions();
 
-	public Function<ParseInput, ? extends CodeFileSrc<DocumentFragmentText<CodeFragmentType>, ? extends CodeLanguage>> getParser();
+	public Function<ParseInput, ? extends CodeFileSrc<? extends CodeLanguage>> getParser();
+
+	public AstExtractor<? extends CompoundBlock> getExtractor();
 
 }

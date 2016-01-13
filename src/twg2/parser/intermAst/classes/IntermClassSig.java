@@ -39,7 +39,7 @@ public interface IntermClassSig extends JsonWritableSig {
 	/** Resolves the {@link IntermClassSig.SimpleImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
 	public static <T_ID, T_SIG extends IntermClassSig.SimpleImpl> IntermClassSig.ResolvedImpl resolveClassSigFrom(T_SIG classSig, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
-			ProjectClassSet<T_ID, ? extends IntermClass<? extends T_SIG, ? extends JsonWritableSig, ? extends CompoundBlock>> projFiles, CompoundBlock defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+			ProjectClassSet.Simple<T_ID, ? extends CompoundBlock> projFiles, CompoundBlock defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 		List<List<String>> resolvedCompilationUnitNames = new ArrayList<>();
 		List<CompoundBlock> resolvedCompilationUnitBlockTypes = new ArrayList<>();
 		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();

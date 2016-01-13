@@ -46,7 +46,7 @@ public class ParserBuilder {
 	 * @param srcName optional
 	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
 	 */
-	public <L extends CodeLanguage> CodeFileSrc<DocumentFragmentText<CodeFragmentType>, L> buildAndParse(String src, L language, String srcName) {
+	public <L extends CodeLanguage> CodeFileSrc<L> buildAndParse(String src, L language, String srcName) {
 		List<String> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines

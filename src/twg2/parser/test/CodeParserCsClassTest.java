@@ -11,11 +11,9 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlockParser;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.main.ParseCodeFile;
 
 /**
@@ -24,7 +22,7 @@ import twg2.parser.main.ParseCodeFile;
  */
 public class CodeParserCsClassTest {
 	@Parameter
-	private CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs"))).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs"))).get(0);
 
 
 	public CodeParserCsClassTest() throws IOException {
@@ -38,7 +36,7 @@ public class CodeParserCsClassTest {
 
 		Assert.assertEquals(1, blocks.size());
 
-		val trackInfoBlock = blocks.get(0);
+		val trackInfoBlock = blocks.get(0).getValue();
 		Assert.assertEquals(CsBlock.CLASS, trackInfoBlock.getBlockType());
 		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
 	}

@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import lombok.val;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
-import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
@@ -31,14 +31,12 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-5
  */
-public class CsBlockParser {
-	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil> lang = CodeLanguageOptions.C_SHARP;
-	private IntermBlock<IntermClassSig.SimpleImpl, CsBlock> parentScope;
-	List<IntermBlock<IntermClassSig.SimpleImpl, CsBlock>> blocks = new ArrayList<>();
+public class CsBlockParser implements AstExtractor<CsBlock> {
 
 
-	public CsBlockParser(IntermBlock<IntermClassSig.SimpleImpl, CsBlock> parentScope) {
-		this.parentScope = parentScope;
+	@Override
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+		return CsBlockParser.extractBlockFieldsAndInterfaceMethods(astTree);
 	}
 
 
@@ -48,8 +46,9 @@ public class CsBlockParser {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public void extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
-			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode) {
+	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
+			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, IntermBlock<IntermClassSig.SimpleImpl, CsBlock> parentScope, List<IntermBlock<IntermClassSig.SimpleImpl, CsBlock>> blocks) {
+		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
 		val children = blockTree.getChildren();
 
 		val childIterable = new TokenListIterable(children);
@@ -90,7 +89,7 @@ public class CsBlockParser {
 				}
 			}
 
-			extractBlocksFromTree(nameScope, child, depth + 1, blockTree);
+			extractBlocksFromTree(nameScope, child, depth + 1, blockTree, parentScope, blocks);
 
 			while(addBlockCount > 0) {
 				nameScope.remove(nameScope.size() - 1);
@@ -105,6 +104,7 @@ public class CsBlockParser {
 	 * @return access modifiers read backward from the iterator's current {@code previous()} value
 	 */
 	private static List<String> readAccessModifier(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
+		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
 		int prevCount = 0;
 		List<String> accessModifiers = new ArrayList<>();
 		SimpleTree<DocumentFragmentText<CodeFragmentType>> child = iter.hasPrevious() ? iter.previous() : null;
@@ -128,6 +128,7 @@ public class CsBlockParser {
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
+		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		List<String> names = new ArrayList<>();
@@ -172,10 +173,10 @@ public class CsBlockParser {
 
 
 	// TODO this only parses some fields and interface methods
-	public static List<IntermClass.SimpleImpl<CsBlock>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
+	public static List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
 		List<IntermBlock<IntermClassSig.SimpleImpl, CsBlock>> blockDeclarations = CsBlockParser.extractBlocks(tokenTree, null);
 
-		List<IntermClass.SimpleImpl<CsBlock>> resBlocks = new ArrayList<>();
+		List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> resBlocks = new ArrayList<>();
 
 		CsUsingStatementExtractor usingStatementExtractor = new CsUsingStatementExtractor();
 
@@ -209,7 +210,7 @@ public class CsBlockParser {
 			}
 
 			if(block.getBlockType() != CsBlock.NAMESPACE) {
-				resBlocks.add(new IntermClass.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockTree(), block.getBlockType()));
+				resBlocks.add(Tuples.of(block.getBlockTree(), new IntermClass.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
 			}
 		}
 
@@ -247,11 +248,11 @@ public class CsBlockParser {
 
 
 	public static List<IntermBlock<IntermClassSig.SimpleImpl, CsBlock>> extractBlocks(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree, IntermBlock<IntermClassSig.SimpleImpl, CsBlock> parentScope) {
-		CsBlockParser extractor = new CsBlockParser(parentScope);
+		List<IntermBlock<IntermClassSig.SimpleImpl, CsBlock>> blocks = new ArrayList<>();
 		//AstUtil.forEach(parsedFile.getDoc(), extractor::extractDataModelFieldsIndexedSubTreeConsumer);
 		List<String> nameScope = new ArrayList<>();
-		extractor.extractBlocksFromTree(nameScope, tokenTree, 0, null);
-		return extractor.blocks;
+		extractBlocksFromTree(nameScope, tokenTree, 0, null, parentScope, blocks);
+		return blocks;
 	}
 
 }

@@ -18,13 +18,11 @@ import org.junit.runners.Parameterized.Parameter;
 import twg2.collections.util.ListUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
-import twg2.parser.main.CsMain;
+import twg2.parser.main.ParserMain;
 import checks.CheckCollections;
 
 /**
@@ -37,7 +35,7 @@ public class CsParserExamples {
 	private IntermClass.ResolvedImpl<CsBlock> trackInfoDef;
 
 	@Parameter
-	private ProjectClassSet<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, IntermClass.SimpleImpl<CsBlock>> projFiles;
+	private ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock> projFiles;
 	@Parameter
 	private List<IntermClass.ResolvedImpl<CsBlock>> resClasses;
 
@@ -46,10 +44,10 @@ public class CsParserExamples {
 		Path trackSearchServiceFile = Paths.get("rsc/csharp/ParserExamples/Services/ITrackSearchService.cs");
 		Path albumInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/AlbumInfo.cs");
 		Path trackInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs");
-		projFiles = new ProjectClassSet<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, IntermClass.SimpleImpl<CsBlock>>();
+		projFiles = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		CsMain.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles);
+		ParserMain.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles);
 		val resFileSet = ProjectClassSet.resolveClasses(projFiles, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));
@@ -57,7 +55,7 @@ public class CsParserExamples {
 		// get a subset of all the parsed files
 		resClasses = new ArrayList<>();
 		for(val classInfo : res) {
-			resClasses.add(classInfo.getValue());
+			resClasses.add(classInfo.getParsedClass());
 		}
 		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
 		trackSearchServiceDef = ensureOne(resClasses.stream().filter((t) -> "ITrackSearchService".equals(t.getSignature().getSimpleName())));
@@ -77,9 +75,6 @@ public class CsParserExamples {
 
 		// SearchResult<IDictionary<AlbumInfo, IList<Track>>> GetAlbumTracks(string albumName)
 		val mthd2Ret = trackSearchServiceDef.getMethods().get(1).getReturnType();
-
-		// TODO debugging
-		System.out.println("ret: " + mthd2Ret);
 
 		Assert.assertEquals("IDictionary", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getFullyQualifyingName()));
 		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(0).getFullyQualifyingName()));
