@@ -94,7 +94,6 @@ public class ParserMain {
 			val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 			for(val block : blockDeclarations) {
-				//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
 				val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
 				dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullyQualifyingName(), fileParsed);
 			}

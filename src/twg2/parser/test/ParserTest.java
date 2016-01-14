@@ -1,132 +1,146 @@
 package twg2.parser.test;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+
+import lombok.val;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.IntArrayList;
-import twg2.parser.Inclusion;
+import twg2.parser.baseAst.AccessModifierEnum;
+import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.CodeFileParsed;
+import twg2.parser.codeParser.CodeFileSrc;
+import twg2.parser.codeParser.CodeLanguage;
+import twg2.parser.codeParser.CodeLanguageOptions;
+import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.documentParser.block.IntermediateBlock;
 import twg2.parser.documentParser.block.ParseBlocks;
 import twg2.parser.documentParser.block.TextBlock;
 import twg2.parser.documentParser.block.TextOffsetBlock;
-import twg2.parser.text.CharParserCondition;
-import twg2.parser.text.CharPrecondition;
-import twg2.parser.text.StringBoundedParserBuilder;
-import twg2.parser.textParser.TextParser;
-import twg2.parser.textParser.TextParserImpl;
-import twg2.parser.textParserUtils.EscapeSequences;
-import twg2.ranges.helpers.CharCategory;
-import twg2.text.stringUtils.StringCompare;
-import twg2.text.stringUtils.StringIndex;
-import checks.Check;
+import twg2.parser.intermAst.annotation.AnnotationSig;
+import twg2.parser.intermAst.field.IntermFieldSig;
+import twg2.parser.intermAst.method.IntermMethodSig;
+import twg2.parser.intermAst.method.IntermParameterSig;
+import twg2.parser.main.ParseCodeFile;
+import twg2.parser.output.WriteSettings;
 import checks.CheckTask;
-import checks.TestData;
-import checks.TestDataObj;
 
 /**
  * @author TeamworkGuy2
  * @since 2014-9-1
  */
 public class ParserTest {
+	private static String simpleCsName = "SimpleCs.cs";
+	private static String simpleCsCode =
+		"namespace ParserExamples.Samples {\n" +
+		"\n" +
+		"    /// <summary>\n" +
+		"    /// A simple class to test parsing.\n" +
+		"    /// </summary>\n" +
+		"    public class SimpleCs {\n" +
+		"\n" +
+		"    /// <value>The names.</value>\n" +
+		"    public IList<string> Names { get; set; }\n" +
+		"\n" +
+		"    /// <value>The number of names.</value>\n" +
+		"    public int Count { get; set }\n" +
+		"\n" +
+        "    /// <summary>\n" +
+        "    /// Add name\n" +
+        "    /// </summary>\n" +
+        "    /// <param name=\"name\">the name</param>\n" +
+        "    /// <returns>the names</returns>\n" +
+        "    [OperationContract]\n" +
+        "    [WebInvoke(Method = \"POST\", UriTemplate = \"/AddName?name={name}\",\n" +
+        "        ResponseFormat = WebMessageFormat.Json)]\n" +
+        "    [TransactionFlow(TransactionFlowOption.Allowed)]\n" +
+        "    Result<IList<String>> AddName(string name) {\n" +
+        "        content of block;\n" +
+        "    }\n" +
+		"\n" +
+		"}\n";
+	private static CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode(simpleCsName, CodeLanguageOptions.C_SHARP, simpleCsCode);
+	private static List<CodeFileParsed.Simple<String, CsBlock>> simpleCsBlocks = new ArrayList<>();
 
-	@Test
-	public void startsWithTest() {
-		List<TestData<String, String>> startsWithStrs = Arrays.asList(
-				TestDataObj.matchFalse("this a lz3", "thisa"),
-				TestDataObj.matchTrue("this a lz3", "this"),
-				TestDataObj.matchFalse("a", "ab"),
-				TestDataObj.matchTrue("a", "a"),
-				TestDataObj.matchFalse("", "a"),
-				TestDataObj.matchTrue("", "")
-		);
+	static {
+		System.out.println(simpleCsCode);
 
-		for(TestData<String, String> test : startsWithStrs) {
-			Assert.assertTrue(test.isShouldInputEqualExpected() ==
-					StringCompare.startsWith(test.getInput().toCharArray(), 0, test.getExpected().toCharArray(), 0));
+		val blockDeclarations = CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc());
+		for(val block : blockDeclarations) {
+			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+			CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>(simpleCsName, block.getValue(), block.getKey());
+			simpleCsBlocks.add(fileParsed);
+
+			try {
+				val ws = new WriteSettings(true, true, true);
+				val sb = new StringBuilder();
+				fileParsed.getParsedClass().toJson(sb, ws);
+				System.out.println(sb.toString());
+			} catch(IOException ioe) {
+				throw new UncheckedIOException(ioe);
+			}
 		}
 	}
 
 
-	// TODO finish converting tests
 	@Test
-	public void indexOfTest() {
-		String searchString = "this 32a this 32.1f is_a string";
-		String[] strs = new String[] {"32a", "32z", " ", "  ", "this", "string"};
-		Integer[] expect = { 5, -1, 4, -1, 0, 25 };
-		char[] searchChars = searchString.toCharArray();
+	public void simpleCsParseTest() {
+		Assert.assertEquals(1, simpleCsBlocks.size());
+		val csClass = simpleCsBlocks.get(0).getParsedClass();
+		Assert.assertEquals(2, csClass.getFields().size());
 
-		CheckTask.assertTests(strs, expect, (str) -> StringIndex.indexOf(searchChars, 0, str, 0));
-	}
+		Assert.assertEquals("SimpleCs", NameUtil.joinFqName(csClass.getSignature().getFullyQualifyingName()));
+		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
+		Assert.assertEquals("class", csClass.getSignature().getDeclarationType());
 
+		IntermFieldSig f = csClass.getFields().get(0);
+		Assert.assertEquals("SimpleCs.Names", NameUtil.joinFqName(f.getFullyQualifyingName()));
+		Assert.assertEquals("IList", f.getFieldType().getTypeName());
+		Assert.assertEquals("string", f.getFieldType().getGenericParams().get(0).getTypeName());
 
-	@Test
-	public void lineBufferTest() {
-		String line = "Abbb abab [very awesome] 132\n" +
-				"few 142345 52132";
+		f = csClass.getFields().get(1);
+		Assert.assertEquals("SimpleCs.Count", NameUtil.joinFqName(f.getFullyQualifyingName()));
+		Assert.assertEquals("int", f.getFieldType().getTypeName());
 
-		TextParser tool = TextParserImpl.of(line);
-		StringBuilder dst = new StringBuilder();
+		Assert.assertEquals(1, csClass.getMethods().size());
+		IntermMethodSig.SimpleImpl m = csClass.getMethods().get(0);
+		Assert.assertEquals("SimpleCs.AddName", NameUtil.joinFqName(m.getFullyQualifyingName()));
+		IntermParameterSig p = m.getParamSigs().get(0);
+		Assert.assertEquals("name", p.getName());
+		Assert.assertEquals("string", p.getTypeSimpleName());
+		//annotations:
+		//{"name": "OperationContract", "arguments": {  } },
+		AnnotationSig sig = m.getAnnotations().get(0);
+		Assert.assertEquals("OperationContract", NameUtil.joinFqName(sig.getFullyQualifyingName()));
+		Assert.assertEquals(0, sig.getArguments().size());
 
-		tool.nextIf('A', dst);
-		tool.nextIf((c) -> (c == 'b'), 2, dst);
-		check(tool.nextIf('b', dst), 1, "could not read 'b'");
-		check(tool.nextIf(' ', dst), 1, "could not read ' '");
-		check(tool.nextIf('a', 'b', 0, dst), 4, "could not read 'a' or 'b'");
-		tool.nextIf((c) -> (true), 0, dst);
+		//{"name": "WebInvoke", "arguments": { "ResponseFormat": "WebMessageFormat.Json", "Method": "POST", "UriTemplate": "/AddName?name={name}" } },
+		sig = m.getAnnotations().get(1);
+		Assert.assertEquals("WebInvoke", NameUtil.joinFqName(sig.getFullyQualifyingName()));
+		Assert.assertTrue(sig.getArguments().containsKey("ResponseFormat"));
+		Assert.assertEquals("WebMessageFormat.Json", sig.getArguments().get("ResponseFormat"));
+		Assert.assertTrue(sig.getArguments().containsKey("Method"));
+		Assert.assertEquals("POST", sig.getArguments().get("Method"));
+		Assert.assertTrue(sig.getArguments().containsKey("UriTemplate"));
+		Assert.assertEquals("/AddName?name={name}", sig.getArguments().get("UriTemplate"));
 
-		tool.nextIf((c) -> (true), 3, dst);
-		tool.nextIf((c) -> (ArrayUtil.indexOf(new char[] {'1', '2', '3', '4', '5', ' '}, c) > -1) , 0, dst);
-		tool.nextIf((c) -> (ArrayUtil.indexOf(new char[] {'1', '2', '3', '4', '5', ' '}, c) > -1) , 0, dst);
+		//{"name": "TransactionFlow", "arguments": { "value": "TransactionFlowOption.Allowed" } }
+		sig = m.getAnnotations().get(2);
+		Assert.assertEquals("TransactionFlow", NameUtil.joinFqName(sig.getFullyQualifyingName()));
+		Assert.assertTrue(sig.getArguments().containsKey("value"));
+		Assert.assertEquals("TransactionFlowOption.Allowed", sig.getArguments().get("value"));
 
-		Assert.assertEquals("parsed: '" + dst.toString() + "', does not match: '" + line + "'", line, dst.toString());
-	}
-
-
-	@Test
-	public void stringBoundedSegmentParserTest() throws IOException {
-		StringBuilder dst = new StringBuilder();
-
-		// single-character start and end markers and single-character escape markers
-		String[] strs = new String[] {   "\"a \\\" b \\\"", "\"\" !", "alpha", "\"a \n\\\"\\\" z\" echo" };
-		String[] expect = new String[] { "\"a \" b \"",       "\"\"",     "",      "\"a \n\"\" z\"" };
-
-		CharPrecondition parser1 = new StringBoundedParserBuilder("stringBoundedSegmentParserTest").addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE).build();
-
-		Function<String, String> escSeqDecoder = EscapeSequences.unicodeEscapeDecoder();
-		CheckTask.assertTests(strs, expect, (s, i) -> {
-			dst.setLength(0);
-			//Assert.assertTrue("i=" + i + " first char '" + s.charAt(0) + "' of '" + s + "'", parser1.isMatch(s.charAt(0)));
-			CharParserCondition cond = parser1.createParser();
-			cond.readConditional(TextParserImpl.of(s), dst);
-			return escSeqDecoder.apply(dst.toString());
-		});
-
-		// TODO reimplement string markers
-		// multi-character start and end markers and multi-character escape markers
-		//strs = new String[] {   "to /**string @@/** and @@**/", "/**/", "alpha", "@@/**start \n@@/**@@**/ end**/ echo" };
-		//expect = new String[] { "/**string @@/** and **/",      "/**/", "",      "/**start \n@@/****/ end**/" };
-		/*
-		settings.setEscapeString("@@")
-			.setHandleEscapes(true)
-			.setReadMultiline(true);
-		input = new ParserHelper();
-		*/
-		//StringBoundedParser parser2 = new StringBoundedParser(settings, input, new String[] {"/**"}, new String[] {"**/"});
-		/*
-		Check.assertTests(strs, expect, "", "mismatch", (s) -> {
-			dst.setLength(0);
-			return parser2.readElement(LineBufferImpl.of(s), dst).toString();
-		});
-		*/
+		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
+		Assert.assertEquals("Result", m.getReturnType().getTypeName());
+		Assert.assertEquals("IList", m.getReturnType().getGenericParams().get(0).getTypeName());
+		Assert.assertEquals("String", m.getReturnType().getGenericParams().get(0).getGenericParams().get(0).getTypeName());
 	}
 
 
@@ -195,50 +209,6 @@ public class ParserTest {
 		});
 
 		CheckTask.assertTests(blockList.toArray(new TextOffsetBlock[blockList.size()]), expect, (block) -> ((TextOffsetBlock)block).toString(str));
-	}
-
-
-	@Test
-	public void readCharTypeTest() {
-		CharCategory[] types = new CharCategory[] {
-				CharCategory.ALPHA_LOWER,
-				CharCategory.ALPHA_UPPER,
-				CharCategory.ALPHA_LOWER,
-				CharCategory.DIGIT,
-				CharCategory.DIGIT,
-				CharCategory.ALPHA_UPPER_OR_LOWER
-		};
-		String[] strs = new String[] {
-				"characterswithoutspaces",
-				"ALPHAUPPERCHARACTHERS",
-				"with spaces",
-				"932421",
-				"7252_312",
-				"AlphaWITHlowerCase"
-		};
-		String[] expect = new String[] {
-				"characterswithoutspaces",
-				"ALPHAUPPERCHARACTHERS",
-				"with",
-				"932421",
-				"7252",
-				"AlphaWITHlowerCase"
-		};
-		Check.assertLengths("types, strs, expect arrays must be the same length", types.length, strs.length, expect.length);
-
-		StringBuilder dst = new StringBuilder();
-		for(int i = 0, size = strs.length; i < size; i++) {
-			TextParser tool = TextParserImpl.of(strs[i]);
-			tool.nextIf(types[i], dst);
-			System.out.println("read char type: " + dst.toString());
-			Check.assertEqual(dst.toString(), expect[i], "");
-			dst.setLength(0);
-		}
-	}
-
-
-	private static void check(int input, int expected, String message) {
-		Assert.assertEquals(message + " (input: " + input + ", expected: " + expected + ")", expected, input);
 	}
 
 
