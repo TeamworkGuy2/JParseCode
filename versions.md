@@ -2,7 +2,7 @@
 ####0.3.0
 date: 2016-1-16
 
-commit: ?
+commit: 0b7128980ba31623d17f85d9f10bd4d99bd1288e
 
 * __Added Java parsing support and tests.__
 * Added Keyword interface for generic language keyword operations such as isKeyword(), isBlockModifierKeyword(), isDataTypeKeyword(), etc.
