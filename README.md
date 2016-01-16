@@ -1,6 +1,6 @@
 ParserToolsTmp
 ==============
-version: 0.2.1
+version: 0.3.0
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
@@ -16,8 +16,8 @@ In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://gi
 Example:
 --------
 
-Source Code:
-
+Source Code (SimpleCs.cs):
+```C#
 	namespace ParserExamples.Samples {
 	
 		/// <summary>
@@ -25,62 +25,64 @@ Source Code:
 		/// </summary>
 		public class SimpleCs {
 	
-		/// <value>The names.</value>
-		public IList<string> Names { get; set; }
+			/// <value>The names.</value>
+			public IList<string> Names { get; set; }
 	
-		/// <value>The number of names.</value>
-		public int Count { get; set }
+			/// <value>The number of names.</value>
+			public int Count { get; set; }
 	
-		/// <summary>
-		/// Add name
-		/// </summary>
-		/// <param name="name">the name</param>
-		/// <returns>the names</returns>
-		[OperationContract]
-		[WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
-			ResponseFormat = WebMessageFormat.Json)]
-		[TransactionFlow(TransactionFlowOption.Allowed)]
-		Result<IList<String>> AddName(string name) {
-			content of block;
+			/// <summary>Add name</summary>
+			/// <param name="name">the name</param>
+			/// <returns>the names</returns>
+			[OperationContract]
+			[WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
+				ResponseFormat = WebMessageFormat.Json)]
+			[TransactionFlow(TransactionFlowOption.Allowed)]
+			Result<IList<String>> AddName(string name) {
+				content of block;
+			}
+	
 		}
 	
 	}
+```
 
 
-Parser Code:
-
-	CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode(simpleCsName, CodeLanguageOptions.C_SHARP, simpleCsCode);
+Java code to parser SimpleCs.cs (simple_cs_source_string is a string containing the contents of SimpleCs.cs):
+```Java
+	CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode("SimpleCs.cs", CodeLanguageOptions.C_SHARP, simple_cs_source_string);
 	WriteSettings ws = new WriteSettings(true, true, true);
 	
-	for(val block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
-		CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>(simpleCsName, block.getValue(), block.getKey());
+	for(Map.Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
+		CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
 	
 		StringBuilder sb = new StringBuilder();
 		fileParsed.getParsedClass().toJson(sb, ws);
-		System.out.println(sb.toString());
+		System.out.println(sb.toString()); // Print the parsed AST to System.out
 	}
+```
 
 
-JSON Result:
-
+JSON Result (printed to System.out):
+```JSON
 	{
 		"classSignature" : {
 			"access" : "PUBLIC",
-			"name" : "SimpleCs",
+			"name" : "ParserExamples.Samples.SimpleCs",
 			"declarationType" : "class"
 		},
 		"blockType" : "CLASS",
 		"using" : [],
 		"fields" : [{
-				"name" : "SimpleCs.Names",
+				"name" : "ParserExamples.Samples.SimpleCs.Names",
 				"type" : "IList[string]"
 			}, {
-				"name" : "SimpleCs.Count",
+				"name" : "ParserExamples.Samples.SimpleCs.Count",
 				"type" : "int"
 			}
 		],
 		"methods" : [{
-				"name" : "SimpleCs.AddName",
+				"name" : "ParserExamples.Samples.SimpleCs.AddName",
 				"parameters" : [{
 						"type" : "string",
 						"name" : "name"
@@ -118,3 +120,4 @@ JSON Result:
 			}
 		]
 	}
+```

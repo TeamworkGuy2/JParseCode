@@ -8,6 +8,7 @@ import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.util.dataStructures.Bag;
 import twg2.parser.Inclusion;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 
@@ -22,7 +23,7 @@ public class StringConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static abstract class BaseStringFilter implements CharParserCondition.WithMarks {
+	public static abstract class BaseStringParser implements CharParser.WithMarks {
 		String[] originalStrs;
 		Bag<String> matchingStrs;
 		boolean anyComplete = false;
@@ -38,13 +39,13 @@ public class StringConditions {
 
 
 		// package-private
-		BaseStringFilter(String name, Collection<String> strs, Inclusion includeCondMatchInRes) {
+		BaseStringParser(String name, Collection<String> strs, Inclusion includeCondMatchInRes) {
 			this(name, strs.toArray(ArrayUtil.EMPTY_STRING_ARRAY), includeCondMatchInRes);
 		}
 
 
 		// package-private
-		BaseStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+		BaseStringParser(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			this.originalStrs = strs;
 			this.matchingStrs = new Bag<String>(this.originalStrs, 0, this.originalStrs.length);
 			this.anyComplete = false;
@@ -104,7 +105,7 @@ public class StringConditions {
 
 
 		@Override
-		public CharParserCondition recycle() {
+		public CharParser recycle() {
 			this.reset();
 			return this;
 		}
@@ -128,7 +129,7 @@ public class StringConditions {
 		}
 
 
-		public static BaseStringFilter copyTo(BaseStringFilter src, BaseStringFilter dst) {
+		public static BaseStringParser copyTo(BaseStringParser src, BaseStringParser dst) {
 			dst.originalStrs = src.originalStrs;
 			dst.includeMatchInRes = src.includeMatchInRes;
 			return dst;
@@ -141,16 +142,16 @@ public class StringConditions {
 
 	/**
 	 */
-	public static class StringLiteralFilter extends StartStringFilter {
+	public static class Literal extends Start {
 
-		public StringLiteralFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+		public Literal(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			super(name, strs, includeCondMatchInRes);
 		}
 
 
 		@Override
-		public StringLiteralFilter copy() {
-			val copy = new StringLiteralFilter(name, originalStrs, includeMatchInRes);
+		public Literal copy() {
+			val copy = new Literal(name, originalStrs, includeMatchInRes);
 			return copy;
 		}
 
@@ -161,9 +162,9 @@ public class StringConditions {
 
 	/**
 	 */
-	public static class StartStringFilter extends BaseStringFilter {
+	public static class Start extends BaseStringParser {
 
-		public StartStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+		public Start(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			super(name, strs, includeCondMatchInRes);
 		}
 
@@ -219,8 +220,8 @@ public class StringConditions {
 
 
 		@Override
-		public CharParserCondition copy() {
-			val copy = new StartStringFilter(super.name, super.originalStrs, super.includeMatchInRes);
+		public Start copy() {
+			val copy = new Start(super.name, super.originalStrs, super.includeMatchInRes);
 			return copy;
 		}
 
@@ -231,9 +232,9 @@ public class StringConditions {
 
 	/**
 	 */
-	public static class EndStringFilter extends BaseStringFilter {
+	public static class End extends BaseStringParser {
 
-		public EndStringFilter(String name, String[] strs, Inclusion includeCondMatchInRes) {
+		public End(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			super(name, strs, includeCondMatchInRes);
 		}
 
@@ -288,8 +289,8 @@ public class StringConditions {
 
 
 		@Override
-		public EndStringFilter copy() {
-			val copy = new EndStringFilter(super.name, super.originalStrs, super.includeMatchInRes);
+		public End copy() {
+			val copy = new End(super.name, super.originalStrs, super.includeMatchInRes);
 			return copy;
 		}
 

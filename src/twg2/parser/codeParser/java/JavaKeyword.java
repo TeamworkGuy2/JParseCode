@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser.java;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,100 +8,77 @@ import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.documentParser.DocumentFragmentText;
 
-public enum CsKeyword {
+/**
+ * @author TeamworkGuy2
+ * @since 2016-1-14
+ */
+public enum JavaKeyword {
 	// NOTE: these must be in alphabetical order for Inst array binary searches to work
 	ABSTRACT("abstract"),
-	AS("as"),
-	BASE("base"),
-	BOOL("bool", true),
+	ASSERT("assert"),
+	BOOLEAN("boolean", true),
 	BREAK("break"),
 	BYTE("byte", true),
 	CASE("case"),
 	CATCH("catch"),
 	CHAR("char", true),
-	CHECKED("checked"),
 	CLASS("class"),
 	CONST("const"),
 	CONTINUE("continue"),
-	DECIMAL("decimal", true),
 	DEFAULT("default"),
-	DELEGATE("delegate"),
 	DO("do"),
 	DOUBLE("double", true),
 	ELSE("else"),
 	ENUM("enum"),
-	EVENT("event"),
-	EXPLICIT("explicit"),
-	EXTERN("extern"),
-	FALSE("false"),
+	EXTENDS("extends"),
+	FINAL("final"),
 	FINALLY("finally"),
-	FIXED("fixed"),
 	FLOAT("float", true),
 	FOR("for"),
-	FOREACH("foreach"),
 	GOTO("goto"),
 	IF("if"),
-	IMPLICIT("implicit"),
-	IN("in"),
+	IMPLEMENTS("implements"),
+	IMPORT("import"),
+	INSTANCEOF("instanceof"),
 	INT("int", true),
-	INTERFACE("interface"),
-	INTERNAL("internal"),
-	IS("is"),
-	LOCK("lock"),
+	INTERFACE("interface", true),
 	LONG("long", true),
-	NAMESPACE("namespace"),
+	NATIVE("native"),
 	NEW("new"),
-	NULL("null"),
-	OBJECT("object", true),
-	OPERATOR("operator"),
-	OUT("out"),
-	OVERRIDE("override"),
-	PARAMS("params"),
+	PACKAGE("package"),
 	PRIVATE("private"),
 	PROTECTED("protected"),
 	PUBLIC("public"),
-	READONLY("readonly"),
-	REF("ref"),
 	RETURN("return"),
-	SBYTE("sbyte", true),
-	SEALED("sealed"),
 	SHORT("short", true),
-	SIZEOF("sizeof"),
-	STACKALLOC("stackalloc"),
 	STATIC("static"),
-	STRING("string", true),
-	STRUCT("struct"),
+	STRICTFP("strictfp"),
+	SUPER("super"),
 	SWITCH("switch"),
+	SYNCHRONIZED("synchronized"),
 	THIS("this"),
 	THROW("throw"),
-	TRUE("true"),
+	THROWS("throws"),
+	TRANSIENT("transient"),
 	TRY("try"),
-	TYPEOF("typeof"),
-	UINT("uint", true),
-	ULONG("ulong", true),
-	UNCHECKED("unchecked"),
-	UNSAFE("unsafe"),
-	USHORT("ushort", true),
-	USING("using"),
-	VIRTUAL("virtual"),
 	VOID("void"),
 	VOLATILE("volatile"),
 	WHILE("while");
 
 
-	public static final CsKeyword.Inst check = new CsKeyword.Inst();
+	public static final Inst check = new JavaKeyword.Inst();
 
 	public final String srcName;
 	public final boolean isType;
 
 
-	CsKeyword(String name) {
+	JavaKeyword(String name) {
 		this.srcName = name;
 		this.isType = false;
 	}
 
 
-	CsKeyword(String name, boolean isType) {
+	JavaKeyword(String name, boolean isType) {
 		this.srcName = name;
 		this.isType = isType;
 	}
@@ -119,20 +96,16 @@ public enum CsKeyword {
 
 
 
-	/**
-	 * @author TeamworkGuy2
-	 * @since 2016-1-14
-	 */
 	public static class Inst implements Keyword {
 		public final String[] keywords;
-		private final CsKeyword[] values;
+		private final JavaKeyword[] values;
 		private final String[] primitives;
 		private final String[] types;
 
 
 		{
 			List<String> typesList = new ArrayList<>();
-			CsKeyword[] keywordEnums = CsKeyword.values();
+			JavaKeyword[] keywordEnums = JavaKeyword.values();
 
 			values = keywordEnums;
 
@@ -150,25 +123,22 @@ public enum CsKeyword {
 			types = typesList.toArray(new String[typesList.size()]);
 			Arrays.sort(types);
 
-			// from: https://msdn.microsoft.com/en-us/library/system.type.isprimitive%28v=vs.110%29.aspx
-			// IntPtr and UIntPtr aren't keywords, so they are string literals here
-			primitives = new String[] { BOOL.srcName, BYTE.srcName, SBYTE.srcName, SHORT.srcName, USHORT.srcName, INT.srcName, UINT.srcName, LONG.srcName, ULONG.srcName,
-					"IntPtr", "UIntPtr",
-					CHAR.srcName, FLOAT.srcName, DOUBLE.srcName };
+			// from: http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2
+			primitives = new String[] { BOOLEAN.srcName, CHAR.srcName, BYTE.srcName, SHORT.srcName, INT.srcName, LONG.srcName, FLOAT.srcName, DOUBLE.srcName, LONG.srcName };
 			Arrays.sort(primitives);
 		}
 
 
-		public CsKeyword toKeyword(String str) {
-			CsKeyword resType = tryToKeyword(str);
+		public JavaKeyword toKeyword(String str) {
+			JavaKeyword resType = tryToKeyword(str);
 			if(resType == null) {
-				throw new IllegalArgumentException("'" + str + "' is not a valid C# keyword");
+				throw new IllegalArgumentException("'" + str + "' is not a valid Java keyword");
 			}
 			return resType;
 		}
 
 
-		public CsKeyword tryToKeyword(String str) {
+		public JavaKeyword tryToKeyword(String str) {
 			int idx = Arrays.binarySearch(keywords, str);
 			return idx > -1 ? values[idx] : null;
 		}
@@ -206,7 +176,7 @@ public enum CsKeyword {
 		@Override
 		public boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
 			return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-					(CsKeyword.CLASS.getSrcName().equals(node.getText()) || CsKeyword.INTERFACE.getSrcName().equals(node.getText()) || CsKeyword.NAMESPACE.getSrcName().equals(node.getText())));
+					(JavaKeyword.CLASS.getSrcName().equals(node.getText()) || JavaKeyword.INTERFACE.getSrcName().equals(node.getText())));
 		}
 
 
@@ -214,10 +184,10 @@ public enum CsKeyword {
 		public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
 			String text = null;
 			return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-					(CsKeyword.PUBLIC.getSrcName().equals((text = node.getText())) || CsKeyword.PROTECTED.getSrcName().equals(text) || CsKeyword.INTERNAL.getSrcName().equals(text) || CsKeyword.PRIVATE.getSrcName().equals(text) ||
-					CsKeyword.ABSTRACT.getSrcName().equals(text) || CsKeyword.SEALED.getSrcName().equals(text) || CsKeyword.STATIC.getSrcName().equals(text)));
+					(JavaKeyword.PUBLIC.getSrcName().equals((text = node.getText())) || JavaKeyword.PROTECTED.getSrcName().equals(text) || JavaKeyword.PRIVATE.getSrcName().equals(text) ||
+					JavaKeyword.ABSTRACT.getSrcName().equals(text) || JavaKeyword.STATIC.getSrcName().equals(text) || JavaKeyword.FINAL.getSrcName().equals(text) || JavaKeyword.STRICTFP.getSrcName().equals(text)));
 		}
 
 	}
-
+	
 }

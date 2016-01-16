@@ -95,7 +95,7 @@ public class ParserMain {
 
 			for(val block : blockDeclarations) {
 				val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
-				dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullyQualifyingName(), fileParsed);
+				dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullName(), fileParsed);
 			}
 		}
 	}

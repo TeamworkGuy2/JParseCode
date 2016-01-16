@@ -21,7 +21,7 @@ import twg2.parser.output.WriteSettings;
 @AllArgsConstructor
 public class ResolvedFieldSig implements JsonWritableSig {
 	private final @Getter String name;
-	private final @Getter List<String> fullyQualifyingName;
+	private final @Getter List<String> fullName;
 	private final @Getter TypeSig.Resolved fieldType;
 	private final @Getter List<AnnotationSig> annotations;
 
@@ -30,7 +30,7 @@ public class ResolvedFieldSig implements JsonWritableSig {
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		// TODO also write annotations
 		dst.append("{ ");
-		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
+		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 
 		dst.append("\"type\": ");
 		fieldType.toJson(dst, st);
@@ -41,7 +41,7 @@ public class ResolvedFieldSig implements JsonWritableSig {
 
 	@Override
 	public String toString() {
-		return fieldType + " " + NameUtil.joinFqName(fullyQualifyingName);
+		return fieldType + " " + NameUtil.joinFqName(fullName);
 	}
 
 }

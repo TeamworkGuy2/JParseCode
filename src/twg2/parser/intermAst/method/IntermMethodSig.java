@@ -10,7 +10,7 @@ import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.csharp.CsDataTypeExtractor;
+import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
@@ -39,7 +39,7 @@ public enum IntermMethodSig {
 		// resolve each parameter's type
 		val paramSigs = intermMethod.getParamSigs();
 		for(val paramSig : paramSigs) {
-			TypeSig.Simple genericParamType = CsDataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName());
+			TypeSig.Simple genericParamType = BaseDataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName());
 			TypeSig.Resolved resolvedParamType = TypeSig.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
 
 			val newParamSig = new ResolvedParameterSig(paramSig.getName(), resolvedParamType, paramSig.isOptional(), paramSig.getDefaultValue());
@@ -48,7 +48,7 @@ public enum IntermMethodSig {
 
 		TypeSig.Resolved resolvedReturnType = TypeSig.resolveFrom(intermMethod.getReturnType(), namespaceClass, projFiles, missingNamespacesDst);
 
-		return new IntermMethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullyQualifyingName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAnnotations());
+		return new IntermMethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAnnotations());
 	}
 
 
@@ -63,13 +63,13 @@ public enum IntermMethodSig {
 	@Immutable
 	public static class Impl<T_PARAM extends JsonWritableSig, T_RET extends JsonWritableSig> implements JsonWritableSig {
 		private final @Getter String name;
-		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<String> fullName;
 		private final @Getter List<T_PARAM> paramSigs;
 		private final @Getter T_RET returnType;
 		private final @Getter List<AnnotationSig> annotations;
 
 
-		public Impl(String name, List<String> fullyQualifyingName, List<? extends T_PARAM> paramSigs,
+		public Impl(String name, List<String> fullName, List<? extends T_PARAM> paramSigs,
 				T_RET returnType, List<? extends AnnotationSig> annotations) {
 			@SuppressWarnings("unchecked")
 			val paramSigsCast = (List<T_PARAM>)paramSigs;
@@ -77,7 +77,7 @@ public enum IntermMethodSig {
 			val annotationsCast = (List<AnnotationSig>)annotations;
 
 			this.name = name;
-			this.fullyQualifyingName = fullyQualifyingName;
+			this.fullName = fullName;
 			this.paramSigs = paramSigsCast;
 			this.returnType = returnType;
 			this.annotations = annotationsCast;
@@ -87,7 +87,7 @@ public enum IntermMethodSig {
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append("{ ");
-			dst.append("\"name\": \"" + (st.fullMethodName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
+			dst.append("\"name\": \"" + (st.fullMethodName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 
 			dst.append("\"parameters\": [");
 			JsonWrite.joinStrConsumer(paramSigs, ", ", dst, (param) -> param.toJson(dst, st));
@@ -106,7 +106,7 @@ public enum IntermMethodSig {
 
 		@Override
 		public String toString() {
-			return returnType + " " + NameUtil.joinFqName(fullyQualifyingName) + paramSigs;
+			return returnType + " " + NameUtil.joinFqName(fullName) + paramSigs;
 		}
 
 	}
@@ -117,9 +117,9 @@ public enum IntermMethodSig {
 	@Immutable
 	public static class SimpleImpl extends Impl<IntermParameterSig, TypeSig.Simple> {
 
-		public SimpleImpl(String name, List<String> fullyQualifyingName, List<? extends IntermParameterSig> paramSigs,
+		public SimpleImpl(String name, List<String> fullName, List<? extends IntermParameterSig> paramSigs,
 				TypeSig.Simple returnType, List<AnnotationSig> annotations) {
-			super(name, fullyQualifyingName, paramSigs, returnType, annotations);
+			super(name, fullName, paramSigs, returnType, annotations);
 		}
 
 	}
@@ -130,9 +130,9 @@ public enum IntermMethodSig {
 	@Immutable
 	public static class ResolvedImpl extends Impl<ResolvedParameterSig, TypeSig.Resolved> {
 
-		public ResolvedImpl(String name, List<String> fullyQualifyingName, List<? extends ResolvedParameterSig> paramSigs,
+		public ResolvedImpl(String name, List<String> fullName, List<? extends ResolvedParameterSig> paramSigs,
 				TypeSig.Resolved returnType, List<AnnotationSig> annotations) {
-			super(name, fullyQualifyingName, paramSigs, returnType, annotations);
+			super(name, fullName, paramSigs, returnType, annotations);
 		}
 
 	}

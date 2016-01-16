@@ -8,8 +8,8 @@ import dataUtils.EnumUtil;
  * @since 2015-12-6
  */
 public enum CsBlock implements CompoundBlock {
-	CLASS(false, false),
-	ENUM(false, false),
+	CLASS(true, false),
+	ENUM(true, false),
 	INTERFACE(false, true),
 	NAMESPACE(false, false),
 	STRUCT(false, false);

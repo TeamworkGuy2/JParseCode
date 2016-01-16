@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.val;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.documentParser.DocumentParser;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.textParser.TextParser;
@@ -28,19 +28,19 @@ public class ParserBuilder {
 	}
 
 
-	public ParserBuilder addParser(CharPrecondition parser, TextTransformer<CodeFragmentType> transformer) {
+	public ParserBuilder addParser(CharParserFactory parser, TextTransformer<CodeFragmentType> transformer) {
 		this.fileParser.addFragmentParser(parser, transformer);
 		return this;
 	}
 
 
-	public ParserBuilder addConstParser(CharPrecondition parser, CodeFragmentType type) {
+	public ParserBuilder addConstParser(CharParserFactory parser, CodeFragmentType type) {
 		this.fileParser.addFragmentParser(parser, (text, off, len) -> type);
 		return this;
 	}
 
 
-	/** Parse a source string using the parsers added via ({@link #addParser(CharPrecondition, TextTransformer)} and {@link #addConstParser(CharPrecondition, CodeFragmentType)})
+	/** Parse a source string using the parsers added via ({@link #addParser(CharParserFactory, TextTransformer)} and {@link #addConstParser(CharParserFactory, CodeFragmentType)})
 	 * @param src the source string
 	 * @param language optional
 	 * @param srcName optional

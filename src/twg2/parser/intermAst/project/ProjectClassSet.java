@@ -136,7 +136,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 	public List<String> resolveSimpleName(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
 		val resolvedClass = resolveSimpleNameToClass(simpleName, namespaces, missingNamespacesDst);
-		return resolvedClass != null ? resolvedClass.getSignature().getFullyQualifyingName() : null;
+		return resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
 	}
 
 
@@ -148,7 +148,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 		// try resolve using the class' parent package/namespace
 		if(resolvedClass == null) {
-			resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, NameUtil.allExceptLastFqName(classSig.getFullyQualifyingName()), missingNamespacesDst);
+			resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, NameUtil.allExceptLastFqName(classSig.getFullName()), missingNamespacesDst);
 		}
 		// TODO support resolution of types that are generic class params
 		//if(resolvedClass == null && classSig.isGeneric()) {
@@ -160,7 +160,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 	public List<String> resolveSimpleName(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
 		val resolvedClass = resolveSimpleNameToClass(simpleName, classScope, missingNamespacesDst);
-		return resolvedClass != null ? resolvedClass.getSignature().getFullyQualifyingName() : null;
+		return resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
 	}
 
 
@@ -208,7 +208,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFiles, missingNamespacesDst));
 			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockType());
 
-			resFiles.addCompilationUnit(resSig.getFullyQualifyingName(), new CodeFileParsed.Resolved<_T_ID, _T_BLOCK>(fileEntry.getValue().getId(), resClass, fileEntry.getValue().getAstTree()));
+			resFiles.addCompilationUnit(resSig.getFullName(), new CodeFileParsed.Resolved<_T_ID, _T_BLOCK>(fileEntry.getValue().getId(), resClass, fileEntry.getValue().getAstTree()));
 		}
 		return resFiles;
 	}

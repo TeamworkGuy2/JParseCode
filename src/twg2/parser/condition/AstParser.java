@@ -9,21 +9,21 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-12-12
  * @param <T_RESULT> the type of result object that parsed data is store in
  */
-public interface AstParserCondition<T_RESULT> extends TokenParserCondition<SimpleTree<DocumentFragmentText<CodeFragmentType>>, T_RESULT> {
+public interface AstParser<T_RESULT> extends TokenParser<SimpleTree<DocumentFragmentText<CodeFragmentType>>, T_RESULT> {
 
 	@Override
-	public AstParserCondition<T_RESULT> copy();
+	public AstParser<T_RESULT> copy();
 
 
 	@Override
-	public default AstParserCondition<T_RESULT> recycle() {
-		throw new UnsupportedOperationException("AstParserCondition recycling not supported");
+	public default AstParser<T_RESULT> recycle() {
+		throw new UnsupportedOperationException("AstParser recycling not supported");
 	}
 
 
 	@Override
-	public default AstParserCondition<T_RESULT> copyOrReuse() {
-		AstParserCondition<T_RESULT> filter = null;
+	public default AstParser<T_RESULT> copyOrReuse() {
+		AstParser<T_RESULT> filter = null;
 		if(this.canRecycle()) {
 			filter = this.recycle();
 		}

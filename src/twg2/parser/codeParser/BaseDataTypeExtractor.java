@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,12 +6,8 @@ import java.util.Map;
 
 import lombok.val;
 import twg2.collections.util.ListBuilder;
-import twg2.parser.baseAst.csharp.CsAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.codeParser.AstExtractor;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.CodeLanguageOptions;
-import twg2.parser.condition.AstParserCondition;
+import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.text.stringUtils.StringCheck;
@@ -23,7 +19,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-12
  */
-public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
+public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 	static enum State {
 		INIT,
@@ -33,21 +29,22 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 	}
 
 
-	private static final CodeLanguageOptions<CodeLanguageOptions.CSharp, CsAstUtil, AstExtractor<CsBlock>> lang = CodeLanguageOptions.C_SHARP;
-
+	private final CodeLanguage lang;
 	private TypeSig.Simple type;
 	private String typeName;
 	private State state = State.INIT;
 	private boolean allowVoid;
 	private boolean prevNodeWasBlockId;
-	private String name = "C# data type";
+	private String name;
 
 
 	/**
 	 * @param allowVoid indicate whether 'void'/'Void' is a valid data type when parsing (true for method return types, but invalid for field/variable types)
 	 */
-	public CsDataTypeExtractor(boolean allowVoid) {
+	public BaseDataTypeExtractor(CodeLanguage lang, boolean allowVoid) {
+		this.lang = lang;
 		this.allowVoid = allowVoid;
+		this.name = lang + " data type";
 	}
 
 
@@ -65,14 +62,14 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 
 		if(state == State.INIT && !prevNodeWasBlockId) {
 			// found type name
-			if(isPossiblyType(tokenNode, allowVoid)) {
+			if(isPossiblyType(lang.getKeyword(), tokenNode, allowVoid)) {
 				state = State.FOUND_TYPE_NAME;
 				typeName = tokenNode.getData().getText();
-				prevNodeWasBlockId = lang.getAstUtil().getChecker().isBlockKeyword(tokenNode.getData());
+				prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
 				return true;
 			}
 			state = State.INIT;
-			prevNodeWasBlockId = lang.getAstUtil().getChecker().isBlockKeyword(tokenNode.getData());
+			prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
 			return false;
 		}
 		else if(state == State.FOUND_TYPE_NAME) {
@@ -82,12 +79,12 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 				isNullable = true;
 			}
 			this.state = State.COMPLETE;
-			this.type = CsDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""));
-			prevNodeWasBlockId = lang.getAstUtil().getChecker().isBlockKeyword(tokenNode.getData());
+			this.type = BaseDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""));
+			prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
 			return isNullable;
 		}
 		state = State.INIT;
-		prevNodeWasBlockId = lang.getAstUtil().getChecker().isBlockKeyword(tokenNode.getData());
+		prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
 		return false;
 	}
 
@@ -117,15 +114,15 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 
 
 	@Override
-	public CsDataTypeExtractor recycle() {
+	public BaseDataTypeExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public CsDataTypeExtractor copy() {
-		val copy = new CsDataTypeExtractor(this.allowVoid);
+	public BaseDataTypeExtractor copy() {
+		val copy = new BaseDataTypeExtractor(this.lang, this.allowVoid);
 		return copy;
 	}
 
@@ -140,9 +137,9 @@ public class CsDataTypeExtractor implements AstParserCondition<TypeSig.Simple> {
 
 	/** Check if a tree node is the start of a data type
 	 */
-	public static boolean isPossiblyType(SimpleTree<DocumentFragmentText<CodeFragmentType>> node, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(Keyword keywordType, SimpleTree<DocumentFragmentText<CodeFragmentType>> node, boolean allowVoid) {
 		val nodeData = node.getData();
-		return AstFragType.isIdentifierOrKeyword(nodeData) && (!CsKeyword.isKeyword(nodeData.getText()) || CsKeyword.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
+		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordType.isKeyword(nodeData.getText()) || keywordType.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
 
 

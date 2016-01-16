@@ -60,22 +60,23 @@ public class ParseCodeFile {
 	}
 
 
-	public static void parseAndPrintFileStats() throws IOException {
-		Path oldProjDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/psor/ca");
-		Path newProjDir = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/ps/l/ca");
-
-		String[] oldProjFileTypes = { ".cs", ".js", ".json", ".html", ".css" };
-		val oldFiles = ParseDirectoryCodeFiles.loadFiles(oldProjDir, oldProjFileTypes);
-		val results = ParseDirectoryCodeFiles.parseFileStats(oldProjDir, oldFiles);
-
-		String[] newProjFileTypes = { ".cs", ".ts", ".json", ".html", ".css" };
-		//val newFiles = loadFiles(newProjDir, newProjFileTypes);
-		//val results = parseFiles(newProjDir, newFiles);
-
-		File dstLog = new File("C:/Users/TeamworkGuy2/Documents/parsed-file-stats.txt");
+	public static void parseAndPrintFileStats(Path projDir, String[] fileTypes, Path dstLog) throws IOException {
+		val files = ParseDirectoryCodeFiles.loadFiles(projDir, fileTypes);
+		val results = ParseDirectoryCodeFiles.parseFileStats(projDir, files);
 
 		Json.getDefaultInst().setPrettyPrint(true);
-		Json.stringify(results, dstLog);
+		Json.stringify(results, dstLog.toFile());
+	}
+
+
+	public static void parseAndPrintOldAndNewFileStats() throws IOException {
+		parseAndPrintFileStats(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/psor/ca"),
+				new String[] { ".cs", ".js", ".json", ".html", ".css" },
+				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-old.txt"));
+
+		parseAndPrintFileStats(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/ps/l/ca"),
+				new String[] { ".cs", ".ts", ".json", ".html", ".css" },
+				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-new.txt"));
 	}
 
 

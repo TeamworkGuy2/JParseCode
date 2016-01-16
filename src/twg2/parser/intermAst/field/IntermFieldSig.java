@@ -25,7 +25,7 @@ import twg2.parser.output.WriteSettings;
 @AllArgsConstructor
 public class IntermFieldSig implements JsonWritableSig {
 	private final @Getter String name;
-	private final @Getter List<String> fullyQualifyingName;
+	private final @Getter List<String> fullName;
 	private final @Getter TypeSig.Simple fieldType;
 	private final @Getter List<AnnotationSig> annotations;
 
@@ -33,7 +33,7 @@ public class IntermFieldSig implements JsonWritableSig {
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		dst.append("{ ");
-		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
+		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 		dst.append("\"type\": \"" + fieldType + "\"");
 		dst.append(" }");
 	}
@@ -41,7 +41,7 @@ public class IntermFieldSig implements JsonWritableSig {
 
 	@Override
 	public String toString() {
-		return fieldType + " " + NameUtil.joinFqName(fullyQualifyingName);
+		return fieldType + " " + NameUtil.joinFqName(fullName);
 	}
 
 
@@ -53,7 +53,7 @@ public class IntermFieldSig implements JsonWritableSig {
 
 		TypeSig.Resolved resolvedFieldType = TypeSig.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);
 
-		return new ResolvedFieldSig(intermField.getName(), intermField.getFullyQualifyingName(), resolvedFieldType, intermField.getAnnotations());
+		return new ResolvedFieldSig(intermField.getName(), intermField.getFullName(), resolvedFieldType, intermField.getAnnotations());
 	}
 
 }

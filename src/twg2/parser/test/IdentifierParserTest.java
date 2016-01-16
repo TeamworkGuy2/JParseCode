@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import twg2.parser.codeParser.parsers.GenericTypeParser;
 import twg2.parser.codeParser.parsers.IdentifierParser;
-import twg2.parser.text.CharParserCondition;
+import twg2.parser.condition.text.CharParser;
 
 /**
  * @author TeamworkGuy2
@@ -17,7 +17,7 @@ public class IdentifierParserTest {
 	@Test
 	public void identifierWithGenericTypeParse() {
 		String name = "IdentifierWithGenericTypeParse";
-		CharParserCondition cond = GenericTypeParser.createGenericTypeStatementCondition(3, IdentifierParser::createCompoundIdentifierCondition);
+		CharParser cond = GenericTypeParser.createGenericTypeStatementCondition(3, IdentifierParser::createCompoundIdentifierCondition);
 
 		parseTestSameParsed(false, false, name, cond, "thing<");
 		parseTestSameParsed(false, true, name, cond, "thing<,>");
@@ -36,7 +36,7 @@ public class IdentifierParserTest {
 	@Test
 	public void compoundIdentifierParse() {
 		String name = "CompoundIdentifierParse";
-		CharParserCondition cond = IdentifierParser.createCompoundIdentifierCondition();
+		CharParser cond = IdentifierParser.createCompoundIdentifierCondition();
 
 		parseTestSameParsed(false, false, name, cond, "");
 		parseTestSameParsed(false, false, name, cond, "thing.");

@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import lombok.val;
 import twg2.collections.util.dataStructures.Bag;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 import twg2.text.stringUtils.StringJoin;
@@ -15,13 +16,13 @@ import twg2.text.stringUtils.StringJoin;
 public class CharCompoundConditions {
 
 
-	/** A collection of {@link CharParserCondition ParserConditions}
+	/** A collection of {@link CharParser ParserConditions}
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static abstract class BaseFilter implements CharParserCondition {
-		CharParserCondition[] originalConds;
-		Bag<CharParserCondition> matchingConds;
+	public static abstract class BaseFilter implements CharParser {
+		CharParser[] originalConds;
+		Bag<CharParser> matchingConds;
 		boolean anyComplete = false;
 		boolean failed = false;
 		int acceptedCount;
@@ -31,18 +32,18 @@ public class CharCompoundConditions {
 		String name;
 
 
-		public BaseFilter(String name, boolean doCopyConds, Collection<CharParserCondition> conds) {
-			this(name, doCopyConds, conds.toArray(new CharParserCondition[conds.size()]));
+		public BaseFilter(String name, boolean doCopyConds, Collection<CharParser> conds) {
+			this(name, doCopyConds, conds.toArray(new CharParser[conds.size()]));
 		}
 
 
 		@SafeVarargs
-		public BaseFilter(String name, boolean doCopyConds, CharParserCondition... conds) {
+		public BaseFilter(String name, boolean doCopyConds, CharParser... conds) {
 			this.originalConds = conds;
 
-			CharParserCondition[] copyConds = conds;
+			CharParser[] copyConds = conds;
 			if(doCopyConds) {
-				copyConds = new CharParserCondition[conds.length];
+				copyConds = new CharParser[conds.length];
 				for(int i = 0, size = conds.length; i < size; i++) {
 					copyConds[i] = conds[i].copy();
 				}
@@ -97,7 +98,7 @@ public class CharCompoundConditions {
 
 
 		@Override
-		public CharParserCondition recycle() {
+		public CharParser recycle() {
 			this.reset();
 			return this;
 		}
@@ -134,7 +135,7 @@ public class CharCompoundConditions {
 	 */
 	public static class Filter extends StartFilter {
 
-		public Filter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+		public Filter(String name, boolean doCopyConds, CharParser[] conds) {
 			super(name, doCopyConds, conds);
 		}
 
@@ -154,7 +155,7 @@ public class CharCompoundConditions {
 	 */
 	public static class StartFilter extends BaseFilter {
 
-		public StartFilter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+		public StartFilter(String name, boolean doCopyConds, CharParser[] conds) {
 			super(name, doCopyConds, conds);
 		}
 
@@ -167,8 +168,8 @@ public class CharCompoundConditions {
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<CharParserCondition> matchingConds = super.matchingConds;
-			CharParserCondition condI = null;
+			Bag<CharParser> matchingConds = super.matchingConds;
+			CharParser condI = null;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
 				condI = matchingConds.get(i);
@@ -230,7 +231,7 @@ public class CharCompoundConditions {
 	 */
 	public static class EndFilter extends BaseFilter {
 
-		public EndFilter(String name, boolean doCopyConds, CharParserCondition[] conds) {
+		public EndFilter(String name, boolean doCopyConds, CharParser[] conds) {
 			super(name, doCopyConds, conds);
 		}
 
@@ -242,10 +243,10 @@ public class CharCompoundConditions {
 				return false;
 			}
 			boolean anyFound = false;
-			Bag<CharParserCondition> matchingConds = super.matchingConds;
+			Bag<CharParser> matchingConds = super.matchingConds;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
-				CharParserCondition condI = matchingConds.get(i);
+				CharParser condI = matchingConds.get(i);
 				if(!condI.isFailed()) {
 					if(!condI.acceptNext(ch, buf)) {
 						matchingConds.remove(i);

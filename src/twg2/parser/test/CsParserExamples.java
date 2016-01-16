@@ -1,4 +1,4 @@
-package twg2.parser.test.csharp;
+package twg2.parser.test;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,7 +57,7 @@ public class CsParserExamples {
 		for(val classInfo : res) {
 			resClasses.add(classInfo.getParsedClass());
 		}
-		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
+		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullName())));
 		trackSearchServiceDef = ensureOne(resClasses.stream().filter((t) -> "ITrackSearchService".equals(t.getSignature().getSimpleName())));
 		trackInfoDef = ensureOne(resClasses.stream().filter((t) -> "TrackInfo".equals(t.getSignature().getSimpleName())));
 		albumInfoDef = ensureOne(resClasses.stream().filter((t) -> "AlbumInfo".equals(t.getSignature().getSimpleName())));
@@ -66,20 +66,20 @@ public class CsParserExamples {
 
 	@Test
 	public void checkResolvedNames() {
-		val classNames = ListUtil.map(resClasses, (ic) -> NameUtil.joinFqName(ic.getSignature().getFullyQualifyingName()));
+		val classNames = ListUtil.map(resClasses, (ic) -> NameUtil.joinFqName(ic.getSignature().getFullName()));
 		CheckCollections.assertLooseEquals(Arrays.asList("ParserExamples.Services.ITrackSearchService", "ParserExamples.Models.AlbumInfo", "ParserExamples.Models.TrackInfo"), classNames);
 
 		// SearchResult<TrackInfo> Search(TrackSearchCriteria criteria)
 		val mthd1Ret = trackSearchServiceDef.getMethods().get(0).getReturnType();
-		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd1Ret.getGenericParams().get(0).getFullyQualifyingName()));
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd1Ret.getGenericParams().get(0).getFullName()));
 
 		// SearchResult<IDictionary<AlbumInfo, IList<Track>>> GetAlbumTracks(string albumName)
 		val mthd2Ret = trackSearchServiceDef.getMethods().get(1).getReturnType();
 
-		Assert.assertEquals("IDictionary", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getFullyQualifyingName()));
-		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(0).getFullyQualifyingName()));
-		Assert.assertEquals("IList", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getFullyQualifyingName()));
-		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getGenericParams().get(0).getFullyQualifyingName()));
+		Assert.assertEquals("IDictionary", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getFullName()));
+		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(0).getFullName()));
+		Assert.assertEquals("IList", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getFullName()));
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getGenericParams().get(0).getFullName()));
 
 	}
 

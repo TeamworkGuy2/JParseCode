@@ -9,13 +9,13 @@ import lombok.val;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.condition.AstParserCondition;
+import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.text.stringUtils.StringTrim;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-public class CsAnnotationExtractor implements AstParserCondition<List<AnnotationSig>> {
+public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 
 	static enum State {
 		INIT,

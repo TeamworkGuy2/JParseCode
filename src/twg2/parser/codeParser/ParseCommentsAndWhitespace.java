@@ -11,7 +11,7 @@ import twg2.parser.codeParser.codeStats.ParsedFileStats;
 import twg2.parser.codeParser.parsers.CodeStringParser;
 import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
@@ -32,8 +32,8 @@ public class ParseCommentsAndWhitespace {
 
 
 	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
-		CharPrecondition stringParser = CodeStringParser.createStringParserForJavascript();
-		CharPrecondition commentParser = CommentParser.createCommentParser(style);
+		CharParserFactory stringParser = CodeStringParser.createStringParserForJavascript();
+		CharParserFactory commentParser = CommentParser.createCommentParser(style);
 
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)

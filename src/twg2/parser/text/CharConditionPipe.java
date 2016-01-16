@@ -11,18 +11,19 @@ import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharListSorted;
 import twg2.collections.util.ListBuilder;
 import twg2.parser.condition.ParserCondition;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 import twg2.text.stringUtils.StringJoin;
 
-/** A compound {@link CharParserCondition} that does not complete until all internal conditions have been completed
+/** A compound {@link CharParser} that does not complete until all internal conditions have been completed
  * @author TeamworkGuy2
  * @since 2015-2-13
  */
 public class CharConditionPipe {
 
 
-	public static abstract class BasePipe<T extends ParserCondition> implements CharParserCondition {
+	public static abstract class BasePipe<T extends ParserCondition> implements CharParser {
 		final boolean canReuse;
 		final List<List<T>> conditionSets; // FIFO list of conditions in this pipe
 		int curSetIndex;
@@ -119,7 +120,7 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition recycle() {
+		public CharParser recycle() {
 			this.reset();
 			return this;
 		}
@@ -208,16 +209,16 @@ public class CharConditionPipe {
 
 
 
-	/** A {@link CharConditionPipe} with the same type of {@link CharParserCondition} from start to end
+	/** A {@link CharConditionPipe} with the same type of {@link CharParser} from start to end
 	 * @param <T> the type of parser mark conditions in this pipe
 	 * @author TeamworkGuy2
 	 * @since 2015-2-22
 	 */
-	public static abstract class WithMarks<T extends CharParserCondition> extends BasePipe<CharParserCondition> implements CharParserCondition.WithMarks {
+	public static abstract class WithMarks<T extends CharParser> extends BasePipe<CharParser> implements CharParser.WithMarks {
 		private char[] firstChars;
 
 
-		public WithMarks(String name, CharParserCondition.WithMarks firstFilter, T filter) {
+		public WithMarks(String name, CharParser.WithMarks firstFilter, T filter) {
 			super(name, firstFilter);
 			val condSet = super.conditionSets.get(0);
 			condSet.add(filter);
@@ -227,7 +228,7 @@ public class CharConditionPipe {
 
 
 		@SafeVarargs
-		public WithMarks(String name, CharParserCondition.WithMarks firstFilter, T... filters) {
+		public WithMarks(String name, CharParser.WithMarks firstFilter, T... filters) {
 			super(name, firstFilter);
 			val condSet = super.conditionSets.get(0);
 			Collections.addAll(condSet, filters);
@@ -236,7 +237,7 @@ public class CharConditionPipe {
 		}
 
 
-		public WithMarks(String name, CharParserCondition.WithMarks firstFilter, Collection<T> filters) {
+		public WithMarks(String name, CharParser.WithMarks firstFilter, Collection<T> filters) {
 			super(name, firstFilter);
 			val condSet = super.conditionSets.get(0);
 			condSet.addAll(filters);
@@ -247,13 +248,13 @@ public class CharConditionPipe {
 
 		@SuppressWarnings("unchecked")
 		public WithMarks(String name, List<? extends List<? extends T>> filterSets) {
-			super(name, (List<List<CharParserCondition>>)filterSets);
-			CharParserCondition.WithMarks firstFilter = (CharParserCondition.WithMarks)super.conditionSets.get(0).get(0);
+			super(name, (List<List<CharParser>>)filterSets);
+			CharParser.WithMarks firstFilter = (CharParser.WithMarks)super.conditionSets.get(0).get(0);
 			initFirstChars(firstFilter);
 		}
 
 
-		private final void initFirstChars(CharParserCondition.WithMarks firstFilter) {
+		private final void initFirstChars(CharParser.WithMarks firstFilter) {
 			CharList firstCharsList = new CharListSorted();
 			firstFilter.getMatchFirstChars(firstCharsList);
 			this.firstChars = firstCharsList.toArray();
@@ -269,7 +270,7 @@ public class CharConditionPipe {
 
 
 	@SafeVarargs
-	public static <S extends CharParserCondition> BasePipe<CharParserCondition> createPipeAllRequired(String name, Iterable<S>... requiredConditionSets) {
+	public static <S extends CharParser> BasePipe<CharParser> createPipeAllRequired(String name, Iterable<S>... requiredConditionSets) {
 		val requiredSets = new ArrayList<List<S>>();
 		for(Iterable<S> requiredCondSet : requiredConditionSets) {
 			val requiredSet = ListBuilder.newMutable(requiredCondSet);
@@ -281,7 +282,7 @@ public class CharConditionPipe {
 	}
 
 
-	public static <S extends CharParserCondition> BasePipe<CharParserCondition> createPipeRepeatableSeparator(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S> separatorConditions) {
+	public static <S extends CharParser> BasePipe<CharParser> createPipeRepeatableSeparator(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S> separatorConditions) {
 		val elementSet = ListBuilder.newMutable(requiredConditions);
 		val separatorSet = ListBuilder.newMutable(separatorConditions);
 
@@ -291,7 +292,7 @@ public class CharConditionPipe {
 
 
 	@SafeVarargs
-	public static <S extends CharParserCondition> BasePipe<CharParserCondition> createPipeOptionalSuffix(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
+	public static <S extends CharParser> BasePipe<CharParser> createPipeOptionalSuffix(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
 		val conditionSets = new ArrayList<List<S>>();
 		@SuppressWarnings("unchecked")
 		List<S> requiredCondsCopy = ListBuilder.newMutable((Iterable<S>)requiredConditions);
@@ -311,17 +312,17 @@ public class CharConditionPipe {
 
 
 
-	public static class AllRequired<S extends CharParserCondition> extends WithMarks<S> {
+	public static class AllRequired<S extends CharParser> extends WithMarks<S> {
 		private TextFragmentRef.ImplMut coords = null;
 
 
 		@SafeVarargs
-		public AllRequired(String name, CharParserCondition.WithMarks filter, S... filters) {
+		public AllRequired(String name, CharParser.WithMarks filter, S... filters) {
 			super(name, filter, filters);
 		}
 
 
-		public AllRequired(String name, CharParserCondition.WithMarks filter, Collection<S> filters) {
+		public AllRequired(String name, CharParser.WithMarks filter, Collection<S> filters) {
 			super(name, filter, filters);
 		}
 
@@ -386,7 +387,7 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition copy() {
+		public CharParser copy() {
 			val copy = new AllRequired<>(name, BasePipe.copyConditionSets(this));
 			BasePipe.copyTo(this, copy);
 			return copy;
@@ -397,17 +398,17 @@ public class CharConditionPipe {
 
 
 
-	public static abstract class AcceptNextAllRequired<S extends CharParserCondition> extends WithMarks<S> {
+	public static abstract class AcceptNextAllRequired<S extends CharParser> extends WithMarks<S> {
 		private TextFragmentRef.ImplMut coords = null;
 
 
 		@SafeVarargs
-		public AcceptNextAllRequired(String name, CharParserCondition.WithMarks filter, S... filters) {
+		public AcceptNextAllRequired(String name, CharParser.WithMarks filter, S... filters) {
 			super(name, filter, filters);
 		}
 
 
-		public AcceptNextAllRequired(String name, CharParserCondition.WithMarks filter, Collection<S> filters) {
+		public AcceptNextAllRequired(String name, CharParser.WithMarks filter, Collection<S> filters) {
 			super(name, filter, filters);
 		}
 
@@ -417,7 +418,7 @@ public class CharConditionPipe {
 		}
 
 
-		public abstract CharParserCondition nextCondition();
+		public abstract CharParser nextCondition();
 
 
 		@Override
@@ -489,16 +490,16 @@ public class CharConditionPipe {
 
 
 
-	public static class OptionalSuffix<S extends CharParserCondition> extends AcceptNextAllRequired<S> {
+	public static class OptionalSuffix<S extends CharParser> extends AcceptNextAllRequired<S> {
 
 		@SafeVarargs
-		public OptionalSuffix(String name, CharParserCondition.WithMarks filter, S... filters) {
+		public OptionalSuffix(String name, CharParser.WithMarks filter, S... filters) {
 			super(name, filter, filters);
 			setup();
 		}
 
 
-		public OptionalSuffix(String name, CharParserCondition.WithMarks filter, Collection<S> filters) {
+		public OptionalSuffix(String name, CharParser.WithMarks filter, Collection<S> filters) {
 			super(name, filter, filters);
 			setup();
 		}
@@ -516,8 +517,8 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition nextCondition() {
-			List<CharParserCondition> curCondSet = super.conditionSets.get(super.curSetIndex);
+		public CharParser nextCondition() {
+			List<CharParser> curCondSet = super.conditionSets.get(super.curSetIndex);
 			curCondSet.set(super.curCondIndex, super.curCondition.copyOrReuse());
 
 			super.curCondIndex++;
@@ -543,7 +544,7 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition copy() {
+		public CharParser copy() {
 			val copy = new OptionalSuffix<>(name, BasePipe.copyConditionSets(this));
 			BasePipe.copyTo(this, copy);
 			return copy;
@@ -560,16 +561,16 @@ public class CharConditionPipe {
 
 
 
-	public static class RepeatableSeparator<S extends CharParserCondition> extends AcceptNextAllRequired<S> {
+	public static class RepeatableSeparator<S extends CharParser> extends AcceptNextAllRequired<S> {
 
 		@SafeVarargs
-		public RepeatableSeparator(String name, CharParserCondition.WithMarks filter, S... filters) {
+		public RepeatableSeparator(String name, CharParser.WithMarks filter, S... filters) {
 			super(name, filter, filters);
 			setup();
 		}
 
 
-		public RepeatableSeparator(String name, CharParserCondition.WithMarks filter, Collection<S> filters) {
+		public RepeatableSeparator(String name, CharParser.WithMarks filter, Collection<S> filters) {
 			super(name, filter, filters);
 			setup();
 		}
@@ -591,8 +592,8 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition nextCondition() {
-			List<CharParserCondition> curCondSet = super.conditionSets.get(super.curSetIndex);
+		public CharParser nextCondition() {
+			List<CharParser> curCondSet = super.conditionSets.get(super.curSetIndex);
 			curCondSet.set(super.curCondIndex, super.curCondition.copyOrReuse());
 
 			super.curCondIndex++;
@@ -628,7 +629,7 @@ public class CharConditionPipe {
 
 
 		@Override
-		public CharParserCondition copy() {
+		public CharParser copy() {
 			val copy = new RepeatableSeparator<>(name, BasePipe.copyConditionSets(this));
 			BasePipe.copyTo(this, copy);
 			return copy;

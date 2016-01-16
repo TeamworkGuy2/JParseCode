@@ -17,6 +17,7 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.test.JavaClassParseTest;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -46,16 +47,16 @@ public class MainParser {
 
 		// fill indices with null so we can random access any valid index
 		for(val classInfo : res) {
-			//String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullyQualifyingName());
+			//String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullName());
 			resClasses.add(classInfo.getParsedClass());
 			resFiles.add(classInfo.getId().getSrcName());
 		}
-		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullyQualifyingName())));
+		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullName())));
 
 		val writeSettings = new WriteSettings(true, false, false);
 
 		for(val classInfo : resClasses) {
-			System.out.print("\"" + NameUtil.joinFqName(classInfo.getSignature().getFullyQualifyingName()) + "\": ");
+			System.out.print("\"" + NameUtil.joinFqName(classInfo.getSignature().getFullName()) + "\": ");
 			classInfo.toJson(System.out, writeSettings);
 		}
 

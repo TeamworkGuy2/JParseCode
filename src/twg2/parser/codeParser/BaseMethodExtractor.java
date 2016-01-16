@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +7,10 @@ import lombok.val;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.condition.AstParserCondition;
+import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.method.IntermMethodSig;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -20,7 +19,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class CsInterfaceMethodExtractor implements AstParserCondition<List<IntermMethodSig.SimpleImpl>> {
+public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.SimpleImpl>> {
 
 	static enum State {
 		INIT,
@@ -32,14 +31,16 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 	}
 
 
-	IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock;
-	CsAnnotationExtractor annotationParser;
+	Keyword keyword;
+	IntermBlock<? extends CompoundBlock> parentBlock;
+	AstParser<List<AnnotationSig>> annotationParser;
 	String methodName;
 	TypeSig.Simple returnTypeSig;
 	List<IntermMethodSig.SimpleImpl> methods = new ArrayList<>();
-	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(true);
+	AstParser<TypeSig.Simple> typeParser;
 	State state = State.INIT;
-	String name = "C# method signature";
+	String langName;
+	String name;
 
 
 	@Override
@@ -51,11 +52,16 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 	/**
 	 * @param parentBlock
 	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
-	 * the annotation parser should already contain results (i.e. {@link AstParserCondition#getParserResult()}) for the method's annotations
+	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
 	 */
-	public CsInterfaceMethodExtractor(IntermBlock<? extends IntermClassSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
+	public BaseMethodExtractor(String langName, Keyword keyword, IntermBlock<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+		this.langName = langName;
+		this.name = langName + " method signature";
+		this.keyword = keyword;
 		this.methods = new ArrayList<>();
 		this.parentBlock = parentBlock;
+		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
 	}
 
@@ -66,7 +72,7 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 			state = State.INIT;
 		}
 
-		if(state == State.INIT && CsDataTypeExtractor.isPossiblyType(tokenNode, true)) {
+		if(state == State.INIT && BaseDataTypeExtractor.isPossiblyType(keyword, tokenNode, true)) {
 			state = State.FINDING_RETURN_TYPE;
 			updateAndCheckTypeParser(tokenNode);
 			return state == State.FINDING_NAME;
@@ -99,8 +105,8 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 				val annotations = new ArrayList<>(annotationParser.getParserResult());
 				annotationParser.recycle();
 
-				val params = CsMethodParametersParser.extractParamsFromSignature(tokenNode);
-				methods.add(new IntermMethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullyQualifyingName(), methodName), params, returnTypeSig, annotations));
+				val params = BaseMethodParametersParser.extractParamsFromSignature(tokenNode);
+				methods.add(new IntermMethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, annotations));
 				return true;
 			}
 			state = State.FAILED;
@@ -152,15 +158,15 @@ public class CsInterfaceMethodExtractor implements AstParserCondition<List<Inter
 
 
 	@Override
-	public CsInterfaceMethodExtractor recycle() {
+	public BaseMethodExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public CsInterfaceMethodExtractor copy() {
-		val copy = new CsInterfaceMethodExtractor(this.parentBlock, this.annotationParser);
+	public BaseMethodExtractor copy() {
+		val copy = new BaseMethodExtractor(this.langName, this.keyword, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy());
 		return copy;
 	}
 

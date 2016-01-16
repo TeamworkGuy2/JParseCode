@@ -13,13 +13,13 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-12-5
  */
 @Immutable
-public class IntermBlock<T_SIG extends IntermClassSig, T_BLOCK extends CompoundBlock> {
-	private final @Getter T_SIG declaration;
+public class IntermBlock<T_BLOCK extends CompoundBlock> {
+	private final @Getter IntermClassSig.SimpleImpl declaration;
 	private final @Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree;
 	private final @Getter T_BLOCK blockType;
 
 
-	public IntermBlock(T_SIG declaration, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
+	public IntermBlock(IntermClassSig.SimpleImpl declaration, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree, T_BLOCK blockType) {
 		this.declaration = declaration;
 		this.blockTree = blockTree;
 		this.blockType = blockType;

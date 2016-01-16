@@ -10,7 +10,7 @@ import twg2.collections.tuple.Tuples;
 import twg2.collections.util.dataStructures.PairList;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.text.CharMultiConditionParser;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextTransformer;
@@ -27,7 +27,7 @@ import twg2.treeLike.simpleTree.SimpleTreeImpl;
  * @since 2015-5-27
  */
 public class DocumentParser<T> {
-	private PairList<CharPrecondition, TextTransformer<T>> parsers;
+	private PairList<CharParserFactory, TextTransformer<T>> parsers;
 
 
 	public DocumentParser() {
@@ -35,7 +35,7 @@ public class DocumentParser<T> {
 	}
 
 
-	public void addFragmentParser(CharPrecondition fragmentParser, TextTransformer<T> handler) {
+	public void addFragmentParser(CharParserFactory fragmentParser, TextTransformer<T> handler) {
 		this.parsers.add(fragmentParser, handler);
 	}
 
@@ -50,7 +50,7 @@ public class DocumentParser<T> {
 	public <D extends DocumentFragment<S, T>, S> SimpleTree<D> parseDocument(TextParser input, D root, BiFunction<T, TextFragmentRef.Impl, D> docFragConstructor, Function<D, Boolean> isParent, IsParentChild<D> isInside) {
 		SimpleTreeImpl<D> tree = new SimpleTreeImpl<>(root);
 
-		List<Entry<CharPrecondition, TextConsumer>> conditions = new ArrayList<>();
+		List<Entry<CharParserFactory, TextConsumer>> conditions = new ArrayList<>();
 
 		for(int i = 0, size = parsers.size(); i < size; i++) {
 			TextTransformer<T> transformer = parsers.getValue(i);

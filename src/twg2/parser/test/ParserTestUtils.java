@@ -4,7 +4,7 @@ import lombok.val;
 
 import org.junit.Assert;
 
-import twg2.parser.text.CharParserCondition;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textParser.TextParserImpl;
 
 /**
@@ -14,7 +14,7 @@ import twg2.parser.textParser.TextParserImpl;
 public interface ParserTestUtils {
 
 	// Test also ensures that conditions work as expected when recycled (if possible) and when copied
-	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src) {
+	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParser cond, String src) {
 		cond = cond.copyOrReuse();
 		_parseTest(expectComplete, expectFailed, name, cond, src, null);
 		cond = cond.copy();
@@ -24,12 +24,12 @@ public interface ParserTestUtils {
 
 	/** If parsing is successfully, the result text should be identical to the src text
 	 */
-	public static void parseTestSameParsed(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src) {
+	public static void parseTestSameParsed(boolean expectComplete, boolean expectFailed, String name, CharParser cond, String src) {
 		parseTest(expectComplete, expectFailed, name, cond, src, src);
 	}
 
 
-	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src, String expectedParsedResult) {
+	public static void parseTest(boolean expectComplete, boolean expectFailed, String name, CharParser cond, String src, String expectedParsedResult) {
 		cond = cond.copyOrReuse();
 		_parseTest(expectComplete, expectFailed, name, cond, src, expectedParsedResult);
 		cond = cond.copy();
@@ -37,7 +37,7 @@ public interface ParserTestUtils {
 	}
 
 
-	public static void _parseTest(boolean expectComplete, boolean expectFailed, String name, CharParserCondition cond, String src, String srcExpect) {
+	public static void _parseTest(boolean expectComplete, boolean expectFailed, String name, CharParser cond, String src, String srcExpect) {
 		TextParserImpl buf = TextParserImpl.of(src);
 
 		while(buf.hasNext()) {

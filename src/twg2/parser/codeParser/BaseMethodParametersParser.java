@@ -1,11 +1,10 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import lombok.val;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.method.IntermParameterSig;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -14,7 +13,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2016-1-3
  */
-public class CsMethodParametersParser {
+public class BaseMethodParametersParser {
 
 	// TODO does not support default parameters
 	public static List<IntermParameterSig> extractParamsFromSignature(SimpleTree<DocumentFragmentText<CodeFragmentType>> sigNode) {

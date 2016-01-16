@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser.java;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,51 +36,64 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-5
  */
-public class CsBlockParser implements AstExtractor<CsBlock> {
+public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
-	// TODO parsers only parse some fields and interface methods
 
 	@Override
 	public AstParser<List<List<String>>> createImportStatementParser() {
-		return new CsUsingStatementExtractor();
+		return new JavaImportStatementExtractor();
 	}
 
 
 	@Override
 	public AstParser<Simple> createTypeParser() {
-		return new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, false);
+		return new BaseDataTypeExtractor(CodeLanguageOptions.JAVA, false);
 	}
 
 
 	@Override
-	public AstParser<List<AnnotationSig>> createAnnotationParser(IntermBlock<CsBlock> block) {
-		return new CsAnnotationExtractor();
+	public AstParser<List<AnnotationSig>> createAnnotationParser(IntermBlock<JavaBlock> block) {
+		return new JavaAnnotationExtractor();
 	}
 
 
 	@Override
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<CsBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
-		return new BaseFieldExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
+	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<JavaBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+		return new BaseFieldExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser);
 	}
 
 
 	@Override
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<CsBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
-		return new BaseMethodExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
+	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<JavaBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+		return new BaseMethodExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser);
 	}
 
 
 	@Override
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
-		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, astTree, (block) -> block.getBlockType() != CsBlock.NAMESPACE);
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+		return extractBlockFieldsAndInterfaceMethods(astTree);
+	}
+
+
+	@Override
+	public List<IntermBlock<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, IntermBlock<JavaBlock> parentScope) {
+		List<IntermBlock<JavaBlock>> blocks = new ArrayList<>();
+		// parse package name and push it into the name scope
+		String pkgName = parsePackageDeclaration(astTree);
+		if(pkgName == null) {
+			pkgName = "(default package)";
+		}
+		nameScope.add(pkgName);
+
+		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, blocks);
 		return blocks;
 	}
 
 
-	@Override
-	public List<IntermBlock<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, IntermBlock<CsBlock> parentScope) {
-		List<IntermBlock<CsBlock>> blocks = new ArrayList<>();
-		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, blocks);
+	// TODO this only parses some fields and interface methods
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
+		// TODO are all Java blocks valid blocks possibly containing fields/methods
+		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, tokenTree, (block) -> true);
 		return blocks;
 	}
 
@@ -92,8 +105,8 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
 	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
-			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, IntermBlock<CsBlock> parentScope, List<IntermBlock<CsBlock>> blocks) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
+			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, IntermBlock<JavaBlock> parentScope, List<IntermBlock<JavaBlock>> blocks) {
+		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
 		val children = blockTree.getChildren();
 
 		val childIterable = new TokenListIterable(children);
@@ -116,7 +129,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeyword().isBlockKeyword(prevNode.getData())) {
 						addBlockCount = 1;
 						val blockTypeStr = prevNode.getData().getText();
-						CsBlock blockType = CsBlock.tryFromKeyword(CsKeyword.check.tryToKeyword(blockTypeStr));
+						JavaBlock blockType = JavaBlock.tryFromKeyword(JavaKeyword.check.tryToKeyword(blockTypeStr));
 						val accessModifiers = readAccessModifier(childIter);
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
 						AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
@@ -144,12 +157,26 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	}
 
 
+	private static String parsePackageDeclaration(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
+		List<SimpleTree<DocumentFragmentText<CodeFragmentType>>> childs = null;
+		if(astTree.hasChildren() && (childs = astTree.getChildren()).size() > 1) {
+			if(lang.getAstUtil().isKeyword(childs.get(0).getData(), JavaKeyword.PACKAGE) &&
+					AstFragType.isIdentifier(childs.get(1).getData())) {
+				return childs.get(1).getData().getText();
+			}
+			return null;
+		}
+		return null;
+	}
+
+
 	/** Read backward through any available access modifiers (i.e. 'abstract', 'public', 'static', ...).
 	 * Returns the iterator where {@code next()} would return the first access modifier element.
 	 * @return access modifiers read backward from the iterator's current {@code previous()} value
 	 */
 	private static List<String> readAccessModifier(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
+		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
 		int prevCount = 0;
 		List<String> accessModifiers = new ArrayList<>();
 		SimpleTree<DocumentFragmentText<CodeFragmentType>> child = iter.hasPrevious() ? iter.previous() : null;
@@ -169,12 +196,12 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	}
 
 
-	/** Reads backward from a '{' block through a simple class signature ({@code ClassName [: ClassName]}).
+	/** Reads backward from a '{' block through a simple class signature ({@code ClassName [extends ClassName] [implements InterfaceNme]}).
 	 * Returns the iterator where {@code next()} would return the class name element.
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
+		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		List<String> names = new ArrayList<>();
@@ -192,7 +219,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		}
 
 		// if the class signature extends/implements, then the identifiers just read are the class/interface names, next read the actual class name
-		if(prevNode != null && prevNode.getData().getText().trim().equals(":")) {
+		if(prevNode != null && lang.getAstUtil().isKeyword(prevNode.getData(), JavaKeyword.EXTENDS, JavaKeyword.IMPLEMENTS)) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
 			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeyword().isBlockKeyword(prevNode.getData())) {

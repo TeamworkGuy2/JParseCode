@@ -5,15 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import lombok.val;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import twg2.arrays.ArrayUtil;
 import twg2.parser.Inclusion;
-import twg2.parser.text.CharParserCondition;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.condition.text.CharParser;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.textParser.TextParserImpl;
@@ -89,13 +87,13 @@ public class MiscStringTests {
 		String[] strs = new String[] {   "\"a \\\" b \\\"", "\"\" !", "alpha", "\"a \n\\\"\\\" z\" echo" };
 		String[] expect = new String[] { "\"a \" b \"",       "\"\"",     "",      "\"a \n\"\" z\"" };
 
-		CharPrecondition parser1 = new StringBoundedParserBuilder("stringBoundedSegmentParserTest").addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE).build();
+		CharParserFactory parser1 = new StringBoundedParserBuilder("stringBoundedSegmentParserTest").addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE).build();
 
 		Function<String, String> escSeqDecoder = EscapeSequences.unicodeEscapeDecoder();
 		CheckTask.assertTests(strs, expect, (s, i) -> {
-			val dst = new StringBuilder();
+			StringBuilder dst = new StringBuilder();
 			//Assert.assertTrue("i=" + i + " first char '" + s.charAt(0) + "' of '" + s + "'", parser1.isMatch(s.charAt(0)));
-			CharParserCondition cond = parser1.createParser();
+			CharParser cond = parser1.createParser();
 			cond.readConditional(TextParserImpl.of(s), dst);
 			return escSeqDecoder.apply(dst.toString());
 		});

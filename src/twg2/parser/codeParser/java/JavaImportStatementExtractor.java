@@ -1,10 +1,10 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser.java;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import twg2.parser.baseAst.csharp.CsAstUtil;
+import twg2.parser.baseAst.java.JavaAstUtil;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
@@ -16,9 +16,9 @@ import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
- * @since 2015-12-8
+ * @since 2016-1-14
  */
-public class CsUsingStatementExtractor implements AstParser<List<List<String>>> {
+public class JavaImportStatementExtractor implements AstParser<List<List<String>>> {
 
 	static enum State {
 		INIT,
@@ -28,11 +28,11 @@ public class CsUsingStatementExtractor implements AstParser<List<List<String>>> 
 	}
 
 
-	private static final CodeLanguageOptions<CsKeyword, CodeLanguageOptions.CSharp, CsAstUtil, AstExtractor<CsBlock>> lang = CodeLanguageOptions.C_SHARP;
+	private static final CodeLanguageOptions<JavaKeyword, CodeLanguageOptions.Java, JavaAstUtil, AstExtractor<JavaBlock>> lang = CodeLanguageOptions.JAVA;
 
 	List<List<String>> usingStatements = new ArrayList<>();
 	State state = State.INIT;
-	String name = "C# import statement";
+	String name = "Java import statement";
 
 
 	@Override
@@ -44,7 +44,7 @@ public class CsUsingStatementExtractor implements AstParser<List<List<String>>> 
 	@Override
 	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
 		if(state != State.FOUND_USING) {
-			if(lang.getAstUtil().getChecker().isKeyword(tokenNode.getData(), CsKeyword.USING)) {
+			if(lang.getAstUtil().getChecker().isKeyword(tokenNode.getData(), JavaKeyword.IMPORT)) {
 				state = State.FOUND_USING;
 			}
 		}
@@ -88,15 +88,15 @@ public class CsUsingStatementExtractor implements AstParser<List<List<String>>> 
 
 
 	@Override
-	public CsUsingStatementExtractor recycle() {
+	public JavaImportStatementExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public CsUsingStatementExtractor copy() {
-		val copy = new CsUsingStatementExtractor();
+	public JavaImportStatementExtractor copy() {
+		val copy = new JavaImportStatementExtractor();
 		return copy;
 	}
 

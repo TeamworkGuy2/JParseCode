@@ -8,6 +8,7 @@ import twg2.collections.primitiveCollections.CharListReadOnly;
 import twg2.functions.Predicates;
 import twg2.functions.Predicates.Char;
 import twg2.parser.Inclusion;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.textParserUtils.ReadIsMatching;
@@ -23,7 +24,7 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static abstract class BaseCharFilter implements CharParserCondition.WithMarks {
+	public static abstract class BaseCharParser implements CharParser.WithMarks {
 		char[] originalChars;
 		boolean anyComplete = false;
 		boolean failed = false;
@@ -44,12 +45,12 @@ public class CharConditions {
 		String name;
 
 
-		public BaseCharFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public BaseCharParser(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			this(name, chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
 		}
 
 
-		public BaseCharFilter(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher, char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
+		public BaseCharParser(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher, char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			this.originalChars = matchChars;
 			this.charMatcher = charMatcher;
 			this.firstCharMatcher = firstCharMatcher;
@@ -109,7 +110,7 @@ public class CharConditions {
 
 
 		@Override
-		public CharParserCondition recycle() {
+		public CharParser recycle() {
 			this.reset();
 			return this;
 		}
@@ -134,7 +135,7 @@ public class CharConditions {
 		}
 
 
-		public static BaseCharFilter copyTo(BaseCharFilter src, BaseCharFilter dst) {
+		public static BaseCharParser copyTo(BaseCharParser src, BaseCharParser dst) {
 			dst.originalChars = src.originalChars;
 			dst.includeMatchInRes = src.includeMatchInRes;
 			dst.charMatcher = src.charMatcher;
@@ -151,22 +152,22 @@ public class CharConditions {
 
 	/**
 	 */
-	public static class CharLiteralFilter extends StartCharFilter {
+	public static class Literal extends Start {
 
-		public CharLiteralFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public Literal(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public CharLiteralFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public Literal(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
 
 
 		@Override
-		public CharLiteralFilter copy() {
-			val copy = new CharLiteralFilter(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+		public Literal copy() {
+			val copy = new Literal(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -179,14 +180,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
-	public static class StartCharFilter extends BaseCharFilter {
+	public static class Start extends BaseCharParser {
 
-		public StartCharFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public Start(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public StartCharFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public Start(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -220,8 +221,8 @@ public class CharConditions {
 
 
 		@Override
-		public StartCharFilter copy() {
-			val copy = new StartCharFilter(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+		public Start copy() {
+			val copy = new Start(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -234,14 +235,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-11-27
 	 */
-	public static class ContainsCharFilter extends BaseCharFilter {
+	public static class Contains extends BaseCharParser {
 
-		public ContainsCharFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public Contains(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public ContainsCharFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public Contains(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -277,8 +278,8 @@ public class CharConditions {
 
 
 		@Override
-		public ContainsCharFilter copy() {
-			val copy = new ContainsCharFilter(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+		public Contains copy() {
+			val copy = new Contains(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -291,14 +292,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-12-13
 	 */
-	public static class ContainsCharFirstSpecialFilter extends BaseCharFilter {
+	public static class ContainsFirstSpecial extends BaseCharParser {
 
-		public ContainsCharFirstSpecialFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public ContainsFirstSpecial(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public ContainsCharFirstSpecialFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public ContainsFirstSpecial(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -334,8 +335,8 @@ public class CharConditions {
 
 
 		@Override
-		public ContainsCharFirstSpecialFilter copy() {
-			val copy = new ContainsCharFirstSpecialFilter(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+		public ContainsFirstSpecial copy() {
+			val copy = new ContainsFirstSpecial(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -348,14 +349,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
-	public static class EndCharFilter extends BaseCharFilter {
+	public static class End extends BaseCharParser {
 
-		public EndCharFilter(String name, CharList chars, Inclusion includeCondMatchInRes) {
+		public End(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public EndCharFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public End(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -388,8 +389,8 @@ public class CharConditions {
 
 
 		@Override
-		public EndCharFilter copy() {
-			val copy = new EndCharFilter(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+		public End copy() {
+			val copy = new End(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -402,15 +403,15 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class EndCharNotPrecededByFilter extends BaseCharFilter {
+	public static class EndNotPrecededBy extends BaseCharParser {
 
-		public EndCharNotPrecededByFilter(String name, CharList chars, Inclusion includeCondMatchInRes, CharListReadOnly notPrecededBy) {
+		public EndNotPrecededBy(String name, CharList chars, Inclusion includeCondMatchInRes, CharListReadOnly notPrecededBy) {
 			super(name, chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
 			super.notPreceding = notPrecededBy;
 		}
 
 
-		public EndCharNotPrecededByFilter(String name, Char charMatcher, Char firstCharMatcher,
+		public EndNotPrecededBy(String name, Char charMatcher, Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc, CharListReadOnly notPrecededBy) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 			super.notPreceding = notPrecededBy;
@@ -454,9 +455,9 @@ public class CharConditions {
 
 
 		@Override
-		public EndCharNotPrecededByFilter copy() {
-			val copy = new EndCharNotPrecededByFilter(name, charMatcher, firstCharMatcher, super.originalChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
-			BaseCharFilter.copyTo(this, copy);
+		public EndNotPrecededBy copy() {
+			val copy = new EndNotPrecededBy(name, charMatcher, firstCharMatcher, super.originalChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
+			BaseCharParser.copyTo(this, copy);
 			return copy;
 		}
 

@@ -1,7 +1,7 @@
 package twg2.parser.codeParser.parsers;
 
 import twg2.parser.Inclusion;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
 
 /**
@@ -10,13 +10,13 @@ import twg2.parser.text.StringBoundedParserBuilder;
  */
 public class CodeBlockParser {
 
-	public static CharPrecondition createBlockParser() {
+	public static CharParserFactory createBlockParser() {
 		return createBlockParser('{', '}');
 	}
 
 
-	public static CharPrecondition createBlockParser(char startChar, char endChar) {
-		CharPrecondition commentParser = new StringBoundedParserBuilder("block")
+	public static CharParserFactory createBlockParser(char startChar, char endChar) {
+		CharParserFactory commentParser = new StringBoundedParserBuilder("block")
 			.addStartEndMarkers("block " + startChar + " " + endChar, startChar, endChar, Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();

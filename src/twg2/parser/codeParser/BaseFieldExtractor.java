@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.csharp;
+package twg2.parser.codeParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,20 +8,19 @@ import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.AstUtil;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.condition.AstParserCondition;
+import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
 import twg2.parser.intermAst.field.IntermFieldSig;
 import twg2.parser.intermAst.type.TypeSig;
-import twg2.parser.output.JsonWritableSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public class CsDataModelFieldExtractor implements AstParserCondition<List<IntermFieldSig>> {
+public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 	static enum State {
 		INIT,
@@ -33,18 +32,25 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 	}
 
 
-	IntermBlock<? extends JsonWritableSig, ? extends CompoundBlock> parentBlock;
-	CsAnnotationExtractor annotationParser;
+	Keyword keyword;
+	IntermBlock<? extends CompoundBlock> parentBlock;
+	AstParser<List<AnnotationSig>> annotationParser;
 	List<IntermFieldSig> fields = new ArrayList<>();
 	TypeSig.Simple fieldTypeSig;
 	String fieldName;
-	CsDataTypeExtractor typeParser = new CsDataTypeExtractor(false);
+	AstParser<TypeSig.Simple> typeParser;
 	State state = State.INIT;
-	String name = "C# field";
+	String langName;
+	String name;
 
 
-	public CsDataModelFieldExtractor(IntermBlock<? extends JsonWritableSig, ? extends CompoundBlock> parentBlock, CsAnnotationExtractor annotationParser) {
+	public BaseFieldExtractor(String langName, Keyword keyword, IntermBlock<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+		this.langName = langName;
+		this.name = langName + " field";
+		this.keyword = keyword;
 		this.parentBlock = parentBlock;
+		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
 	}
 
@@ -61,7 +67,7 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 			state = State.INIT;
 		}
 
-		if(state == State.INIT && CsDataTypeExtractor.isPossiblyType(tokenNode, false)) {
+		if(state == State.INIT && BaseDataTypeExtractor.isPossiblyType(keyword, tokenNode, false)) {
 			state = State.FINDING_DATA_TYPE;
 			val res = updateAndCheckTypeParser(tokenNode);
 			return res;
@@ -94,7 +100,7 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 				state = State.COMPLETE;
 				val annotations = new ArrayList<>(annotationParser.getParserResult());
 				annotationParser.recycle();
-				fields.add(new IntermFieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullyQualifyingName(), fieldName), fieldTypeSig, annotations));
+				fields.add(new IntermFieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, annotations));
 				return true;
 			}
 			state = State.FAILED;
@@ -145,15 +151,15 @@ public class CsDataModelFieldExtractor implements AstParserCondition<List<Interm
 
 
 	@Override
-	public CsDataModelFieldExtractor recycle() {
+	public BaseFieldExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public CsDataModelFieldExtractor copy() {
-		val copy = new CsDataModelFieldExtractor(this.parentBlock, this.annotationParser);
+	public BaseFieldExtractor copy() {
+		val copy = new BaseFieldExtractor(this.langName, this.keyword, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy());
 		return copy;
 	}
 

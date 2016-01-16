@@ -97,7 +97,7 @@ public enum TypeSig {
 			this.typeName = typeName;
 			this.nullable = nullable;
 			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.isPrimitive(typeName);
+			this.primitive = CsKeyword.check.isPrimitive(typeName);
 		}
 
 
@@ -161,7 +161,7 @@ public enum TypeSig {
 			this.genericParams = genericParamsCast;
 			this.nullable = nullable;
 			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.isPrimitive(typeName);
+			this.primitive = CsKeyword.check.isPrimitive(typeName);
 		}
 
 
@@ -212,7 +212,7 @@ public enum TypeSig {
 
 		public String getSimpleName();
 
-		public List<String> getFullyQualifyingName();
+		public List<String> getFullName();
 
 		public boolean isNullable();
 
@@ -235,17 +235,17 @@ public enum TypeSig {
 	@Immutable
 	public static class ResolvedBaseImpl implements TypeSig.Resolved {
 		private final @Getter String simpleName;
-		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<String> fullName;
 		private final @Getter boolean nullable;
 		private final @Getter boolean primitive;
 
 
 		public ResolvedBaseImpl(List<String> fullyQualifyingName, boolean nullable) {
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
-			this.fullyQualifyingName = fullyQualifyingName;
+			this.fullName = fullyQualifyingName;
 			this.nullable = nullable;
 			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.isPrimitive(simpleName);
+			this.primitive = CsKeyword.check.isPrimitive(simpleName);
 		}
 
 
@@ -263,7 +263,7 @@ public enum TypeSig {
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append(" {");
-			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullyQualifyingName) + "\"");
+			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullName) + "\"");
 
 			if(nullable) {
 				dst.append(", ");
@@ -296,7 +296,7 @@ public enum TypeSig {
 	@Immutable
 	public static class ResolvedGenericImpl implements TypeSig.Resolved {
 		private final @Getter String simpleName;
-		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<String> fullName;
 		private final @Getter List<TypeSig.Resolved> genericParams;
 		private final @Getter boolean nullable;
 		private final @Getter boolean primitive;
@@ -307,11 +307,11 @@ public enum TypeSig {
 			val genericParamsCast = (List<TypeSig.Resolved>)genericParams;
 
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
-			this.fullyQualifyingName = fullyQualifyingName;
+			this.fullName = fullyQualifyingName;
 			this.genericParams = genericParamsCast;
 			this.nullable = nullable;
 			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.isPrimitive(simpleName);
+			this.primitive = CsKeyword.check.isPrimitive(simpleName);
 		}
 
 
@@ -324,7 +324,7 @@ public enum TypeSig {
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append(" {");
-			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullyQualifyingName) + "\", ");
+			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullName) + "\", ");
 
 			dst.append("\"genericParameters\": [");
 			JsonWrite.joinStrConsumer(genericParams, ", ", dst, (param) -> param.toJson(dst, st));

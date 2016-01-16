@@ -8,21 +8,23 @@ import lombok.Getter;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharMapSorted;
+import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.ParserStartChars;
 
-/** A collection of {@link CharParserCondition}
+/** A collection of {@link CharParser}
  * @author TeamworkGuy2
  * @since 2015-2-14
  */
-public class CharPreconditionImpl<P extends CharParserCondition> implements CharPrecondition {
+public class CharParserFactoryImpl<P extends CharParser> implements CharParserFactory {
 	private List<P> conditions;
 	private CharMapSorted<P> firstChars;
 	private CharList tmpChars = new CharArrayList();
-	private CharParserCondition conditionSet;
+	private CharParser conditionSet;
 	private @Getter boolean compound;
 
 
 	@SafeVarargs
-	public CharPreconditionImpl(String name, boolean compound, P... parserConditions) {
+	public CharParserFactoryImpl(String name, boolean compound, P... parserConditions) {
 		this.compound = compound;
 		this.conditions = new ArrayList<>();
 		Collections.addAll(this.conditions, parserConditions);
@@ -56,12 +58,12 @@ public class CharPreconditionImpl<P extends CharParserCondition> implements Char
 
 
 	@Override
-	public CharParserCondition createParser() {
+	public CharParser createParser() {
 		return conditionSet.copy();
 	}
 
 
-	private static final <P extends CharParserCondition> void addFirstChars(P cond, CharList tmpChars, CharMapSorted<P> dstChars) {
+	private static final <P extends CharParser> void addFirstChars(P cond, CharList tmpChars, CharMapSorted<P> dstChars) {
 		if(cond instanceof ParserStartChars) {
 			((ParserStartChars)cond).getMatchFirstChars(tmpChars);
 		}

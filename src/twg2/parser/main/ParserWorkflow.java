@@ -195,6 +195,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 				}
 				for(val src : sources) {
+					sb.append(newline);
 					sb.append(src.getKey());
 					sb.append(newline);
 					JsonWrite.joinStrConsumer(src.getValue(), newline, sb, (f) -> sb.append(f.toString()));
@@ -253,7 +254,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullyQualifyingName())));
+					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullName())));
 					sb.append("]" + newline);
 				}
 
@@ -318,7 +319,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullyQualifyingName())));
+					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullName())));
 					sb.append("]" + newline);
 				}
 
@@ -360,7 +361,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 					sb.append(entry.getKey());
 					sb.append(newline);
-					JsonWrite.joinStrConsumer(entry.getValue(), newline, sb, (f) -> sb.append(NameUtil.joinFqName(f.getParsedClass().getSignature().getFullyQualifyingName())));
+					JsonWrite.joinStrConsumer(entry.getValue(), newline, sb, (f) -> sb.append(NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName())));
 					sb.append(newline);
 				}
 				log.log(level, this.getClass(), sb.toString());
@@ -399,7 +400,7 @@ public class ParserWorkflow {
 				val classes = dstSet.getValue();
 				val resClasses = new ArrayList<>(classes);
 				
-				resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getParsedClass().getSignature().getFullyQualifyingName()).compareTo(NameUtil.joinFqName(c2.getParsedClass().getSignature().getFullyQualifyingName())));
+				resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getParsedClass().getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getParsedClass().getSignature().getFullName())));
 
 				try(val output = Files.newBufferedWriter(Paths.get(dst.path), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
 
@@ -409,7 +410,7 @@ public class ParserWorkflow {
 						if(!first) {
 							output.append(",\n");
 						}
-						output.append("\"" + NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullyQualifyingName()) + "\": ");
+						output.append("\"" + NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullName()) + "\": ");
 						classInfo.getParsedClass().toJson(output, writeSettings);
 						first = false;
 					}

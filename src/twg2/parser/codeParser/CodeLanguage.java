@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.LanguageAstUtil;
+import twg2.parser.baseAst.AstUtil;
 
 /**
  * @author TeamworkGuy2
@@ -12,7 +12,9 @@ import twg2.parser.baseAst.LanguageAstUtil;
  */
 public interface CodeLanguage {
 
-	public LanguageAstUtil getAstUtil();
+	public AstUtil getAstUtil();
+
+	public Keyword getKeyword();
 
 	public String displayName();
 

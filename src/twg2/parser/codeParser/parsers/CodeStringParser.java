@@ -1,7 +1,7 @@
 package twg2.parser.codeParser.parsers;
 
 import twg2.parser.Inclusion;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
 
 /**
@@ -13,8 +13,8 @@ public final class CodeStringParser {
 	private CodeStringParser() { throw new AssertionError("cannot instantiate static class CodeStringParser"); }
 
 
-	public static final CharPrecondition createStringParserForJava() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder("Java string")
+	public static final CharParserFactory createStringParserForJava() {
+		CharParserFactory stringParser = new StringBoundedParserBuilder("Java string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -23,8 +23,8 @@ public final class CodeStringParser {
 
 
 	// TODO make parser work with all types of C# string literals
-	public static final CharPrecondition createStringParserForCSharp() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder("C# string")
+	public static final CharParserFactory createStringParserForCSharp() {
+		CharParserFactory stringParser = new StringBoundedParserBuilder("C# string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -32,8 +32,8 @@ public final class CodeStringParser {
 	}
 
 
-	public static final CharPrecondition createStringParserForJavascript() {
-		CharPrecondition stringParser = new StringBoundedParserBuilder("JS string")
+	public static final CharParserFactory createStringParserForJavascript() {
+		CharParserFactory stringParser = new StringBoundedParserBuilder("JS string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();

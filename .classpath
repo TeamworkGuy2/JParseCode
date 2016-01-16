@@ -23,5 +23,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TemplateUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/jar/jtree_walker.jar" sourcepath="/JTreeWalker"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/jar/data_transfer.jar"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jparser-data-type-like/jar/jparser_data_type_like.jar" sourcepath="/JParserDataTypeLike"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

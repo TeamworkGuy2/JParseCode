@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import twg2.collections.tuple.Tuples;
 import twg2.collections.util.dataStructures.PairList;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
@@ -15,8 +16,8 @@ import twg2.parser.textParser.TextParser;
  * @since 2015-5-29
  */
 public class CharMultiConditionParser {
-	private PairList<CharPrecondition, TextConsumer> conditions = new PairList<>();
-	private PairList<CharPrecondition, Entry<CharParserCondition, TextConsumer>> curMatches = new PairList<>();
+	private PairList<CharParserFactory, TextConsumer> conditions = new PairList<>();
+	private PairList<CharParserFactory, Entry<CharParser, TextConsumer>> curMatches = new PairList<>();
 
 
 	public CharMultiConditionParser() {
@@ -25,16 +26,16 @@ public class CharMultiConditionParser {
 
 
 	@SafeVarargs
-	public CharMultiConditionParser(Entry<CharPrecondition, TextConsumer>... conditions) {
-		for(Entry<CharPrecondition, TextConsumer> cond : conditions) {
+	public CharMultiConditionParser(Entry<CharParserFactory, TextConsumer>... conditions) {
+		for(Entry<CharParserFactory, TextConsumer> cond : conditions) {
 			this.conditions.add(cond);
 		}
 		this.reset();
 	}
 
 
-	public CharMultiConditionParser(Collection<? extends Entry<CharPrecondition, TextConsumer>> conditions) {
-		for(Entry<CharPrecondition, TextConsumer> cond : conditions) {
+	public CharMultiConditionParser(Collection<? extends Entry<CharParserFactory, TextConsumer>> conditions) {
+		for(Entry<CharParserFactory, TextConsumer> cond : conditions) {
 			this.conditions.add(cond);
 		}
 		this.reset();
@@ -44,11 +45,11 @@ public class CharMultiConditionParser {
 	public boolean acceptNext(char ch, TextParser buf) {
 		// add conditions that match
 		for(int i = 0, size = conditions.size(); i < size; i++) {
-			CharPrecondition cond = conditions.getKey(i);
+			CharParserFactory cond = conditions.getKey(i);
 			// as possible tokens are encountered (based on one char), add them to the list of current matches
 			if(cond.isMatch(ch)) {
 				if(cond.isCompound() || !curMatches.containsKey(cond)) {
-					CharParserCondition parserCond = cond.createParser();
+					CharParser parserCond = cond.createParser();
 					curMatches.add(cond, Tuples.of(parserCond, conditions.getValue(i)));
 				}
 			}
@@ -58,9 +59,9 @@ public class CharMultiConditionParser {
 		// else remove it from the current set of matching parsers
 		// IMPORTANT: we loop backward so that more recently started parser can consume input first (this ensures that things like matching quote or parentheses are matched in order)
 		for(int i = curMatches.size() - 1; i > -1; i--) {
-			CharPrecondition preCond = curMatches.getKey(i);
-			Entry<CharParserCondition, TextConsumer> condEntry = curMatches.getValue(i);
-			CharParserCondition cond = condEntry.getKey();
+			CharParserFactory preCond = curMatches.getKey(i);
+			Entry<CharParser, TextConsumer> condEntry = curMatches.getValue(i);
+			CharParser cond = condEntry.getKey();
 
 			cond.acceptNext(ch, buf);
 
@@ -108,7 +109,7 @@ public class CharMultiConditionParser {
 	}
 
 
-	private static boolean allCompound(List<CharPrecondition> conds, int off, int len) {
+	private static boolean allCompound(List<CharParserFactory> conds, int off, int len) {
 		if(len < 1) {
 			return true;
 		}

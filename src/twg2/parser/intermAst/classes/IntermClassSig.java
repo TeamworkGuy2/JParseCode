@@ -14,7 +14,7 @@ import twg2.annotations.Immutable;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.csharp.CsDataTypeExtractor;
+import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
@@ -29,7 +29,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 	public AccessModifier getAccessModifier();
 
-	public List<String> getFullyQualifyingName();
+	public List<String> getFullName();
 
 	public String getDeclarationType();
 
@@ -49,7 +49,7 @@ public interface IntermClassSig extends JsonWritableSig {
 				val resolvedClass = projFiles.resolveSimpleNameToClass(simpleName, namespaceClass, missingNamespacesDst);
 				if(resolvedClass != null) {
 					resolvedCompilationUnitBlockTypes.add(resolvedClass.getBlockType());
-					resolvedCompilationUnitNames.add(resolvedClass.getSignature().getFullyQualifyingName());
+					resolvedCompilationUnitNames.add(resolvedClass.getSignature().getFullName());
 				}
 				else {
 					resolvedCompilationUnitBlockTypes.add(defaultBlockType);
@@ -69,7 +69,7 @@ public interface IntermClassSig extends JsonWritableSig {
 			// TODO maybe should check isClass() rather than !isInterface()
 			if(!firstCompilationUnitBlockType.isInterface()) {
 				val name = NameUtil.joinFqName(firstCompilationUnitName);
-				val extendClassSimpleType = CsDataTypeExtractor.extractGenericTypes(name);
+				val extendClassSimpleType = BaseDataTypeExtractor.extractGenericTypes(name);
 				extendClassType = TypeSig.resolveFrom(extendClassSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 				extendsClass = true;
 			}
@@ -78,10 +78,10 @@ public interface IntermClassSig extends JsonWritableSig {
 				implementInterfaceTypes = new ArrayList<>();
 				for(int i = extendsClass ? 1 : 0, size = resolvedCompilationUnitBlockTypes.size(); i < size; i++) {
 					if(!resolvedCompilationUnitBlockTypes.get(i).isInterface()) {
-						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullyQualifyingName() + "'");
+						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullName() + "'");
 					}
 					val name = NameUtil.joinFqName(resolvedCompilationUnitNames.get(i));
-					val implementInterfaceSimpleType = CsDataTypeExtractor.extractGenericTypes(name);
+					val implementInterfaceSimpleType = BaseDataTypeExtractor.extractGenericTypes(name);
 					val implementInterfaceType = TypeSig.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 					implementInterfaceTypes.add(implementInterfaceType);
 				}
@@ -98,7 +98,7 @@ public interface IntermClassSig extends JsonWritableSig {
 			}
 		}
 
-		val classFqName = classSig.getFullyQualifyingName();
+		val classFqName = classSig.getFullName();
 
 		val res = new IntermClassSig.ResolvedImpl(classSig.getAccessModifier(), classFqName, resolvedClassParams, classSig.getDeclarationType(),
 				extendClassType, implementInterfaceTypes);
@@ -112,7 +112,7 @@ public interface IntermClassSig extends JsonWritableSig {
 	@AllArgsConstructor
 	public static class SimpleImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
-		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<String> fullName;
 		private final @Getter List<TypeSig.Simple> genericParams;
 		private final @Getter String declarationType;
 		private final @Getter List<String> extendImplementSimpleNames;
@@ -120,7 +120,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 		@Override
 		public String getSimpleName() {
-			return fullyQualifyingName.get(fullyQualifyingName.size() - 1);
+			return fullName.get(fullName.size() - 1);
 		}
 
 
@@ -133,7 +133,7 @@ public interface IntermClassSig extends JsonWritableSig {
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append("{ ");
 			dst.append("\"access\": \"" + accessModifier + "\", ");
-			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\"");
+			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\"");
 
 			if(declarationType != null) {
 				dst.append(", ");
@@ -160,7 +160,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 		@Override
 		public String toString() {
-			return accessModifier.toSrc() + " " + declarationType + " " + NameUtil.joinFqName(fullyQualifyingName);
+			return accessModifier.toSrc() + " " + declarationType + " " + NameUtil.joinFqName(fullName);
 		}
 
 	}
@@ -176,7 +176,7 @@ public interface IntermClassSig extends JsonWritableSig {
 	@AllArgsConstructor
 	public static class ResolvedImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
-		private final @Getter List<String> fullyQualifyingName;
+		private final @Getter List<String> fullName;
 		private final @Getter List<TypeSig.Resolved> genericParams;
 		private final @Getter String declarationType;
 		private final @Getter TypeSig.Resolved extendClass;
@@ -185,7 +185,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 		@Override
 		public String getSimpleName() {
-			return fullyQualifyingName.get(fullyQualifyingName.size() - 1);
+			return fullName.get(fullName.size() - 1);
 		}
 
 
@@ -198,7 +198,7 @@ public interface IntermClassSig extends JsonWritableSig {
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
 			dst.append("{ ");
 			dst.append("\"access\": \"" + accessModifier + "\", ");
-			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullyQualifyingName) : fullyQualifyingName.get(fullyQualifyingName.size() - 1)) + "\", ");
+			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 			dst.append("\"declarationType\": \"" + declarationType + "\"");
 
 			if(genericParams != null && genericParams.size() > 0) {
@@ -227,7 +227,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 		@Override
 		public String toString() {
-			return accessModifier.toSrc() + " " + declarationType + " " + NameUtil.joinFqName(fullyQualifyingName);
+			return accessModifier.toSrc() + " " + declarationType + " " + NameUtil.joinFqName(fullName);
 		}
 
 	}

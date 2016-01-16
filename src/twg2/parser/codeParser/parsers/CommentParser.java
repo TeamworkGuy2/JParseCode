@@ -4,7 +4,7 @@ import java.util.EnumSet;
 
 import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
-import twg2.parser.text.CharPrecondition;
+import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
 
 /**
@@ -16,8 +16,8 @@ public final class CommentParser {
 	private CommentParser() { throw new AssertionError("cannot instantiate static class CommentParser"); }
 
 
-	public static final CharPrecondition createCommentParserForJava() {
-		CharPrecondition commentParser = new StringBoundedParserBuilder("comment")
+	public static final CharParserFactory createCommentParserForJava() {
+		CharParserFactory commentParser = new StringBoundedParserBuilder("comment")
 			.addStartEndMarkers("multi-line comment", "/*", "*/", Inclusion.INCLUDE)
 			.addStartEndMarkers("single-line comment", "//", '\n', Inclusion.EXCLUDE)
 			.build();
@@ -25,7 +25,7 @@ public final class CommentParser {
 	}
 
 
-	public static final CharPrecondition createCommentParser(EnumSet<CommentStyle> style) {
+	public static final CharParserFactory createCommentParser(EnumSet<CommentStyle> style) {
 		StringBoundedParserBuilder commentParser = new StringBoundedParserBuilder("comment " + style);
 		int markerCount = 0;
 
