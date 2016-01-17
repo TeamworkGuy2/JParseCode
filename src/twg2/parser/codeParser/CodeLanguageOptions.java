@@ -25,9 +25,46 @@ import twg2.parser.codeParser.java.JavaKeyword;
  * @author TeamworkGuy2
  * @since 2015-9-19
  */
-public class CodeLanguageOptions<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_UTIL extends AstUtil<? extends CompoundBlock, T_KEYWORD>, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> implements CodeLanguage {
+public enum CodeLanguageOptions {
+	;
 
-	public static class CSharp extends CodeLanguageOptions<CsKeyword, CSharp, CsAstUtil, AstExtractor<CsBlock>> {
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-1-16
+	 * @param <T_KEYWORD> the keyword enum containing this language's keywords
+	 * @param <T_LANG> this language's {@link CodeLanguage} type
+	 * @param <T_AST_UTIL> the {@link AstUtil} type for this language
+	 * @param <T_AST_EXTRACTOR> {@link AstExtractor} type for this language
+	 */
+	public static class CodeLanguageImpl<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_UTIL extends AstUtil<? extends CompoundBlock, T_KEYWORD>, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> implements CodeLanguage {
+		final String displayName;
+		@Getter final Function<ParseInput, CodeFileSrc<T_LANG>> parser;
+		@Getter final List<String> fileExtensions;
+		@Getter final T_AST_UTIL astUtil;
+		@Getter final Keyword keyword;
+		@Getter final T_AST_EXTRACTOR extractor;
+
+
+		// package-private
+		CodeLanguageImpl(String displayName, T_AST_UTIL astUtil, Keyword keyword, Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
+			this.displayName = displayName;
+			this.parser = parser;
+			this.fileExtensions = new ArrayList<>(Arrays.asList(fileExtensions));
+			this.astUtil = astUtil;
+			this.keyword = keyword;
+			this.extractor = extractor;
+		}
+
+
+		@Override
+		public String displayName() {
+			return displayName;
+		}
+
+	}
+
+
+	public static class CSharp extends CodeLanguageImpl<CsKeyword, CSharp, CsAstUtil, AstExtractor<CsBlock>> {
 		CSharp(String displayName, CsAstUtil astUtil, Keyword keyword, Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, String... fileExtensions) {
 			super(displayName, astUtil, keyword, parser, extractor, fileExtensions);
 		}
@@ -35,7 +72,7 @@ public class CodeLanguageOptions<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_U
 	}
 
 
-	public static class Java extends CodeLanguageOptions<JavaKeyword, Java, JavaAstUtil, AstExtractor<JavaBlock>> {
+	public static class Java extends CodeLanguageImpl<JavaKeyword, Java, JavaAstUtil, AstExtractor<JavaBlock>> {
 		Java(String displayName, JavaAstUtil astUtil, Keyword keyword, Function<ParseInput, CodeFileSrc<Java>> parser, AstExtractor<JavaBlock> extractor, String... fileExtensions) {
 			super(displayName, astUtil, keyword, parser, extractor, fileExtensions);
 		}
@@ -44,10 +81,10 @@ public class CodeLanguageOptions<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_U
 
 
 	public static final Java JAVA = new Java("Java", new JavaAstUtil(), JavaKeyword.check, JavaClassParser::parse, new JavaBlockParser(), "java");
-	public static final CodeLanguageOptions<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> JAVASCRIPT = new CodeLanguageOptions<>("Javascript", null, null, null, null, "js", "ts");
+	public static final CodeLanguageImpl<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, "js", "ts");
 	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsKeyword.check, CsClassParser::parse, new CsBlockParser(), "cs");
-	public static final CodeLanguageOptions<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> CSS = new CodeLanguageOptions<>("CSS", null, null, null, null, "css");
-	public static final CodeLanguageOptions<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> XML = new CodeLanguageOptions<>("XML", null, null, null, null, "html", "xml");
+	public static final CodeLanguageImpl<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> CSS = new CodeLanguageImpl<>("CSS", null, null, null, null, "css");
+	public static final CodeLanguageImpl<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> XML = new CodeLanguageImpl<>("XML", null, null, null, null, "html", "xml");
 
 	private static CopyOnWriteArrayList<CodeLanguage> values;
 
@@ -59,31 +96,6 @@ public class CodeLanguageOptions<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_U
 		values.add(C_SHARP);
 		values.add(CSS);
 		values.add(XML);
-	}
-
-
-	final String displayName;
-	@Getter final Function<ParseInput, CodeFileSrc<T_LANG>> parser;
-	@Getter final List<String> fileExtensions;
-	@Getter final T_AST_UTIL astUtil;
-	@Getter final Keyword keyword;
-	@Getter final T_AST_EXTRACTOR extractor;
-
-
-	// package-private
-	CodeLanguageOptions(String displayName, T_AST_UTIL astUtil, Keyword keyword, Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
-		this.displayName = displayName;
-		this.parser = parser;
-		this.fileExtensions = new ArrayList<>(Arrays.asList(fileExtensions));
-		this.astUtil = astUtil;
-		this.keyword = keyword;
-		this.extractor = extractor;
-	}
-
-
-	@Override
-	public String displayName() {
-		return displayName;
 	}
 
 
@@ -106,7 +118,7 @@ public class CodeLanguageOptions<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_U
 	 */
 	public static <_T_BLOCK extends CompoundBlock, _T_KEYWORD, _T_LANG extends CodeLanguage, _T_AST_UTIL extends AstUtil<_T_BLOCK, _T_KEYWORD>, T_AST_EXTRACTOR extends AstExtractor<_T_BLOCK>> CodeLanguage registerCodeLanguage(
 			String displayName, _T_AST_UTIL astUtil, Keyword keyword, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
-		val inst = new CodeLanguageOptions<>(displayName, astUtil, keyword, parser, extractor, fileExtensions);
+		val inst = new CodeLanguageImpl<>(displayName, astUtil, keyword, parser, extractor, fileExtensions);
 		_registerNewLanguage(inst);
 		return inst;
 	}

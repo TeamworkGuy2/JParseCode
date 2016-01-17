@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;

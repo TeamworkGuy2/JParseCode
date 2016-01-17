@@ -3,8 +3,8 @@ package twg2.parser.codeParser;
 import java.util.List;
 import java.util.Map.Entry;
 
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
@@ -27,9 +27,9 @@ public interface AstExtractor<T_BLOCK extends CompoundBlock> {
 
 	public AstParser<List<AnnotationSig>> createAnnotationParser(IntermBlock<T_BLOCK> block);
 
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<T_BLOCK> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser);
+	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser);
 
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<T_BLOCK> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser);
+	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser);
 
 
 	public List<IntermBlock<T_BLOCK>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, IntermBlock<T_BLOCK> parentScope);

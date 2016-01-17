@@ -5,7 +5,7 @@ import java.util.Enumeration;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 
-import twg2.parser.documentParser.block.TextOffsetBlock;
+import twg2.parser.textFragment.TextFragmentRef;
 
 /**
  * @author TeamworkGuy2
@@ -18,10 +18,10 @@ public class TextBlockElement extends AbstractDocument.AbstractElement {
 	private int len;
 
 
-	public TextBlockElement(AbstractDocument abstractDocument, Element parent, TextOffsetBlock textBlock) {
+	public TextBlockElement(AbstractDocument abstractDocument, Element parent, TextFragmentRef textBlock) {
 		abstractDocument.super(parent, null);
-		this.off = textBlock.getOffset();
-		this.len = textBlock.getLength();
+		this.off = textBlock.getOffsetStart();
+		this.len = textBlock.getOffsetEnd() - textBlock.getOffsetStart();
 	}
 
 

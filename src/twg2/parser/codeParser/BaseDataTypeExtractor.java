@@ -6,8 +6,8 @@ import java.util.Map;
 
 import lombok.val;
 import twg2.collections.util.ListBuilder;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.text.stringUtils.StringCheck;

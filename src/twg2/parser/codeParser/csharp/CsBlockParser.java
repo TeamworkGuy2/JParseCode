@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import lombok.val;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
@@ -18,7 +19,6 @@ import twg2.parser.codeParser.BaseMethodExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
@@ -48,7 +48,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 	@Override
 	public AstParser<Simple> createTypeParser() {
-		return new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, false);
+		return new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, true);
 	}
 
 
@@ -59,20 +59,22 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 
 	@Override
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<CsBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, false);
 		return new BaseFieldExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
 	}
 
 
 	@Override
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<CsBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, true);
 		return new BaseMethodExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
 	}
 
 
 	@Override
 	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
-		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, astTree, (block) -> block.getBlockType() != CsBlock.NAMESPACE);
+		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, astTree);
 		return blocks;
 	}
 

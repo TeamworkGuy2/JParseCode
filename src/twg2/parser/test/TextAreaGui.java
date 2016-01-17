@@ -1,6 +1,5 @@
 package twg2.parser.test;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,14 +23,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
-import twg2.collections.primitiveCollections.IntArrayList;
-import twg2.parser.documentParser.block.IntermediateBlock;
-import twg2.parser.documentParser.block.ParseBlocks;
-import twg2.parser.documentParser.block.TextOffsetBlock;
 
 /**
  * @author TeamworkGuy2
@@ -126,6 +118,8 @@ public class TextAreaGui {
 
 		@Override
 		public void removeUpdate(DocumentEvent e) {
+			// TODO re-implemented
+			/*
 			try {
 				Document doc = e.getDocument();
 				System.out.println("remove update: " + doc.getLength() + ": " + e);
@@ -147,6 +141,7 @@ public class TextAreaGui {
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
+			*/
 		}
 
 		@Override

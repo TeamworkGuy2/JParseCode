@@ -1,4 +1,16 @@
 --------
+####0.4.0
+date: 2016-1-16
+
+commit: ?
+
+* Fixed a regression in C# method signature parsing
+* Removed unused twg2.parser.documentParser.block package
+* Moved twg2.parser.condition.AstParser -> twg2.parser.baseAst.AstParser
+* Modified CodeLanguageOptions, so implementation class is a sub-class and CodeLanguageOptions contains only static fields and methods
+
+
+--------
 ####0.3.0
 date: 2016-1-16
 

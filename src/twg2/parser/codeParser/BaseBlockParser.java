@@ -3,12 +3,11 @@ package twg2.parser.codeParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 
 import lombok.val;
 import twg2.collections.tuple.Tuples;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
@@ -26,12 +25,11 @@ public class BaseBlockParser {
 	/** Parses a simple AST tree using an {@link AstExtractor}
 	 * @param extractor provides parsers and extract method to consume the astTree
 	 * @param astTree the tree of basic {@link DocumentFragmentText}{@code <}{@link CodeFragmentType}{@code >} tokens
-	 * @param isValidBlock a function that checks if an {@link IntermBlock} appears to be valid before attempting to parse it
 	 * @return a list of entries with simple AST tree blocks as keys and {@link IntermClass} as values
 	 */
 	// TODO this only parses some fields and interface methods
 	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
-			AstExtractor<_T_BLOCK> extractor, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, Predicate<IntermBlock<_T_BLOCK>> isValidBlock) {
+			AstExtractor<_T_BLOCK> extractor, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
 
 		val nameScope = new ArrayList<String>();
 
@@ -46,22 +44,18 @@ public class BaseBlockParser {
 		List<List<String>> usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
 
 		for(val block : blockDeclarations) {
-			if(!isValidBlock.test(block)) {
-				continue;
-			}
-
-			List<IntermFieldSig> fields = null;
-			List<IntermMethodSig.SimpleImpl> intfMethods = null;
-
-			AstParser<List<AnnotationSig>> annotationExtractor = extractor.createAnnotationParser(block);
-			AstParser<List<IntermFieldSig>> fieldExtractor = extractor.createFieldParser(block, extractor.createTypeParser(), annotationExtractor);
-			AstParser<List<IntermMethodSig.SimpleImpl>> methodExtractor = extractor.createMethodParser(block, extractor.createTypeParser(), annotationExtractor);
-
 			usingStatementExtractor.recycle();
 			runParsers(block.getBlockTree(), usingStatementExtractor);
 
 			List<List<String>> tmpUsingStatements = usingStatementExtractor.getParserResult();
 			usingStatements.addAll(tmpUsingStatements);
+
+			List<IntermFieldSig> fields = null;
+			List<IntermMethodSig.SimpleImpl> intfMethods = null;
+
+			AstParser<List<AnnotationSig>> annotationExtractor = extractor.createAnnotationParser(block);
+			AstParser<List<IntermFieldSig>> fieldExtractor = extractor.createFieldParser(block, annotationExtractor);
+			AstParser<List<IntermMethodSig.SimpleImpl>> methodExtractor = extractor.createMethodParser(block, annotationExtractor);
 
 			runParsers(block.getBlockTree(), annotationExtractor, fieldExtractor, methodExtractor);
 
@@ -72,7 +66,9 @@ public class BaseBlockParser {
 				intfMethods = methodExtractor.getParserResult();
 			}
 
-			resBlocks.add(Tuples.of(block.getBlockTree(), new IntermClass.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
+			if(block.getBlockType().canContainFields() && block.getBlockType().canContainMethods()) {
+				resBlocks.add(Tuples.of(block.getBlockTree(), new IntermClass.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
+			}
 		}
 
 		return resBlocks;

@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.val;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.text.stringUtils.StringTrim;

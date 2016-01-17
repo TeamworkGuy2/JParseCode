@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import lombok.val;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
@@ -18,7 +19,6 @@ import twg2.parser.codeParser.BaseMethodExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.block.IntermBlock;
@@ -47,7 +47,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 	@Override
 	public AstParser<Simple> createTypeParser() {
-		return new BaseDataTypeExtractor(CodeLanguageOptions.JAVA, false);
+		return new BaseDataTypeExtractor(CodeLanguageOptions.JAVA, true);
 	}
 
 
@@ -58,13 +58,15 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	@Override
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<JavaBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, false);
 		return new BaseFieldExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser);
 	}
 
 
 	@Override
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<JavaBlock> block, AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, true);
 		return new BaseMethodExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser);
 	}
 
@@ -93,7 +95,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	// TODO this only parses some fields and interface methods
 	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
 		// TODO are all Java blocks valid blocks possibly containing fields/methods
-		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, tokenTree, (block) -> true);
+		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, tokenTree);
 		return blocks;
 	}
 

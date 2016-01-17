@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import twg2.parser.baseAst.java.JavaAstUtil;
+import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
-import twg2.parser.condition.AstParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
 
@@ -28,7 +26,7 @@ public class JavaImportStatementExtractor implements AstParser<List<List<String>
 	}
 
 
-	private static final CodeLanguageOptions<JavaKeyword, CodeLanguageOptions.Java, JavaAstUtil, AstExtractor<JavaBlock>> lang = CodeLanguageOptions.JAVA;
+	private static final CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
 
 	List<List<String>> usingStatements = new ArrayList<>();
 	State state = State.INIT;

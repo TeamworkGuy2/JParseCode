@@ -90,6 +90,12 @@ public class ParserMain {
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);
+
+			// TODO debugging
+			if(parsedFile.getSrcName().contains("IdsChanged")) {
+				System.out.println();
+			}
+
 			@SuppressWarnings("unchecked")
 			val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 

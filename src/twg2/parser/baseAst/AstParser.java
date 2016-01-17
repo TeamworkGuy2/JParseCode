@@ -1,6 +1,7 @@
-package twg2.parser.condition;
+package twg2.parser.baseAst;
 
 import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.condition.TokenParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
 

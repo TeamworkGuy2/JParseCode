@@ -17,7 +17,6 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.output.WriteSettings;
-import twg2.parser.test.JavaClassParseTest;
 import twg2.text.stringUtils.StringJoin;
 
 /**
