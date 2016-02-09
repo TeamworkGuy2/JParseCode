@@ -16,13 +16,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import dataUtils.TimeUnitUtil;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.arrays.ArrayUtil;
 import twg2.collections.tuple.Tuples;
+import twg2.io.files.FileReadUtil;
 import twg2.io.log.Logging;
 import twg2.io.log.LoggingImpl;
 import twg2.parser.baseAst.CompoundBlock;
@@ -57,9 +61,9 @@ public class ParserWorkflow {
 	}
 
 
-	public void run(Level logLevel) throws IOException {
+	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader) throws IOException {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingImpl.Format.DATETIME_LEVEL_AND_CLASS) : null;
+		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingImpl.PrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
 		try {
 			val loadRes = LoadResult.load(this.sources);
@@ -67,7 +71,14 @@ public class ParserWorkflow {
 				loadRes.log(log, logLevel, true);
 			}
 
-			val parseRes = ParsedResult.parse(loadRes.sources);
+			// TODO debugging
+			long start = System.nanoTime();
+
+			val parseRes = ParsedResult.parse(loadRes.sources, executor, fileReader);
+
+			// TODO debugging
+			System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
+
 			if(log != null) {
 				parseRes.log(log, logLevel, true);
 			}
@@ -263,11 +274,11 @@ public class ParserWorkflow {
 		}
 
 
-		public static ParsedResult parse(List<Entry<SourceInfo, List<Path>>> files) throws IOException {
+		public static ParsedResult parse(List<Entry<SourceInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException {
 			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>();
 
 			for(val filesWithSrc : files) {
-				ParserMain.parseFileSet(filesWithSrc.getValue(), fileSet);
+				ParserMain.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader);
 			}
 
 			return new ParsedResult(fileSet);
@@ -431,8 +442,10 @@ public class ParserWorkflow {
 
 
 	public static ParserWorkflow parseArgs(String[] args) {
-		if("-help".equals(args[0])) {
-			System.out.println("example command:\n" +
+		if(Arrays.asList("-help", "--help", "-h").contains(args[0])) {
+			System.out.println("An in-progress suite of parsing tools for C#, Java, and TypeScript source code.\n" +
+				"Used to create basic ASTs containing class signatures, fields, and methods. (source: https://github.com/TeamworkGuy2/JParserTools)\n" +
+				"example command:\n" +
 				"-sources 'C:/Users/TeamworkGuy2/Documents/Projects/app/server/Services=1,[cs];" +
 					"C:/Users/TeamworkGuy2/Documents/Projects/app/server/Entities=3,[cs]'" +
 				" -destinations 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Services.json=[Corningstone.Services];" +

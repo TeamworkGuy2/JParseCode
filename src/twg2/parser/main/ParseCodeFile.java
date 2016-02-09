@@ -26,25 +26,34 @@ import twg2.text.stringUtils.StringSplit;
  */
 public class ParseCodeFile {
 
-	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files) throws IOException {
+	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files, FileReadUtil fileReader) throws IOException {
 		List<CodeFileSrc<CodeLanguage>> parsedFiles = new ArrayList<>();
 
 		for(Path path : files) {
-			File file = path.toFile();
-			String srcStr = StringReplace.replace(FileReadUtil.defaultInst.readString(new FileReader(file)), "\r\n", "\n");
-			String fileName = file.getName();
-			String fileExt = StringSplit.lastMatch(fileName, ".");
-			val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
-			if(lang != null) {
-				val parsedFileInfo = parseCode(file.toString(), lang, srcStr);
-				parsedFiles.add(parsedFileInfo);
-			}
-			else {
-				throw new IllegalArgumentException("unsupported file extension '" + fileExt + "' for parsing '" + fileName + "'");
-			}
+			val parsedFile = parseFile(path.toFile(), fileReader);
+			parsedFiles.add(parsedFile);
 		}
 
 		return parsedFiles;
+	}
+
+
+	public static CodeFileSrc<CodeLanguage> parseFile(File file, FileReadUtil fileReader) throws IOException {
+		String srcStr;
+		// TODO for multi-threaded parsing
+		synchronized (ParseCodeFile.class) {
+			srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
+		}
+		String fileName = file.getName();
+		String fileExt = StringSplit.lastMatch(fileName, ".");
+		val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
+		if(lang != null) {
+			val parsedFileInfo = parseCode(file.toString(), lang, srcStr);
+			return parsedFileInfo;
+		}
+		else {
+			throw new IllegalArgumentException("unsupported file extension '" + fileExt + "' for parsing '" + fileName + "'");
+		}
 	}
 
 
@@ -60,9 +69,9 @@ public class ParseCodeFile {
 	}
 
 
-	public static void parseAndPrintFileStats(Path projDir, String[] fileTypes, Path dstLog) throws IOException {
+	public static void parseAndPrintFileStats(Path projDir, String[] fileTypes, Path dstLog, FileReadUtil fileReader) throws IOException {
 		val files = ParseDirectoryCodeFiles.loadFiles(projDir, fileTypes);
-		val results = ParseDirectoryCodeFiles.parseFileStats(projDir, files);
+		val results = ParseDirectoryCodeFiles.parseFileStats(projDir, files, fileReader);
 
 		Json.getDefaultInst().setPrettyPrint(true);
 		Json.stringify(results, dstLog.toFile());
@@ -70,21 +79,24 @@ public class ParseCodeFile {
 
 
 	public static void parseAndPrintOldAndNewFileStats() throws IOException {
+		FileReadUtil fileReader = FileReadUtil.defaultInst();
+
 		parseAndPrintFileStats(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/psor/ca"),
 				new String[] { ".cs", ".js", ".json", ".html", ".css" },
-				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-old.txt"));
+				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-old.txt"), fileReader);
 
 		parseAndPrintFileStats(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/ps/l/ca"),
 				new String[] { ".cs", ".ts", ".json", ".html", ".css" },
-				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-new.txt"));
+				Paths.get("C:/Users/TeamworkGuy2/Documents/parsed-file-stats-new.txt"), fileReader);
 	}
 
 
 	public static void parseAndPrintCSharpFileInfo() throws IOException {
+		val fileReader = FileReadUtil.defaultInst();
 		Path file = Paths.get("./rsc/ITrackSearchService.cs");
 		//Path file = Paths.get("./rsc/TrackInfo.cs");
 		val files = Arrays.asList(file);
-		val parsedFiles = parseFiles(files);
+		val parsedFiles = parseFiles(files, fileReader);
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);

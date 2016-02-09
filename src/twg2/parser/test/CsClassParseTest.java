@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
@@ -34,7 +35,7 @@ import twg2.parser.output.WriteSettings;
  */
 public class CsClassParseTest {
 	private static String simpleCsName = "SimpleCs.cs";
-	private static String simpleCsCode =
+	private static final String simpleCsCode =
 		"namespace ParserExamples.Samples {\n" +
 		"\n" +
 		"  /// <summary>\n" +
@@ -47,6 +48,9 @@ public class CsClassParseTest {
 		"\n" +
 		"    /// <value>The number of names.</value>\n" +
 		"    public int Count { get; set; }\n" +
+		"\n" +
+		"    /// <value>The access timestamps.</value>\n" +
+		"    public DateTime[] accesses { get; set; }\n" +
 		"\n" +
         "    /// <summary>Add name</summary>\n" +
         "    /// <param name=\"name\">the name</param>\n" +
@@ -87,7 +91,7 @@ public class CsClassParseTest {
 
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs"))).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.defaultInst()).get(0);
 
 
 	public CsClassParseTest() throws IOException {
@@ -111,7 +115,7 @@ public class CsClassParseTest {
 	public void simpleCsParseTest() {
 		Assert.assertEquals(1, simpleCsBlocks.size());
 		val csClass = simpleCsBlocks.get(0).getParsedClass();
-		Assert.assertEquals(2, csClass.getFields().size());
+		Assert.assertEquals(3, csClass.getFields().size());
 
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs", NameUtil.joinFqName(csClass.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
@@ -120,11 +124,16 @@ public class CsClassParseTest {
 		IntermFieldSig f = csClass.getFields().get(0);
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Names", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("IList", f.getFieldType().getTypeName());
-		Assert.assertEquals("string", f.getFieldType().getGenericParams().get(0).getTypeName());
+		Assert.assertEquals("string", f.getFieldType().getParams().get(0).getTypeName());
 
 		f = csClass.getFields().get(1);
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Count", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(2);
+		Assert.assertEquals("ParserExamples.Samples.SimpleCs.accesses", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
+		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
 		Assert.assertEquals(1, csClass.getMethods().size());
 		IntermMethodSig.SimpleImpl m = csClass.getMethods().get(0);
@@ -156,8 +165,8 @@ public class CsClassParseTest {
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
 		Assert.assertEquals("Result", m.getReturnType().getTypeName());
-		Assert.assertEquals("IList", m.getReturnType().getGenericParams().get(0).getTypeName());
-		Assert.assertEquals("String", m.getReturnType().getGenericParams().get(0).getGenericParams().get(0).getTypeName());
+		Assert.assertEquals("IList", m.getReturnType().getParams().get(0).getTypeName());
+		Assert.assertEquals("String", m.getReturnType().getParams().get(0).getParams().get(0).getTypeName());
 	}
 
 }

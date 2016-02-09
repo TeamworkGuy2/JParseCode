@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
@@ -86,7 +87,7 @@ public class JavaClassParseTest {
 
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java"))).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java")), FileReadUtil.defaultInst()).get(0);
 
 
 	public JavaClassParseTest() throws IOException {
@@ -119,7 +120,7 @@ public class JavaClassParseTest {
 		IntermFieldSig f = csClass.getFields().get(0);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.Names", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("List", f.getFieldType().getTypeName());
-		Assert.assertEquals("String", f.getFieldType().getGenericParams().get(0).getTypeName());
+		Assert.assertEquals("String", f.getFieldType().getParams().get(0).getTypeName());
 
 		f = csClass.getFields().get(1);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.Count", NameUtil.joinFqName(f.getFullName()));
@@ -155,8 +156,8 @@ public class JavaClassParseTest {
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
 		Assert.assertEquals("Result", m.getReturnType().getTypeName());
-		Assert.assertEquals("List", m.getReturnType().getGenericParams().get(0).getTypeName());
-		Assert.assertEquals("String", m.getReturnType().getGenericParams().get(0).getGenericParams().get(0).getTypeName());
+		Assert.assertEquals("List", m.getReturnType().getParams().get(0).getTypeName());
+		Assert.assertEquals("String", m.getReturnType().getParams().get(0).getParams().get(0).getTypeName());
 	}
 
 }

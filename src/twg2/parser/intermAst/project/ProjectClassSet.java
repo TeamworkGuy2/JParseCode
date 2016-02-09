@@ -1,13 +1,14 @@
 package twg2.parser.intermAst.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import lombok.val;
-import twg2.collections.util.ListUtil;
+import twg2.collections.builder.ListUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
@@ -93,7 +94,8 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 					val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
 					if(compilationUnitSimpleName.equals(simpleName)) {
 						if(matchingCompilationUnit != null) {
-							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getParsedClass() + "]");
+							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "' in namespace '" + nsName + "'" +
+									", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.getParsedClass().getSignature() + "]");
 						}
 						matchingCompilationUnit = nsCompilationUnit.getParsedClass();
 					}
@@ -124,7 +126,8 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 				val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
 				if(compilationUnitSimpleName.equals(simpleName)) {
 					if(matchingCompilationUnit != null) {
-						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "', [" + matchingCompilationUnit + ", " + nsCompilationUnit.getParsedClass() + "]");
+						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "' in namespace '" + nsName + "'" +
+								", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.getParsedClass().getSignature() + "]");
 					}
 					matchingCompilationUnit = nsCompilationUnit.getParsedClass();
 				}
@@ -141,10 +144,15 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 
 	public T_CLASS resolveSimpleNameToClass(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
-		// try resolve using the class' imports
-		T_CLASS resolvedClass = resolveSimpleNameToClass(simpleName, classScope.getUsingStatements(), missingNamespacesDst);
-
 		IntermClassSig.SimpleImpl classSig = classScope.getSignature();
+
+		// try resolve using the class' nested classes
+		T_CLASS resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, classSig.getFullName(), missingNamespacesDst);
+
+		// try resolve using the class' imports
+		if(resolvedClass == null) {
+			resolvedClass = resolveSimpleNameToClass(simpleName, classScope.getUsingStatements(), missingNamespacesDst);
+		}
 
 		// try resolve using the class' parent package/namespace
 		if(resolvedClass == null) {

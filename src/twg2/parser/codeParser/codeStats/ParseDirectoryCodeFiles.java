@@ -16,8 +16,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
+import twg2.collections.builder.ListUtil;
 import twg2.collections.tuple.Tuples;
-import twg2.collections.util.ListUtil;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
@@ -133,13 +133,13 @@ public class ParseDirectoryCodeFiles {
 	}
 
 
-	public static ParseDirectoryCodeFiles parseFileStats(Path relativePath, List<Path> files) throws IOException {
+	public static ParseDirectoryCodeFiles parseFileStats(Path relativePath, List<Path> files, FileReadUtil fileReader) throws IOException {
 		List<ParsedFileStats> filesStats = new ArrayList<>();
 
 		for(Path path : files) {
 			File file = path.toFile();
 			String fullFileName = file.getName();
-			String srcStr = StringReplace.replace(FileReadUtil.defaultInst.readString(new FileReader(file)), "\r\n", "\n");
+			String srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
 			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");
 			if("json".equals(fileNameExt.getValue())) {
 				int lineCount = StringSplit.countMatches(srcStr, "\n");

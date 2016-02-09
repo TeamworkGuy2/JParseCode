@@ -1,15 +1,14 @@
 package twg2.parser.text;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import lombok.val;
+import twg2.collections.builder.ListBuilder;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharListSorted;
-import twg2.collections.util.ListBuilder;
 import twg2.parser.condition.ParserCondition;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
@@ -273,7 +272,7 @@ public class CharConditionPipe {
 	public static <S extends CharParser> BasePipe<CharParser> createPipeAllRequired(String name, Iterable<S>... requiredConditionSets) {
 		val requiredSets = new ArrayList<List<S>>();
 		for(Iterable<S> requiredCondSet : requiredConditionSets) {
-			val requiredSet = ListBuilder.newMutable(requiredCondSet);
+			val requiredSet = ListBuilder.mutable(requiredCondSet);
 			requiredSets.add(requiredSet);
 		}
 		
@@ -283,10 +282,17 @@ public class CharConditionPipe {
 
 
 	public static <S extends CharParser> BasePipe<CharParser> createPipeRepeatableSeparator(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S> separatorConditions) {
-		val elementSet = ListBuilder.newMutable(requiredConditions);
-		val separatorSet = ListBuilder.newMutable(separatorConditions);
+		val conds = new ArrayList<List<? extends S>>();
 
-		val cond = new RepeatableSeparator<S>(name, new ArrayList<>(Arrays.asList(elementSet, separatorSet)));
+		val elementSet = ListBuilder.mutable(requiredConditions);
+		conds.add(elementSet);
+
+		if(separatorConditions != null) {
+			val separatorSet = ListBuilder.mutable(separatorConditions);
+			conds.add(separatorSet);
+		}
+
+		val cond = new RepeatableSeparator<S>(name, conds);
 		return cond;
 	}
 
@@ -295,17 +301,36 @@ public class CharConditionPipe {
 	public static <S extends CharParser> BasePipe<CharParser> createPipeOptionalSuffix(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
 		val conditionSets = new ArrayList<List<S>>();
 		@SuppressWarnings("unchecked")
-		List<S> requiredCondsCopy = ListBuilder.newMutable((Iterable<S>)requiredConditions);
+		List<S> requiredCondsCopy = ListBuilder.mutable((Iterable<S>)requiredConditions);
 		conditionSets.add(requiredCondsCopy);
 
 		@SuppressWarnings("unchecked")
 		Iterable<S>[] optionalCondsCast = (Iterable<S>[])optionalConditions;
 		for(Iterable<S> condSet : optionalCondsCast) {
-			val requiredSet = ListBuilder.newMutable(condSet);
+			val requiredSet = ListBuilder.mutable(condSet);
 			conditionSets.add(requiredSet);
 		}
 
 		val cond = new OptionalSuffix<S>(name, conditionSets);
+		return cond;
+	}
+
+
+	@SafeVarargs
+	public static <S extends CharParser> BasePipe<CharParser> createPipeOptionalSuffixesAny(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
+		val conditionSets = new ArrayList<List<S>>();
+		@SuppressWarnings("unchecked")
+		List<S> requiredCondsCopy = ListBuilder.mutable((Iterable<S>)requiredConditions);
+		conditionSets.add(requiredCondsCopy);
+
+		@SuppressWarnings("unchecked")
+		Iterable<S>[] optionalCondsCast = (Iterable<S>[])optionalConditions;
+		for(Iterable<S> condSet : optionalCondsCast) {
+			val requiredSet = ListBuilder.mutable(condSet);
+			conditionSets.add(requiredSet);
+		}
+
+		val cond = new OptionalSuffixesAny<S>(name, conditionSets);
 		return cond;
 	}
 
@@ -398,22 +423,22 @@ public class CharConditionPipe {
 
 
 
-	public static abstract class AcceptNextAllRequired<S extends CharParser> extends WithMarks<S> {
+	public static abstract class AcceptMultiple<S extends CharParser> extends WithMarks<S> {
 		private TextFragmentRef.ImplMut coords = null;
 
 
 		@SafeVarargs
-		public AcceptNextAllRequired(String name, CharParser.WithMarks filter, S... filters) {
+		public AcceptMultiple(String name, CharParser.WithMarks filter, S... filters) {
 			super(name, filter, filters);
 		}
 
 
-		public AcceptNextAllRequired(String name, CharParser.WithMarks filter, Collection<S> filters) {
+		public AcceptMultiple(String name, CharParser.WithMarks filter, Collection<S> filters) {
 			super(name, filter, filters);
 		}
 
 
-		public AcceptNextAllRequired(String name, List<? extends List<? extends S>> filterSets) {
+		public AcceptMultiple(String name, List<? extends List<? extends S>> filterSets) {
 			super(name, filterSets);
 		}
 
@@ -434,45 +459,51 @@ public class CharConditionPipe {
 				return false;
 			}
 
-			boolean res = this.curCondition.acceptNext(ch, buf);
+			// TODO debugging
+			if(this.name.equals("type parser") && twg2.parser.textParserUtils.ReadIsMatching.isNext(buf, "List<String")) {
+				System.out.println();
+			}
+
+			boolean res = super.curCondition.acceptNext(ch, buf);
 			// when complete
-			if(this.curCondition.isComplete()) {
-				val curCondCoords = this.curCondition.getCompleteMatchedTextCoords();
+			if(super.curCondition.isComplete()) {
+				val curCondCoords = super.curCondition.getCompleteMatchedTextCoords();
 				this.coords = this.coords == null ? TextFragmentRef.copyMutable(curCondCoords) : TextFragmentRef.merge(this.coords, this.coords, curCondCoords);
 
 				// get the next condition, or null
-				this.curCondition = this.nextCondition();
+				super.curCondition = nextCondition();
 
 				// required parser done, optional parsers next
-				if(this.curSetIndex > 0 && this.curCondition != null) {
-					if(buf.hasNext()) {
+				if(super.curSetIndex > 0) {
+					if(super.curCondition != null && buf.hasNext()) {
 						// peek at next buffer character, if optional parser accepts, lock into parsing the optional parser
 						char nextCh = buf.nextChar();
+						boolean nextRes = super.curCondition.acceptNext(nextCh, buf);
 						buf.unread(1);
-						boolean nextRes = this.curCondition.acceptNext(nextCh, buf);
-						this.curCondition = this.curCondition.copyOrReuse();
+						super.curCondition = super.curCondition.copyOrReuse();
+
 						if(nextRes) {
-							this.anyComplete = false;
+							super.anyComplete = false;
 						}
 						// else, the required parser is complete, so isComplete() is valid
 						else {
-							this.anyComplete = true;
-							this.curCondition = null;
+							super.anyComplete = true;
+							super.curCondition = null;
 						}
 					}
 					// no further parser input available, but since the required parser is already complete, isComplete() is valid
-					else if(this.subseqentConditionSetsOptional) {
-						this.anyComplete = true;
-						this.curCondition = null;
+					else if(super.subseqentConditionSetsOptional) {
+						super.anyComplete = true;
+						super.curCondition = null;
 					}
 				}
 			}
 
 			if(!res) {
-				this.failed = true;
+				super.failed = true;
 			}
 			else {
-				this.dstBuf.append(ch);
+				super.dstBuf.append(ch);
 			}
 
 			return res;
@@ -490,7 +521,7 @@ public class CharConditionPipe {
 
 
 
-	public static class OptionalSuffix<S extends CharParser> extends AcceptNextAllRequired<S> {
+	public static class OptionalSuffix<S extends CharParser> extends AcceptMultiple<S> {
 
 		@SafeVarargs
 		public OptionalSuffix(String name, CharParser.WithMarks filter, S... filters) {
@@ -561,7 +592,189 @@ public class CharConditionPipe {
 
 
 
-	public static class RepeatableSeparator<S extends CharParser> extends AcceptNextAllRequired<S> {
+	/** Parse a list of conditions, all conditions are optional and are parsed in order.
+	 * Each condition is parsed until {@link CharParser#acceptNext(char, TextParser)} returns false.
+	 * @author TeamworkGuy2
+	 * @since 2016-2-7
+	 */
+	public static class OptionalSuffixesAny<S extends CharParser> extends WithMarks<S> {
+		private TextFragmentRef.ImplMut coords = null;
+		private boolean prevCallLookAheadSucceeded;
+		private char prevCallLookAheadChar;
+
+
+		@SafeVarargs
+		public OptionalSuffixesAny(String name, CharParser.WithMarks filter, S... filters) {
+			super(name, filter, filters);
+			setup();
+		}
+
+
+		public OptionalSuffixesAny(String name, CharParser.WithMarks filter, Collection<S> filters) {
+			super(name, filter, filters);
+			setup();
+		}
+
+
+		public OptionalSuffixesAny(String name, List<? extends List<? extends S>> filterSets) {
+			super(name, filterSets);
+			setup();
+		}
+
+
+		private final void setup() {
+			super.subseqentConditionSetsOptional = true;
+		}
+
+
+		@Override
+		public TextFragmentRef getCompleteMatchedTextCoords() {
+			return this.coords;
+		}
+
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			if(this.curCondition == null) {
+				this.failed = true;
+				return false;
+			}
+
+			// if the previous call succeeded by using a look ahead char matching the current 'ch', then return true without checking it again (don't pass 'ch' to 'curCondition' again, because parsers are stateful)
+			if(this.prevCallLookAheadSucceeded && this.prevCallLookAheadChar == ch) {
+				return true;
+			}
+
+			this.prevCallLookAheadSucceeded = false;
+
+			final boolean initRes = super.curCondition.acceptNext(ch, buf);
+			boolean res = initRes;
+			boolean complete;
+			// when complete
+			if((complete = super.curCondition.isComplete()) || super.curCondition.isFailed()) {
+				if(complete) {
+					val curCondCoords = super.curCondition.getCompleteMatchedTextCoords();
+					this.coords = this.coords == null ? TextFragmentRef.copyMutable(curCondCoords) : TextFragmentRef.merge(this.coords, this.coords, curCondCoords);
+				}
+
+				// check if the parser will accept more input (for optional repeat parsers), else find the next parser that will
+				if(!res || buf.hasNext()) {
+					// peek at next buffer character or reuse the current character (if unused), and test if the current completed parser will accept it (for repeatable parsers)
+					char nextCh = initRes ? buf.nextChar() : ch;
+					boolean nextRes = false;
+
+					if(complete) {
+						nextRes = super.curCondition.acceptNext(nextCh, buf);
+
+						if(nextRes) {
+							super.anyComplete = false;
+							if(initRes) {
+								this.prevCallLookAheadSucceeded = true;
+								this.prevCallLookAheadChar = nextCh;
+							}
+							res = nextRes;
+						}
+					}
+					// the current parser is complete AND will not accept more input, so
+					if(!nextRes) {
+						boolean nextRes2 = res;
+						// while we have the peek ahead char, check if the next parser will accept it
+						super.curCondition = nextCondition();
+						while(super.curCondition != null) {
+							nextRes2 = super.curCondition.acceptNext(nextCh, buf);
+							// if this was a look ahead char
+							if(initRes) {
+								// since this was the first char the condition accepted, just copy and reuse, instead of setting the look ahead flag and char
+								super.curCondition = super.curCondition.copyOrReuse();
+							}
+							// if the next optional parser accepts the character, then lock into parsing the optional parser, else the loop checks parser until none remain
+							if(nextRes2) {
+								super.anyComplete = false;
+								res = nextRes2;
+								break;
+							}
+							super.curCondition = nextCondition();
+						}
+					}
+					if(initRes) {
+						buf.unread(1);
+					}
+				}
+				// no further parser input available, but since at least one parser is already complete, isComplete() is valid
+				else if(complete) {
+					super.anyComplete = true;
+					super.curCondition = null;
+				}
+			}
+
+			if(!res) {
+				super.failed = true;
+			}
+			else {
+				super.dstBuf.append(ch);
+			}
+
+			return res;
+		}
+
+
+		public CharParser nextCondition() {
+			List<CharParser> curCondSet = super.conditionSets.get(super.curSetIndex);
+			curCondSet.set(super.curCondIndex, super.curCondition.copyOrReuse());
+
+			super.curCondIndex++;
+
+			// advance to the next condition in the current set
+			if(super.curCondIndex < curCondSet.size()) {
+				return curCondSet.get(super.curCondIndex);
+			}
+			// advance to the next set of conditions
+			else if(super.curSetIndex < super.conditionSets.size() - 1) {
+				super.anyComplete = true;
+				super.curSetIndex++;
+				super.curCondIndex = 0;
+				curCondSet = super.conditionSets.get(super.curSetIndex);
+				return curCondSet.size() > 0 ? curCondSet.get(super.curCondIndex) : null;
+			}
+			// or there are no conditions left (this precondition filter is complete)
+			else {
+				super.anyComplete = true;
+				return null;
+			}
+		}
+
+
+		@Override
+		void reset() {
+			super.reset();
+			this.coords = null;
+		}
+
+
+		@Override
+		public CharParser copy() {
+			val copy = new OptionalSuffixesAny<>(name, BasePipe.copyConditionSets(this));
+			BasePipe.copyTo(this, copy);
+			return copy;
+		}
+
+
+		@Override
+		public String toString() {
+			return BasePipe.conditionSetToString(super.conditionSets, ", optional then ", "", '(', ')');
+		}
+
+	}
+
+
+
+
+	/** Accept one or two parser conditions and parse them repeatedly, this parser is complete once the first parser condition is completed once
+	 * @author TeamworkGuy2
+	 * @since 2016-2-7
+	 * @param <S> the type of parsers in this set
+	 */
+	public static class RepeatableSeparator<S extends CharParser> extends AcceptMultiple<S> {
 
 		@SafeVarargs
 		public RepeatableSeparator(String name, CharParser.WithMarks filter, S... filters) {
@@ -613,7 +826,7 @@ public class CharConditionPipe {
 					super.curSetIndex = 0;
 				}
 				else {
-					throw new AssertionError("unknown repeatable separator pipe condition state");
+					throw new AssertionError("illegal repeatable separator pipe condition state (set index: " + super.curSetIndex + ")");
 				}
 
 				super.curCondIndex = 0;

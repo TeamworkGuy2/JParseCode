@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import lombok.val;
@@ -15,7 +17,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
-import twg2.collections.util.ListUtil;
+import twg2.collections.builder.ListUtil;
+import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeLanguage;
@@ -45,9 +48,12 @@ public class CsParserExamples {
 		Path albumInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/AlbumInfo.cs");
 		Path trackInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs");
 		projFiles = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
+		// TODO until better solution for managing algorithm parallelism
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		FileReadUtil fileReader = FileReadUtil.defaultInst();
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		ParserMain.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles);
+		ParserMain.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader);
 		val resFileSet = ProjectClassSet.resolveClasses(projFiles, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));
@@ -71,15 +77,15 @@ public class CsParserExamples {
 
 		// SearchResult<TrackInfo> Search(TrackSearchCriteria criteria)
 		val mthd1Ret = trackSearchServiceDef.getMethods().get(0).getReturnType();
-		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd1Ret.getGenericParams().get(0).getFullName()));
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd1Ret.getParams().get(0).getFullName()));
 
 		// SearchResult<IDictionary<AlbumInfo, IList<Track>>> GetAlbumTracks(string albumName)
 		val mthd2Ret = trackSearchServiceDef.getMethods().get(1).getReturnType();
 
-		Assert.assertEquals("IDictionary", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getFullName()));
-		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(0).getFullName()));
-		Assert.assertEquals("IList", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getFullName()));
-		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd2Ret.getGenericParams().get(0).getGenericParams().get(1).getGenericParams().get(0).getFullName()));
+		Assert.assertEquals("IDictionary", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getFullName()));
+		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(0).getFullName()));
+		Assert.assertEquals("IList", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(1).getFullName()));
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(1).getParams().get(0).getFullName()));
 
 	}
 

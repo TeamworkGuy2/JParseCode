@@ -1,4 +1,4 @@
-package twg2.parser.test;
+package twg2.parser.miscellaneous;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

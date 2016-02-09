@@ -1,4 +1,4 @@
-package twg2.parser.test;
+package twg2.parser.miscellaneous;
 
 import java.io.IOException;
 import java.util.Random;
@@ -7,14 +7,9 @@ import java.util.Random;
  * @author TeamworkGuy2
  * @since 2014-9-1
  */
-public class ParserTest {
+public class MiscellaneousTest {
 
 	public static void main(String[] args) throws IOException {
-		new IdentifierParserTest().identifierWithGenericTypeParse();
-		new IdentifierParserTest().compoundIdentifierParse();
-		//parserTest.parseBlocksTest();
-		//parserTest.lineBufferTest();
-
 		/*
 		stringToCaseTest();
 		readCharTypeTest();
@@ -23,6 +18,7 @@ public class ParserTest {
 		readJsonLiteNumberTest();
 		lineBufferTest();
 		*/
+
 		System.out.println("float min_normal: " + Float.MIN_NORMAL + ", min_value: " + Float.MIN_VALUE);
 		System.out.println("double min_normal: " + Double.MIN_NORMAL + ", min_value: " + Double.MIN_VALUE);
 		System.out.println();

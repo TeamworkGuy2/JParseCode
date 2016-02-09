@@ -5,8 +5,8 @@ import java.util.Collection;
 
 import lombok.val;
 import twg2.arrays.ArrayUtil;
+import twg2.collections.dataStructures.Bag;
 import twg2.collections.primitiveCollections.CharList;
-import twg2.collections.util.dataStructures.Bag;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;

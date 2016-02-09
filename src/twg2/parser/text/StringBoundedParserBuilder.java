@@ -62,8 +62,13 @@ public class StringBoundedParserBuilder {
 
 
 	public StringBoundedParserBuilder addStartEndNotPrecededByMarkers(String name, char start, char notPreced, char end, Inclusion includeEnd) {
+		return addStartEndNotPrecededByMarkers(name, start, notPreced, end, 0, includeEnd);
+	}
+
+
+	public StringBoundedParserBuilder addStartEndNotPrecededByMarkers(String name, char start, char notPreced, char end, int minPreEndChars, Inclusion includeEnd) {
 		val startFilter = new CharConditions.Start(name + "-start", CharArrayList.of(start), Inclusion.INCLUDE);
-		val endFilter = new CharConditions.EndNotPrecededBy(name + "-end", CharArrayList.of(end), includeEnd, CharArrayList.of(notPreced));
+		val endFilter = new CharConditions.EndNotPrecededBy(name + "-end", CharArrayList.of(end), minPreEndChars, includeEnd, CharArrayList.of(notPreced));
 		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
 		return this;
 	}

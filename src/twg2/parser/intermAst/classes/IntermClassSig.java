@@ -92,7 +92,7 @@ public interface IntermClassSig extends JsonWritableSig {
 		List<TypeSig.Resolved> resolvedClassParams = Collections.emptyList();
 		if(classSig.isGeneric()) {
 			resolvedClassParams = new ArrayList<>();
-			for(val simpleParam : classSig.getGenericParams()) {
+			for(val simpleParam : classSig.getParams()) {
 				TypeSig.Resolved resolvedClassParam = TypeSig.resolveFrom(simpleParam, namespaceClass, projFiles, missingNamespacesDst);
 				resolvedClassParams.add(resolvedClassParam);
 			}
@@ -113,7 +113,9 @@ public interface IntermClassSig extends JsonWritableSig {
 	public static class SimpleImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
 		private final @Getter List<String> fullName;
-		private final @Getter List<TypeSig.Simple> genericParams;
+		/** This type's generic type parameters, if any */
+		private final @Getter List<TypeSig.Simple> params;
+		/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 		private final @Getter String declarationType;
 		private final @Getter List<String> extendImplementSimpleNames;
 
@@ -125,7 +127,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 
 		public boolean isGeneric() {
-			return genericParams.size() > 0;
+			return params.size() > 0;
 		}
 
 
@@ -140,10 +142,10 @@ public interface IntermClassSig extends JsonWritableSig {
 				dst.append("\"declarationType\": \"" + declarationType + "\"");
 			}
 
-			if(genericParams != null && genericParams.size() > 0) {
+			if(params != null && params.size() > 0) {
 				dst.append(", ");
 				dst.append("\"genericParameters\": [");
-				JsonWrite.joinStrConsumer(genericParams, ", ", dst, (p) -> p.toJson(dst, st));
+				JsonWrite.joinStrConsumer(params, ", ", dst, (p) -> p.toJson(dst, st));
 				dst.append("]");
 			}
 
@@ -177,7 +179,9 @@ public interface IntermClassSig extends JsonWritableSig {
 	public static class ResolvedImpl implements IntermClassSig {
 		private final @Getter AccessModifier accessModifier;
 		private final @Getter List<String> fullName;
-		private final @Getter List<TypeSig.Resolved> genericParams;
+		/** This type's generic type parameters, if any */
+		private final @Getter List<TypeSig.Resolved> params;
+		/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 		private final @Getter String declarationType;
 		private final @Getter TypeSig.Resolved extendClass;
 		private final @Getter List<TypeSig.Resolved> implementInterfaces;
@@ -190,7 +194,7 @@ public interface IntermClassSig extends JsonWritableSig {
 
 
 		public boolean isGeneric() {
-			return genericParams.size() > 0;
+			return params.size() > 0;
 		}
 
 
@@ -201,10 +205,10 @@ public interface IntermClassSig extends JsonWritableSig {
 			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 			dst.append("\"declarationType\": \"" + declarationType + "\"");
 
-			if(genericParams != null && genericParams.size() > 0) {
+			if(params != null && params.size() > 0) {
 				dst.append(", ");
 				dst.append("\"genericParameters\": [");
-				JsonWrite.joinStrConsumer(genericParams, ", ", dst, (p) -> p.toJson(dst, st));
+				JsonWrite.joinStrConsumer(params, ", ", dst, (p) -> p.toJson(dst, st));
 				dst.append("]");
 			}
 

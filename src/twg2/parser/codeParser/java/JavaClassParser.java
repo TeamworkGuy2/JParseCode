@@ -65,7 +65,7 @@ public class JavaClassParser {
 			//.addCharLiteralMarker(',')
 			.addCharLiteralMarker(";", ';')
 			.addCharLiteralMarker("@", '@')
-			.addStringLiteralMarker("::", "::")
+			.addStringLiteralMarker("::", "::") // TODO technically not a separator, integrate with identifier parser
 			.isCompound(false)
 			.build();
 		return annotationParser;

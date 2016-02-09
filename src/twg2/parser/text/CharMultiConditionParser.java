@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import twg2.collections.dataStructures.PairList;
 import twg2.collections.tuple.Tuples;
-import twg2.collections.util.dataStructures.PairList;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;

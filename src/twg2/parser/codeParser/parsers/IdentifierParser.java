@@ -21,7 +21,7 @@ public class IdentifierParser {
 	static int genericTypeDepth = 3;
 
 	public static CharParserFactory createIdentifierWithGenericTypeParser() {
-		val typeStatementCondition = GenericTypeParser.createGenericTypeStatementCondition(genericTypeDepth, IdentifierParser::createCompoundIdentifierCondition);
+		val typeStatementCondition = GenericTypeParser.createGenericTypeParser(genericTypeDepth, IdentifierParser::createCompoundIdentifierParser);
 		CharParserFactory identifierWithGenericTypeParser = new CharParserFactoryImpl<>("compound identifier with optional generic type", false, typeStatementCondition);
 		return identifierWithGenericTypeParser;
 	}
@@ -29,7 +29,7 @@ public class IdentifierParser {
 
 	public static CharParserFactory createIdentifierParser() {
 		CharParserFactory identifierParser = new StringParserBuilder("identifier")
-			.addConditionMatcher(createIdentifierCondition())
+			.addConditionMatcher(newIdentifierParser())
 			.build();
 		return identifierParser;
 	}
@@ -38,7 +38,7 @@ public class IdentifierParser {
 	/**
 	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'mySpecialLoopCount', '$thing', or '_stspr')
 	 */
-	public static CharConditions.BaseCharParser createIdentifierCondition() {
+	public static CharConditions.BaseCharParser newIdentifierParser() {
 		CharSearchSet firstCharSet = new CharSearchSet();
 		firstCharSet.addChar('$');
 		firstCharSet.addChar('_');
@@ -56,8 +56,8 @@ public class IdentifierParser {
 	/**
 	 * @return a compound identifier parser (i.e. can parse 'Aa.Bb.Cc' as one identifier token')
 	 */
-	public static CharParser createCompoundIdentifierCondition() {
-		val identifierParser = Arrays.asList(IdentifierParser.createIdentifierCondition());
+	public static CharParser createCompoundIdentifierParser() {
+		val identifierParser = Arrays.asList(newIdentifierParser());
 		val separatorParser = Arrays.asList(new CharConditions.Literal("identifier namespace separator", CharArrayList.of('.'), Inclusion.INCLUDE));
 		return CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser);
 	}

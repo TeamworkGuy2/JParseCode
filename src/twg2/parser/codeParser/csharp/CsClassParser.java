@@ -47,9 +47,9 @@ public class CsClassParser {
 	}
 
 
-	static CharParserFactory createAnnotationParser() {
+	public static CharParserFactory createAnnotationParser() {
 		CharParserFactory annotationParser = new StringBoundedParserBuilder("C# annotation")
-			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', Inclusion.INCLUDE)
+			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', 1, Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();
 		return annotationParser;
@@ -57,7 +57,7 @@ public class CsClassParser {
 
 
 	// TODO only partially implemented
-	static CharParserFactory createOperatorParser() {
+	public static CharParserFactory createOperatorParser() {
 		CharParserFactory operatorParser = new StringParserBuilder("C# operator")
 			.addCharLiteralMarker("+", '+')
 			.addCharLiteralMarker("-", '-')
@@ -70,7 +70,7 @@ public class CsClassParser {
 
 
 	// TODO couldn't get this working with identifier parser which needs to parse ', ' in strings like 'Map<String, String>'
-	static CharParserFactory createSeparatorParser() {
+	public static CharParserFactory createSeparatorParser() {
 		CharParserFactory annotationParser = new StringBoundedParserBuilder("C# separator")
 			//.addCharLiteralMarker(',')
 			.addCharLiteralMarker(";", ';')

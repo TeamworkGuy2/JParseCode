@@ -58,11 +58,15 @@ public class StringConditionsTest {
 	@Test
 	public void testEndStringCondition() {
 		String[] endMarkers = new String[] {
-				"-->", "\"\"\"", "!#"
+				"-->",
+				"\"\"\"",
+				"!#"
 		};
 
 		String[] testStrs = new String[] {
-				"<!-- comment -->", "\"stuff\"\"\"", "!#", "!#="
+				"<!-- comment -->",
+				"\"stuff\"\"\"",
+				"!#", "!#="
 		};
 
 		Boolean[] expect = { true, true, true, false };

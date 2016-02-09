@@ -62,7 +62,7 @@ public class CharConditionsTest {
 	public void testCharEndNotPrecededByCondition() {
 		String name = "EndNotPrecededByCondition";
 		val notPreced = CharArrayList.of('\\', '@');
-		CharParser cond = new CharConditions.EndNotPrecededBy(name, CharArrayList.of('\'', '"', '!'), Inclusion.INCLUDE, notPreced);
+		CharParser cond = new CharConditions.EndNotPrecededBy(name, CharArrayList.of('\'', '"', '!'), 0, Inclusion.INCLUDE, notPreced);
 
 		parseTest(false, false, name, cond, "abc@'");
 		parseTest(true, false, name, cond, "stuff\"");

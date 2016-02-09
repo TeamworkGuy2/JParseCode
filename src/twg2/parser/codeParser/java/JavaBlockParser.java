@@ -138,11 +138,11 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						val blockGenericTypesSig = BaseDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope));
-						val blockGenericTypes = blockGenericTypesSig.isGeneric() ? blockGenericTypesSig.getGenericParams() : Collections.<TypeSig.Simple>emptyList();
-						val blockFqName = NameUtil.splitFqName(blockGenericTypesSig.getTypeName());
+						val blockSig = BaseDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope));
+						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
+						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
-						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(access, blockFqName, blockGenericTypes, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(access, blockFqName, blockTypes, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);

@@ -1,8 +1,19 @@
 --------
+####0.5.0
+date: 2016-2-9
+
+commit: ?
+
+* Added array type parsing, \(i.e. 'int\[]\[]')
+* Moved twg2.parser.codeParser.eclipseProject to another project
+* Added some more tests and moved none JUnit experiment files to 'miscellaneous' package
+
+
+--------
 ####0.4.0
 date: 2016-1-16
 
-commit: ?
+commit: ab23d86656221e6b1a540d7129446b08c808aca4
 
 * Fixed a regression in C# method signature parsing
 * Removed unused twg2.parser.documentParser.block package

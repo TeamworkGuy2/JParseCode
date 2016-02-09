@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 
 import lombok.val;
+import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeLanguage;
@@ -26,16 +28,17 @@ import twg2.text.stringUtils.StringJoin;
 public class MainParser {
 
 
-	public static void parseAndValidProjectCsClasses() throws IOException {
+	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException {
 		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
-		val files1 = ParserMain.getFilesByExtension(Paths.get("/server/Services"), 1, "cs");
-		val files2 = ParserMain.getFilesByExtension(Paths.get("/server/Entities"), 3, "cs");
+		val files1 = ParserMain.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
+		val files2 = ParserMain.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
+		boolean threaded = false;
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		val files = new ArrayList<Path>();
 		files.addAll(files1);
 		files.addAll(files2);
-		ParserMain.parseFileSet(files, fileSet);
+		ParserMain.parseFileSet(files, fileSet, null, fileReader);
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
@@ -67,15 +70,20 @@ public class MainParser {
 
 
 	public static void main(String[] args) throws IOException {
+		ExecutorService executor = null; //Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		FileReadUtil fileReader = FileReadUtil.defaultInst();
+
 		if(args.length > 0) {
 			val parserWorkflow = ParserWorkflow.parseArgs(args);
-			parserWorkflow.run(Level.INFO);
+			parserWorkflow.run(Level.INFO, executor, fileReader);
 		}
 		else {
 			//parseAndPrintCSharpFileInfo();
 			//parseAndPrintFileStats();
-			parseAndValidProjectCsClasses();
+			parseAndValidProjectCsClasses(fileReader);
 		}
+
+		//executor.shutdown();
 	}
 
 }

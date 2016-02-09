@@ -404,17 +404,21 @@ public class CharConditions {
 	 * @since 2015-2-21
 	 */
 	public static class EndNotPrecededBy extends BaseCharParser {
+		private final int minPreEndChars;
 
-		public EndNotPrecededBy(String name, CharList chars, Inclusion includeCondMatchInRes, CharListReadOnly notPrecededBy) {
+
+		public EndNotPrecededBy(String name, CharList chars, int minPreEndChars, Inclusion includeCondMatchInRes, CharListReadOnly notPrecededBy) {
 			super(name, chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
 			super.notPreceding = notPrecededBy;
+			this.minPreEndChars = minPreEndChars;
 		}
 
 
 		public EndNotPrecededBy(String name, Char charMatcher, Char firstCharMatcher,
-				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc, CharListReadOnly notPrecededBy) {
+				char[] matchChars, int minPreEndChars, Inclusion includeCondMatchInRes, Object toStringSrc, CharListReadOnly notPrecededBy) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 			super.notPreceding = notPrecededBy;
+			this.minPreEndChars = minPreEndChars;
 		}
 
 
@@ -435,7 +439,7 @@ public class CharConditions {
 			}
 
 			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
-			super.anyComplete = super.charMatcher.test(ch);
+			super.anyComplete = super.charMatcher.test(ch) && (this.minPreEndChars == 0 || super.matchCount >= this.minPreEndChars);
 
 			if(super.matchCount == 0) {
 				super.coords.setStart(buf);
@@ -456,7 +460,7 @@ public class CharConditions {
 
 		@Override
 		public EndNotPrecededBy copy() {
-			val copy = new EndNotPrecededBy(name, charMatcher, firstCharMatcher, super.originalChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
+			val copy = new EndNotPrecededBy(name, charMatcher, firstCharMatcher, super.originalChars, this.minPreEndChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
 			BaseCharParser.copyTo(this, copy);
 			return copy;
 		}

@@ -2,10 +2,9 @@ package twg2.parser.codeParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import lombok.val;
-import twg2.collections.util.ListBuilder;
+import twg2.collections.builder.ListBuilder;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.documentParser.DocumentFragmentText;
@@ -151,7 +150,7 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 			throw new IllegalArgumentException("cannot parse a type signature containing '" + genericMark + "' (because this is a simple parser implementation)");
 		}
 
-		StringBuilder sb = new StringBuilder(typeSig);
+		val sb = new StringBuilder(typeSig);
 		val genericParamSets = new ArrayList<String>();
 		int i = 0;
 		while(true) {
@@ -168,14 +167,17 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 		}
 
 		// convert the generic parameters to TypeSig nested
-		Map.Entry<String, String> rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), "#");
-		TypeSig.SimpleBaseImpl root = new TypeSig.SimpleBaseImpl(StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?'), rootNameAndMarker.getKey().endsWith("?"));
+		val rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), "#");
+		val paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
+		val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
+		val isOptional = rootNameAndMarker.getKey().endsWith("?");
+		TypeSig.SimpleBaseImpl root = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional);
 		TypeSig.Simple sig;
 
 		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
 		if(rootMarker > -1) {
 			val sigChilds = expandGenericParamSet(root, rootMarker, genericParamSets);
-			sig = new TypeSig.SimpleGenericImpl(root.getTypeName(), sigChilds, root.isNullable());
+			sig = new TypeSig.SimpleGenericImpl(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable());
 		}
 		else {
 			sig = root;
@@ -188,21 +190,25 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 	public static List<TypeSig.Simple> expandGenericParamSet(TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
 		String paramSetStr = remainingParamSets.get(parentParamMarker);
 		remainingParamSets.remove(parentParamMarker);
-		List<String> params = ListBuilder.newMutable(paramSetStr.split(", "));
 		List<TypeSig.Simple> paramSigs = new ArrayList<>();
+		List<String> params = ListBuilder.mutable(paramSetStr.split(", "));
+
 		for(String param : params) {
 			// Split the generic parameter name and possible marker indicating further nested generic type
-			Map.Entry<String, String> paramNameAndMarker = StringSplit.firstMatchParts(param, "#");
+			val paramNameAndMarker = StringSplit.firstMatchParts(param, "#");
 
 			// Create basic generic parameter using the name
-			TypeSig.SimpleBaseImpl paramSigInit = new TypeSig.SimpleBaseImpl(StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?'), paramNameAndMarker.getKey().endsWith("?"));
+			val paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');
+			val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
+			val isOptional = paramNameAndMarker.getKey().endsWith("?");
+			TypeSig.SimpleBaseImpl paramSigInit = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional);
 			TypeSig.Simple paramSig;
 
 			// if this generic parameter has a marker, parse it's sub parameters and add them to a new compound generic type signature
 			int paramMarker = !StringCheck.isNullOrEmpty(paramNameAndMarker.getValue()) ? Integer.parseInt(paramNameAndMarker.getValue()) : -1;
 			if(paramMarker > -1) {
 				val childParams = expandGenericParamSet(paramSigInit, paramMarker, remainingParamSets);
-				paramSig = new TypeSig.SimpleGenericImpl(paramSigInit.getTypeName(), childParams, paramSigInit.isNullable());
+				paramSig = new TypeSig.SimpleGenericImpl(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable());
 			}
 			// else just use the generic parameter's basic signature (no nested generic types)
 			else {
