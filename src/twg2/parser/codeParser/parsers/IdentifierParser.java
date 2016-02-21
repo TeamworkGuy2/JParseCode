@@ -38,7 +38,7 @@ public class IdentifierParser {
 	/**
 	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'mySpecialLoopCount', '$thing', or '_stspr')
 	 */
-	public static CharConditions.BaseCharParser newIdentifierParser() {
+	public static CharConditions.BaseCharParserWithMarks newIdentifierParser() {
 		CharSearchSet firstCharSet = new CharSearchSet();
 		firstCharSet.addChar('$');
 		firstCharSet.addChar('_');
@@ -48,7 +48,7 @@ public class IdentifierParser {
 		CharSearchSet charSet = firstCharSet.copy();
 		charSet.addRange('0', '9');
 
-		val cond = new CharConditions.ContainsFirstSpecial("identifier", charSet::contains, firstCharSet::contains, charSet.toCharList().toArray(), Inclusion.INCLUDE, charSet);
+		val cond = new CharConditions.ContainsFirstSpecial("identifier", charSet::contains, firstCharSet::contains, firstCharSet.toCharList().toArray(), Inclusion.INCLUDE, charSet);
 		return cond;
 	}
 

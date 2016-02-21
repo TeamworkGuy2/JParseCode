@@ -12,6 +12,8 @@ public enum CodeFragmentType {
 	COMMENT(false),
 	/** chars surrounded by quotes */
 	STRING(false),
+	/** a float, int, hexadecimal, octal, binary, or other numeric literal */
+	NUMBER(false),
 	/** sequence of chars forming a valid name/keyword/identifier */
 	IDENTIFIER(false),
 	/** sequence of chars forming a keyword, commonly a subset of 'IDENTIFIER' */
@@ -21,13 +23,7 @@ public enum CodeFragmentType {
 	/** chars like ';', ',' */
 	SEPARATOR(false),
 	/** chars surrounded by parenthesis, can contain nested blocks */
-	BLOCK(true),
-	/** TODO unused */
-	NAMESPACE_LIKE(true),
-	/** TODO unused */
-	CLASS_LIKE(true),
-	/** TODO unused */
-	FUNCTION_LIKE(true);
+	BLOCK(true);
 
 
 	@Getter private final boolean compound;

@@ -10,12 +10,14 @@ import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharMapSorted;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.condition.text.ParserStartChars;
+import twg2.parser.textParser.TextParser;
 
 /** A collection of {@link CharParser}
  * @author TeamworkGuy2
  * @since 2015-2-14
  */
 public class CharParserFactoryImpl<P extends CharParser> implements CharParserFactory {
+	private String name;
 	private List<P> conditions;
 	private CharMapSorted<P> firstChars;
 	private CharList tmpChars = new CharArrayList();
@@ -25,6 +27,7 @@ public class CharParserFactoryImpl<P extends CharParser> implements CharParserFa
 
 	@SafeVarargs
 	public CharParserFactoryImpl(String name, boolean compound, P... parserConditions) {
+		this.name = name;
 		this.compound = compound;
 		this.conditions = new ArrayList<>();
 		Collections.addAll(this.conditions, parserConditions);
@@ -52,7 +55,7 @@ public class CharParserFactoryImpl<P extends CharParser> implements CharParserFa
 
 
 	@Override
-	public boolean isMatch(char ch) {
+	public boolean isMatch(char ch, TextParser buf) {
 		return firstChars.contains(ch);
 	}
 

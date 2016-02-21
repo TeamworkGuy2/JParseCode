@@ -23,16 +23,19 @@ public class AnnotationSig implements JsonWritableSig {
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		dst.append(" {");
-		dst.append("\"name\": \"" + NameUtil.joinFqName(fullName) + "\", ");
+		dst.append("\"name\": \"" + NameUtil.joinFqName(fullName) + "\"");
 
-		dst.append("\"arguments\": { ");
-		boolean notFirst = false;
-		for(val argumentEntry : arguments.entrySet()) {
-			// TODO Csv style escape
-			dst.append((notFirst ? ", " : "") + '"' + argumentEntry.getKey() + "\": \"" + argumentEntry.getValue().replace("\"", "\\\"") + '"');
-			notFirst = true;
+		if(st.includeEmptyAnnotationArguments || arguments.size() > 0) {
+			dst.append(", ");
+			dst.append("\"arguments\": { ");
+			boolean notFirst = false;
+			for(val argumentEntry : arguments.entrySet()) {
+				// TODO Csv style escape
+				dst.append((notFirst ? ", " : "") + '"' + argumentEntry.getKey() + "\": \"" + argumentEntry.getValue().replace("\"", "\\\"") + '"');
+				notFirst = true;
+			}
+			dst.append(" }");
 		}
-		dst.append(" }");
 
 		dst.append(" }");
 	}

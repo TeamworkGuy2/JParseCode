@@ -1,5 +1,6 @@
 package twg2.parser.baseAst.csharp;
 
+import lombok.val;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -10,6 +11,7 @@ import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.treeLike.simpleTree.SimpleTree;
 import dataUtils.EnumUtil;
 
 /**
@@ -107,19 +109,46 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.getSrcName().equals(node.getText()));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText())));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText()) || keyword3.getSrcName().equals(node.getText())));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
+	}
+
+
+	@Override
+	public boolean isFieldBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> block) {
+		if(block == null) { return true; }
+		val childs = block.getChildren();
+		// properties must have at-least one indexer
+		if(childs.size() == 0) { return false; }
+
+		boolean prevWasGetOrSet = false;
+		for(val child : childs) {
+			val frag = child.getData();
+			val fragType = frag.getFragmentType();
+			if(fragType == CodeFragmentType.COMMENT) {
+				continue;
+			}
+			val isGetOrSet = fragType == CodeFragmentType.IDENTIFIER && ("get".equals(frag.getText()) || "set".equals(frag.getText()));
+			if(isGetOrSet || (prevWasGetOrSet && (fragType == CodeFragmentType.BLOCK || fragType == CodeFragmentType.SEPARATOR))) {
+				// allow
+			}
+			else {
+				return false;
+			}
+			prevWasGetOrSet = isGetOrSet;
+		}
+		return true;
 	}
 
 }

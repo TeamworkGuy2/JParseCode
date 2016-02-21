@@ -61,14 +61,14 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 		if(state == State.INIT && !prevNodeWasBlockId) {
 			// found type name
-			if(isPossiblyType(lang.getKeyword(), tokenNode, allowVoid)) {
+			if(isPossiblyType(lang.getKeywordUtil(), tokenNode, allowVoid)) {
 				state = State.FOUND_TYPE_NAME;
 				typeName = tokenNode.getData().getText();
-				prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
+				prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
 				return true;
 			}
 			state = State.INIT;
-			prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
+			prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
 			return false;
 		}
 		else if(state == State.FOUND_TYPE_NAME) {
@@ -78,12 +78,12 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 				isNullable = true;
 			}
 			this.state = State.COMPLETE;
-			this.type = BaseDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""));
-			prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
+			this.type = BaseDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""), lang.getKeywordUtil());
+			prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
 			return isNullable;
 		}
 		state = State.INIT;
-		prevNodeWasBlockId = lang.getKeyword().isBlockKeyword(tokenNode.getData());
+		prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
 		return false;
 	}
 
@@ -136,14 +136,14 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 	/** Check if a tree node is the start of a data type
 	 */
-	public static <T> boolean isPossiblyType(Keyword keywordType, SimpleTree<DocumentFragmentText<CodeFragmentType>> node, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(KeywordUtil keywordType, SimpleTree<DocumentFragmentText<CodeFragmentType>> node, boolean allowVoid) {
 		val nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordType.isKeyword(nodeData.getText()) || keywordType.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
 
 
 	// TODO create a proper, full parser for generic types
-	public static TypeSig.Simple extractGenericTypes(String typeSig) {
+	public static TypeSig.Simple extractGenericTypes(String typeSig, KeywordUtil keywordUtil) {
 		String genericMark = "#";
 
 		if(typeSig.contains(genericMark)) {
@@ -171,13 +171,13 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 		val paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
 		val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
 		val isOptional = rootNameAndMarker.getKey().endsWith("?");
-		TypeSig.SimpleBaseImpl root = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional);
+		TypeSig.SimpleBaseImpl root = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
 		TypeSig.Simple sig;
 
 		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
 		if(rootMarker > -1) {
-			val sigChilds = expandGenericParamSet(root, rootMarker, genericParamSets);
-			sig = new TypeSig.SimpleGenericImpl(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable());
+			val sigChilds = expandGenericParamSet(keywordUtil, root, rootMarker, genericParamSets);
+			sig = new TypeSig.SimpleGenericImpl(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));
 		}
 		else {
 			sig = root;
@@ -187,7 +187,7 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 	}
 
 
-	public static List<TypeSig.Simple> expandGenericParamSet(TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
+	public static List<TypeSig.Simple> expandGenericParamSet(KeywordUtil keywordUtil, TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
 		String paramSetStr = remainingParamSets.get(parentParamMarker);
 		remainingParamSets.remove(parentParamMarker);
 		List<TypeSig.Simple> paramSigs = new ArrayList<>();
@@ -201,14 +201,14 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 			val paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');
 			val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
 			val isOptional = paramNameAndMarker.getKey().endsWith("?");
-			TypeSig.SimpleBaseImpl paramSigInit = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional);
+			TypeSig.SimpleBaseImpl paramSigInit = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
 			TypeSig.Simple paramSig;
 
 			// if this generic parameter has a marker, parse it's sub parameters and add them to a new compound generic type signature
 			int paramMarker = !StringCheck.isNullOrEmpty(paramNameAndMarker.getValue()) ? Integer.parseInt(paramNameAndMarker.getValue()) : -1;
 			if(paramMarker > -1) {
-				val childParams = expandGenericParamSet(paramSigInit, paramMarker, remainingParamSets);
-				paramSig = new TypeSig.SimpleGenericImpl(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable());
+				val childParams = expandGenericParamSet(keywordUtil, paramSigInit, paramMarker, remainingParamSets);
+				paramSig = new TypeSig.SimpleGenericImpl(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable(), keywordUtil.isPrimitive(paramSigInit.getTypeName()));
 			}
 			// else just use the generic parameter's basic signature (no nested generic types)
 			else {

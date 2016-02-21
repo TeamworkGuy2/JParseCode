@@ -50,7 +50,7 @@ public class ParserBuilder {
 		List<String> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
-		StringLineSupplier srcLineReader = new StringLineSupplier(src, 0, src.length(), true, true);
+		StringLineSupplier srcLineReader = new StringLineSupplier(src, 0, src.length(), true, true, true, true);
 		EnhancedIterator<String> lineReader = new EnhancedIterator<>(() -> {
 			String str = srcLineReader.get();
 			if(str != null) {
@@ -59,7 +59,7 @@ public class ParserBuilder {
 			return str;
 		});
 
-		TextParser input = new TextParserImpl(lineReader, true);
+		TextParser input = new TextParserImpl(lineReader);
 
 		val docTextFragment = new TextFragmentRef.ImplMut(0, src.length(), 0, 0, -1, -1);
 		val docRoot = new DocumentFragmentText<>(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src).toString());

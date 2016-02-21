@@ -1,8 +1,13 @@
 package twg2.parser.baseAst.tools;
 
+import java.util.function.BiPredicate;
+
+import lombok.val;
+import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.DocumentFragment;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
@@ -70,6 +75,29 @@ public class AstFragType {
 
 	public static final boolean isBlock(DocumentFragmentText<CodeFragmentType> node, String blockSymbol) {
 		return node != null && node.getFragmentType().isCompound() && node.getText().startsWith(blockSymbol);
+	}
+
+
+	// TODO unused
+	public static final boolean blockContainsOnly(SimpleTree<DocumentFragmentText<CodeFragmentType>> block, BiPredicate<DocumentFragmentText<CodeFragmentType>, CodeFragmentType> cond, boolean emptyTreeValid, CodeFragmentType... optionalAllows) {
+		if(block == null) {
+			return emptyTreeValid;
+		}
+		if(optionalAllows == null) {
+			optionalAllows = new CodeFragmentType[0];
+		}
+		val childs = block.getChildren();
+		if(childs.size() == 0) {
+			return false;
+		}
+
+		for(val child : childs) {
+			val frag = child.getData();
+			if(ArrayUtil.indexOf(optionalAllows, frag.getFragmentType()) < 0 && !cond.test(frag, frag.getFragmentType())) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

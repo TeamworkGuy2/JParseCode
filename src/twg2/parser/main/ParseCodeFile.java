@@ -79,7 +79,7 @@ public class ParseCodeFile {
 
 
 	public static void parseAndPrintOldAndNewFileStats() throws IOException {
-		FileReadUtil fileReader = FileReadUtil.defaultInst();
+		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		parseAndPrintFileStats(Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/psor/ca"),
 				new String[] { ".cs", ".js", ".json", ".html", ".css" },
@@ -92,7 +92,7 @@ public class ParseCodeFile {
 
 
 	public static void parseAndPrintCSharpFileInfo() throws IOException {
-		val fileReader = FileReadUtil.defaultInst();
+		val fileReader = FileReadUtil.threadLocalInst();
 		Path file = Paths.get("./rsc/ITrackSearchService.cs");
 		//Path file = Paths.get("./rsc/TrackInfo.cs");
 		val files = Arrays.asList(file);

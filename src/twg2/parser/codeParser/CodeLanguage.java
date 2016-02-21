@@ -14,7 +14,7 @@ public interface CodeLanguage {
 
 	public AstUtil getAstUtil();
 
-	public Keyword getKeyword();
+	public KeywordUtil getKeywordUtil();
 
 	public String displayName();
 

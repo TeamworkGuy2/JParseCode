@@ -54,11 +54,13 @@ public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 	private static AnnotationSig parseAnnotationBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> node) {
 		val children = node.getChildren();
 		val size = children.size();
+		// contains just an annotation name, no (arguments...)
 		if(size == 1) {
 			val annotTypeData = children.get(0).getData();
 			if(annotTypeData.getFragmentType() != CodeFragmentType.IDENTIFIER) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotTypeData.getText() + "'"); }
 			return new AnnotationSig(annotTypeData.getText(), NameUtil.splitFqName(annotTypeData.getText()), new HashMap<>());
 		}
+		// parse an annotation name including (arguments...)
 		else {
 			val annotTypeData = children.get(0).getData();
 			if(annotTypeData.getFragmentType() != CodeFragmentType.IDENTIFIER) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotTypeData.getText() + "'"); }
@@ -71,13 +73,15 @@ public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 			if(sizeI == 1) {
 				val singleParam = paramChilds.get(0).getData();
 				if(singleParam.getFragmentType().isCompound()) { throw new IllegalArgumentException("annotation param expected to start with an identifier, string, or other literal value, found '" + singleParam.getText() + "'"); }
-				params.put("value", StringTrim.trimQuotes(singleParam.getText()));
+				val paramValue = StringTrim.trimQuotes(singleParam.getText());
+				params.put("value", paramValue);
 			}
 			else {
 				for(int i = 0; i < sizeI; i+=3) {
 					val nameParam = paramChilds.get(i).getData();
 					if(nameParam.getFragmentType() != CodeFragmentType.IDENTIFIER) { throw new IllegalArgumentException("annotation param expected to start with identifier, found '" + nameParam.getText() + "'"); }
 					if(paramChilds.get(i + 1).getData().getFragmentType() != CodeFragmentType.OPERATOR) { throw new IllegalArgumentException("annotation param expected to be separated by operator, found '" + paramChilds.get(i + 1).getData().getText() + "'"); }
+
 					String valueStr = StringTrim.trimQuotes(paramChilds.get(i + 2).getData().getText());
 					int iOff = 3;
 					if(i + iOff + 1 < sizeI && paramChilds.get(i + iOff).getData().getFragmentType() == CodeFragmentType.OPERATOR) {

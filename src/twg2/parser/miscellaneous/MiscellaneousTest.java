@@ -3,6 +3,9 @@ package twg2.parser.miscellaneous;
 import java.io.IOException;
 import java.util.Random;
 
+import twg2.parser.test.CsClassParseTest;
+import lombok.val;
+
 /**
  * @author TeamworkGuy2
  * @since 2014-9-1
@@ -10,6 +13,8 @@ import java.util.Random;
 public class MiscellaneousTest {
 
 	public static void main(String[] args) throws IOException {
+		val a = new CsClassParseTest();
+		a.simpleCsParseTest();
 		/*
 		stringToCaseTest();
 		readCharTypeTest();

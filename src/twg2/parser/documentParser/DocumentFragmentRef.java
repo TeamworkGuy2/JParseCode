@@ -7,12 +7,13 @@ import twg2.parser.textFragment.TextFragmentRef;
  * @since 2015-5-28
  */
 public class DocumentFragmentRef<T> implements DocumentFragment<TextFragmentRef, T> {
-	private final TextFragmentRef textFragment;
-	private final T type;
+	// package-private
+	final TextFragmentRef textFragment;
+	final T fragmentType;
 
 
 	public DocumentFragmentRef(T type, TextFragmentRef text) {
-		this.type = type;
+		this.fragmentType = type;
 		this.textFragment = text;
 	}
 
@@ -25,13 +26,13 @@ public class DocumentFragmentRef<T> implements DocumentFragment<TextFragmentRef,
 
 	@Override
 	public T getFragmentType() {
-		return type;
+		return fragmentType;
 	}
 
 
 	@Override
 	public String toString() {
-		return "DocumentFragmentRef: { type: " + type + ", " + textFragment.toString() + " }";
+		return "DocumentFragmentRef: { type: " + fragmentType + ", " + textFragment.toString() + " }";
 	}
 
 }

@@ -6,7 +6,6 @@ import lombok.val;
 import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.primitiveCollections.CharListReadOnly;
 import twg2.functions.Predicates;
-import twg2.functions.Predicates.Char;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextFragmentRef;
@@ -22,10 +21,9 @@ public class CharConditions {
 
 	/**
 	 * @author TeamworkGuy2
-	 * @since 2015-2-21
+	 * @since 2016-2-20
 	 */
-	public static abstract class BaseCharParser implements CharParser.WithMarks {
-		char[] originalChars;
+	public static abstract class BaseCharParser implements CharParser {
 		boolean anyComplete = false;
 		boolean failed = false;
 		char acceptedChar = 0;
@@ -40,20 +38,12 @@ public class CharConditions {
 		StringBuilder dstBuf = new StringBuilder();
 		/** Sets up accept and reset functions given this object */
 		Predicates.Char charMatcher;
-		Predicates.Char firstCharMatcher;
 		Object toStringSrc;
 		String name;
 
 
-		public BaseCharParser(String name, CharList chars, Inclusion includeCondMatchInRes) {
-			this(name, chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
-		}
-
-
-		public BaseCharParser(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher, char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
-			this.originalChars = matchChars;
+		public BaseCharParser(String name, Predicates.Char charMatcher, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			this.charMatcher = charMatcher;
-			this.firstCharMatcher = firstCharMatcher;
 			this.anyComplete = false;
 			this.includeMatchInRes = includeCondMatchInRes;
 			this.toStringSrc = toStringSrc;
@@ -86,12 +76,6 @@ public class CharConditions {
 
 
 		@Override
-		public void getMatchFirstChars(CharList dst) {
-			dst.addAll(originalChars);
-		}
-
-
-		@Override
 		public boolean isComplete() {
 			return anyComplete && !failed;
 		}
@@ -117,6 +101,33 @@ public class CharConditions {
 
 
 		// package-private
+		void acceptedCompletedChar(char ch, TextParser buf) {
+			if(this.matchCount == 0) {
+				this.coords.setStart(buf);
+			}
+			this.dstBuf.append(ch);
+			this.acceptedChar = ch;
+			this.acceptedCount++;
+			this.matchCount++;
+		}
+
+
+		void acceptedMatchOrCompleteChar(char ch, TextParser buf) {
+			if(this.matchCount == 0) {
+				this.coords.setStart(buf);
+			}
+
+			if(this.anyComplete) {
+				this.acceptedCount++;
+				this.acceptedChar = ch;
+				this.coords.setEnd(buf);
+			}
+
+			this.dstBuf.append(ch);
+			this.matchCount++;
+		}
+
+
 		void reset() {
 			anyComplete = false;
 			failed = false;
@@ -131,18 +142,113 @@ public class CharConditions {
 
 		@Override
 		public String toString() {
-			return "one " + (toStringSrc != null ? toStringSrc.toString() : Arrays.toString(this.originalChars));
+			return "one " + (toStringSrc != null ? toStringSrc.toString() : charMatcher);
 		}
 
 
 		public static BaseCharParser copyTo(BaseCharParser src, BaseCharParser dst) {
-			dst.originalChars = src.originalChars;
+			dst.includeMatchInRes = src.includeMatchInRes;
+			dst.charMatcher = src.charMatcher;
+			dst.toStringSrc = src.toStringSrc;
+			dst.name = src.name;
+			return dst;
+		}
+
+	}
+
+
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2015-2-21
+	 */
+	public static abstract class BaseCharParserWithMarks extends BaseCharParser implements CharParser.WithMarks {
+		char[] firstMatchChars;
+		Predicates.Char firstCharMatcher;
+
+
+		public BaseCharParserWithMarks(String name, CharList chars, Inclusion includeCondMatchInRes) {
+			this(name, chars::contains, null, chars.toArray(), includeCondMatchInRes, null);
+		}
+
+
+		public BaseCharParserWithMarks(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher, char[] firstMatchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
+			super(name, charMatcher, includeCondMatchInRes, toStringSrc);
+			this.firstMatchChars = firstMatchChars;
+			this.firstCharMatcher = firstCharMatcher;
+		}
+
+
+		@Override
+		public void getMatchFirstChars(CharList dst) {
+			dst.addAll(firstMatchChars);
+		}
+
+
+		@Override
+		public String toString() {
+			return "one " + (toStringSrc != null ? toStringSrc.toString() : Arrays.toString(this.firstMatchChars));
+		}
+
+
+		public static BaseCharParserWithMarks copyTo(BaseCharParserWithMarks src, BaseCharParserWithMarks dst) {
+			dst.firstMatchChars = src.firstMatchChars;
 			dst.includeMatchInRes = src.includeMatchInRes;
 			dst.charMatcher = src.charMatcher;
 			dst.firstCharMatcher = src.firstCharMatcher;
 			dst.toStringSrc = src.toStringSrc;
 			dst.name = src.name;
 			return dst;
+		}
+
+	}
+
+
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2015-2-10
+	 */
+	public static class Start extends BaseCharParserWithMarks {
+
+		public Start(String name, CharList chars, Inclusion includeCondMatchInRes) {
+			super(name, chars, includeCondMatchInRes);
+		}
+
+
+		public Start(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher,
+				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
+			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
+		}
+
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			if(super.anyComplete || super.failed) {
+				super.failed = true;
+				return false;
+			}
+
+			super.anyComplete = super.charMatcher.test(ch);
+
+			if(super.anyComplete) {
+				super.acceptedCompletedChar(ch, buf);
+				super.coords.setEnd(buf);
+				return true;
+			}
+			else {
+				super.failed = true;
+				return false;
+			}
+		}
+
+
+		@Override
+		public Start copy() {
+			val copy = new Start(name, charMatcher, firstCharMatcher, firstMatchChars, includeMatchInRes, toStringSrc);
+			return copy;
 		}
 
 	}
@@ -159,7 +265,7 @@ public class CharConditions {
 		}
 
 
-		public Literal(String name, Char charMatcher, Char firstCharMatcher,
+		public Literal(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -167,119 +273,7 @@ public class CharConditions {
 
 		@Override
 		public Literal copy() {
-			val copy = new Literal(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
-			return copy;
-		}
-
-	}
-
-
-
-
-	/**
-	 * @author TeamworkGuy2
-	 * @since 2015-2-10
-	 */
-	public static class Start extends BaseCharParser {
-
-		public Start(String name, CharList chars, Inclusion includeCondMatchInRes) {
-			super(name, chars, includeCondMatchInRes);
-		}
-
-
-		public Start(String name, Char charMatcher, Char firstCharMatcher,
-				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
-			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
-		}
-
-
-		@Override
-		public boolean acceptNext(char ch, TextParser buf) {
-			if(super.anyComplete || super.failed) {
-				super.failed = true;
-				return false;
-			}
-			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
-			super.anyComplete = super.charMatcher.test(ch);
-
-			if(super.anyComplete) {
-				if(super.acceptedCount == 0) {
-					super.coords.setStart(buf);
-				}
-				super.dstBuf.append(ch);
-				super.acceptedChar = ch;
-				super.acceptedCount++;
-				super.matchCount++;
-				super.coords.setEnd(buf);
-				return true;
-			}
-			else {
-				super.failed = true;
-				return false;
-			}
-		}
-
-
-		@Override
-		public Start copy() {
-			val copy = new Start(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
-			return copy;
-		}
-
-	}
-
-
-
-
-	/**
-	 * @author TeamworkGuy2
-	 * @since 2015-11-27
-	 */
-	public static class Contains extends BaseCharParser {
-
-		public Contains(String name, CharList chars, Inclusion includeCondMatchInRes) {
-			super(name, chars, includeCondMatchInRes);
-		}
-
-
-		public Contains(String name, Char charMatcher, Char firstCharMatcher,
-				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
-			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
-		}
-
-
-		@Override
-		public boolean acceptNext(char ch, TextParser buf) {
-			// fail if the condition is already complete
-			if(super.anyComplete) {
-				super.failed = true;
-				return false;
-			}
-
-			if(super.charMatcher.test(ch)) {
-				if(super.matchCount == 0) {
-					super.coords.setStart(buf);
-				}
-				super.dstBuf.append(ch);
-				super.acceptedChar = ch;
-				super.acceptedCount++;
-				super.matchCount++;
-				// this condition doesn't complete until the first non-matching character
-				if(!ReadIsMatching.isNext(buf, super.charMatcher, 1)) {
-					super.anyComplete = true;
-					super.coords.setEnd(buf); // TODO somewhat inefficient, but we can't be sure that calls to this function are sequential parser positions, so we can't move this to the failure condition
-				}
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-
-
-		@Override
-		public Contains copy() {
-			val copy = new Contains(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+			val copy = new Literal(name, charMatcher, firstCharMatcher, firstMatchChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -292,14 +286,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-12-13
 	 */
-	public static class ContainsFirstSpecial extends BaseCharParser {
+	public static class ContainsFirstSpecial extends BaseCharParserWithMarks {
 
 		public ContainsFirstSpecial(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public ContainsFirstSpecial(String name, Char charMatcher, Char firstCharMatcher,
+		public ContainsFirstSpecial(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -314,13 +308,8 @@ public class CharConditions {
 			}
 
 			if(super.matchCount == 0 ? super.firstCharMatcher.test(ch) : super.charMatcher.test(ch)) {
-				if(super.matchCount == 0) {
-					super.coords.setStart(buf);
-				}
-				super.dstBuf.append(ch);
-				super.acceptedChar = ch;
-				super.acceptedCount++;
-				super.matchCount++;
+				super.acceptedCompletedChar(ch, buf);
+
 				// this condition doesn't complete until the first non-matching character
 				if(!ReadIsMatching.isNext(buf, super.charMatcher, 1)) {
 					super.anyComplete = true;
@@ -336,7 +325,35 @@ public class CharConditions {
 
 		@Override
 		public ContainsFirstSpecial copy() {
-			val copy = new ContainsFirstSpecial(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+			val copy = new ContainsFirstSpecial(name, charMatcher, firstCharMatcher, firstMatchChars, includeMatchInRes, toStringSrc);
+			return copy;
+		}
+
+	}
+
+
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2015-11-27
+	 */
+	public static class Contains extends ContainsFirstSpecial {
+
+		public Contains(String name, CharList chars, Inclusion includeCondMatchInRes) {
+			super(name, chars, includeCondMatchInRes);
+		}
+
+
+		public Contains(String name, Predicates.Char charMatcher,
+				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
+			super(name, charMatcher, charMatcher, matchChars, includeCondMatchInRes, toStringSrc);
+		}
+
+
+		@Override
+		public Contains copy() {
+			val copy = new Contains(name, charMatcher, firstMatchChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -349,14 +366,14 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
-	public static class End extends BaseCharParser {
+	public static class End extends BaseCharParserWithMarks {
 
 		public End(String name, CharList chars, Inclusion includeCondMatchInRes) {
 			super(name, chars, includeCondMatchInRes);
 		}
 
 
-		public End(String name, Char charMatcher, Char firstCharMatcher,
+		public End(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher,
 				char[] matchChars, Inclusion includeCondMatchInRes, Object toStringSrc) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 		}
@@ -371,18 +388,7 @@ public class CharConditions {
 			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
 			super.anyComplete = super.charMatcher.test(ch);
 
-			if(super.matchCount == 0) {
-				super.coords.setStart(buf);
-			}
-
-			if(super.anyComplete) {
-				super.acceptedCount++;
-				super.acceptedChar = ch;
-				super.coords.setEnd(buf);
-			}
-
-			super.dstBuf.append(ch);
-			super.matchCount++;
+			super.acceptedMatchOrCompleteChar(ch, buf);
 
 			return true;
 		}
@@ -390,7 +396,7 @@ public class CharConditions {
 
 		@Override
 		public End copy() {
-			val copy = new End(name, charMatcher, firstCharMatcher, originalChars, includeMatchInRes, toStringSrc);
+			val copy = new End(name, charMatcher, firstCharMatcher, firstMatchChars, includeMatchInRes, toStringSrc);
 			return copy;
 		}
 
@@ -403,7 +409,7 @@ public class CharConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static class EndNotPrecededBy extends BaseCharParser {
+	public static class EndNotPrecededBy extends BaseCharParserWithMarks {
 		private final int minPreEndChars;
 
 
@@ -414,7 +420,7 @@ public class CharConditions {
 		}
 
 
-		public EndNotPrecededBy(String name, Char charMatcher, Char firstCharMatcher,
+		public EndNotPrecededBy(String name, Predicates.Char charMatcher, Predicates.Char firstCharMatcher,
 				char[] matchChars, int minPreEndChars, Inclusion includeCondMatchInRes, Object toStringSrc, CharListReadOnly notPrecededBy) {
 			super(name, charMatcher, firstCharMatcher, matchChars, includeCondMatchInRes, toStringSrc);
 			super.notPreceding = notPrecededBy;
@@ -441,18 +447,7 @@ public class CharConditions {
 			// reverse iterate through the bag so we don't have to adjust the loop counter when we remove elements
 			super.anyComplete = super.charMatcher.test(ch) && (this.minPreEndChars == 0 || super.matchCount >= this.minPreEndChars);
 
-			if(super.matchCount == 0) {
-				super.coords.setStart(buf);
-			}
-
-			if(super.anyComplete) {
-				super.acceptedChar = ch;
-				super.acceptedCount++;
-				super.coords.setEnd(buf);
-			}
-
-			super.dstBuf.append(ch);
-			super.matchCount++;
+			super.acceptedMatchOrCompleteChar(ch, buf);
 
 			return true;
 		}
@@ -460,8 +455,8 @@ public class CharConditions {
 
 		@Override
 		public EndNotPrecededBy copy() {
-			val copy = new EndNotPrecededBy(name, charMatcher, firstCharMatcher, super.originalChars, this.minPreEndChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
-			BaseCharParser.copyTo(this, copy);
+			val copy = new EndNotPrecededBy(name, charMatcher, firstCharMatcher, super.firstMatchChars, this.minPreEndChars, super.includeMatchInRes, super.toStringSrc, super.notPreceding);
+			BaseCharParserWithMarks.copyTo(this, copy);
 			return copy;
 		}
 

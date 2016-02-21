@@ -10,6 +10,7 @@ import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.treeLike.simpleTree.SimpleTree;
 import dataUtils.EnumUtil;
 
 /**
@@ -110,19 +111,27 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.getSrcName().equals(node.getText()));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1, JavaKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText())));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
 	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1, JavaKeyword keyword2, JavaKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.getSrcName().equals(node.getText()) || keyword2.getSrcName().equals(node.getText()) || keyword3.getSrcName().equals(node.getText())));
+		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
+	}
+
+
+	/** Java does not have a field block
+	 */
+	@Override
+	public boolean isFieldBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+		return false;
 	}
 
 }

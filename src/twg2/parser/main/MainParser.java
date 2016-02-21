@@ -32,13 +32,14 @@ public class MainParser {
 		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
 		val files1 = ParserMain.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
 		val files2 = ParserMain.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
-		boolean threaded = false;
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		val files = new ArrayList<Path>();
 		files.addAll(files1);
 		files.addAll(files2);
-		ParserMain.parseFileSet(files, fileSet, null, fileReader);
+
+		ExecutorService executor = null;
+		ParserMain.parseFileSet(files, fileSet, executor, fileReader);
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
@@ -55,7 +56,7 @@ public class MainParser {
 		}
 		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullName())));
 
-		val writeSettings = new WriteSettings(true, false, false);
+		val writeSettings = new WriteSettings(true, false, false, false);
 
 		for(val classInfo : resClasses) {
 			System.out.print("\"" + NameUtil.joinFqName(classInfo.getSignature().getFullName()) + "\": ");
@@ -71,7 +72,7 @@ public class MainParser {
 
 	public static void main(String[] args) throws IOException {
 		ExecutorService executor = null; //Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		FileReadUtil fileReader = FileReadUtil.defaultInst();
+		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		if(args.length > 0) {
 			val parserWorkflow = ParserWorkflow.parseArgs(args);
@@ -83,7 +84,9 @@ public class MainParser {
 			parseAndValidProjectCsClasses(fileReader);
 		}
 
-		//executor.shutdown();
+		if(executor != null) {
+			executor.shutdown();
+		}
 	}
 
 }

@@ -209,7 +209,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 					sb.append(src.getKey());
 					sb.append(newline);
-					JsonWrite.joinStrConsumer(src.getValue(), newline, sb, (f) -> sb.append(f.toString()));
+					JsonWrite.joinStr(src.getValue(), newline, sb, (f) -> f.toString());
 					sb.append(newline);
 				}
 
@@ -265,7 +265,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullName())));
+					JsonWrite.joinStr(fileSet.getValue(), ", ", sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
 					sb.append("]" + newline);
 				}
 
@@ -330,7 +330,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStrConsumer(fileSet.getValue(), ", ", sb, (f) -> sb.append(NameUtil.joinFqName(f.getSignature().getFullName())));
+					JsonWrite.joinStr(fileSet.getValue(), ", ", sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
 					sb.append("]" + newline);
 				}
 
@@ -340,6 +340,7 @@ public class ParserWorkflow {
 
 
 		public static ResolvedResult resolve(ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> simpleFileSet, HashSet<List<String>> missingNamespaces) throws IOException {
+			// TODO shouldn't be using CsBlock, should use language block type
 			val resFileSet = ProjectClassSet.resolveClasses(simpleFileSet, CsBlock.CLASS, missingNamespaces);
 
 			return new ResolvedResult(resFileSet, missingNamespaces);
@@ -372,7 +373,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 					sb.append(entry.getKey());
 					sb.append(newline);
-					JsonWrite.joinStrConsumer(entry.getValue(), newline, sb, (f) -> sb.append(NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName())));
+					JsonWrite.joinStr(entry.getValue(), newline, sb, (f) -> NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName()));
 					sb.append(newline);
 				}
 				log.log(level, this.getClass(), sb.toString());
@@ -403,7 +404,7 @@ public class ParserWorkflow {
 
 		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
 			// get a subset of all the parsed files
-			val writeSettings = new WriteSettings(true, false, false);
+			val writeSettings = new WriteSettings(true, false, false, false);
 
 			// fill indices with null so we can random access any valid index
 			for(val dstSet : resSets.entrySet()) {

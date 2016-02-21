@@ -8,9 +8,11 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.BaseDataTypeExtractor;
+import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.intermAst.annotation.AnnotationSig;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
@@ -30,7 +32,7 @@ public enum IntermMethodSig {
 
 	/** Resolves simple name fields from {@link IntermMethodSig.SimpleImpl} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
 	 */
-	public static <T_METHOD extends IntermMethodSig.SimpleImpl> IntermMethodSig.ResolvedImpl resolveFrom(T_METHOD intermMethod,
+	public static <T_METHOD extends IntermMethodSig.SimpleImpl> IntermMethodSig.ResolvedImpl resolveFrom(KeywordUtil keywordUtil, T_METHOD intermMethod,
 			IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass, ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
@@ -39,7 +41,7 @@ public enum IntermMethodSig {
 		// resolve each parameter's type
 		val paramSigs = intermMethod.getParamSigs();
 		for(val paramSig : paramSigs) {
-			TypeSig.Simple genericParamType = BaseDataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName());
+			TypeSig.Simple genericParamType = BaseDataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName(), keywordUtil);
 			TypeSig.Resolved resolvedParamType = TypeSig.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
 
 			val newParamSig = new ResolvedParameterSig(paramSig.getName(), resolvedParamType, paramSig.isOptional(), paramSig.getDefaultValue());
@@ -48,7 +50,7 @@ public enum IntermMethodSig {
 
 		TypeSig.Resolved resolvedReturnType = TypeSig.resolveFrom(intermMethod.getReturnType(), namespaceClass, projFiles, missingNamespacesDst);
 
-		return new IntermMethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAnnotations());
+		return new IntermMethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAccessModifiers(), intermMethod.getAnnotations());
 	}
 
 
@@ -66,13 +68,16 @@ public enum IntermMethodSig {
 		private final @Getter List<String> fullName;
 		private final @Getter List<T_PARAM> paramSigs;
 		private final @Getter T_RET returnType;
+		private final @Getter List<AccessModifier> accessModifiers;
 		private final @Getter List<AnnotationSig> annotations;
 
 
 		public Impl(String name, List<String> fullName, List<? extends T_PARAM> paramSigs,
-				T_RET returnType, List<? extends AnnotationSig> annotations) {
+				T_RET returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations) {
 			@SuppressWarnings("unchecked")
 			val paramSigsCast = (List<T_PARAM>)paramSigs;
+			@SuppressWarnings("unchecked")
+			val accessModifiersCast = (List<AccessModifier>)accessModifiers;
 			@SuppressWarnings("unchecked")
 			val annotationsCast = (List<AnnotationSig>)annotations;
 
@@ -80,6 +85,7 @@ public enum IntermMethodSig {
 			this.fullName = fullName;
 			this.paramSigs = paramSigsCast;
 			this.returnType = returnType;
+			this.accessModifiers = accessModifiersCast;
 			this.annotations = annotationsCast;
 		}
 
@@ -90,11 +96,15 @@ public enum IntermMethodSig {
 			dst.append("\"name\": \"" + (st.fullMethodName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 
 			dst.append("\"parameters\": [");
-			JsonWrite.joinStrConsumer(paramSigs, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonWrite.joinStrConsume(paramSigs, ", ", dst, (param) -> param.toJson(dst, st));
+			dst.append("], ");
+
+			dst.append("\"accessModifiers\": [");
+			JsonWrite.joinStr(accessModifiers, ", ", dst, (acs) -> '"' + acs.toSrc() + '"');
 			dst.append("], ");
 
 			dst.append("\"annotations\": [");
-			JsonWrite.joinStrConsumer(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
+			JsonWrite.joinStrConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
 			dst.append("], ");
 
 			dst.append("\"returnType\": ");
@@ -118,8 +128,8 @@ public enum IntermMethodSig {
 	public static class SimpleImpl extends Impl<IntermParameterSig, TypeSig.Simple> {
 
 		public SimpleImpl(String name, List<String> fullName, List<? extends IntermParameterSig> paramSigs,
-				TypeSig.Simple returnType, List<AnnotationSig> annotations) {
-			super(name, fullName, paramSigs, returnType, annotations);
+				TypeSig.Simple returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations) {
+			super(name, fullName, paramSigs, returnType, accessModifiers, annotations);
 		}
 
 	}
@@ -131,8 +141,8 @@ public enum IntermMethodSig {
 	public static class ResolvedImpl extends Impl<ResolvedParameterSig, TypeSig.Resolved> {
 
 		public ResolvedImpl(String name, List<String> fullName, List<? extends ResolvedParameterSig> paramSigs,
-				TypeSig.Resolved returnType, List<AnnotationSig> annotations) {
-			super(name, fullName, paramSigs, returnType, annotations);
+				TypeSig.Resolved returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations) {
+			super(name, fullName, paramSigs, returnType, accessModifiers, annotations);
 		}
 
 	}

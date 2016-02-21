@@ -50,7 +50,7 @@ public class CsParserExamples {
 		projFiles = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
 		// TODO until better solution for managing algorithm parallelism
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		FileReadUtil fileReader = FileReadUtil.defaultInst();
+		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		ParserMain.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader);

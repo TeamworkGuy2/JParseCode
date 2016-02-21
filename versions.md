@@ -1,8 +1,21 @@
 --------
+####0.6.0
+date: 2016-2-21
+
+commit: ?
+
+* Added numeric literal parsing \(i.e. '23' or '1.5f')
+* Added field and method access modifier parsing \(i.e. public, static, synchronized, volatile)
+* Fields now writing their annotations when toJson\() is called
+* Changed JsonWrite method names to help differentiate their purposes
+* Update to use latest version of multiple libraries, including: JFileIo, JStreamish, JTextParser, and JParserDataTypeLike
+
+
+--------
 ####0.5.0
 date: 2016-2-9
 
-commit: ?
+commit: eea353c111f789b315ab5471661c6a305c0701d2
 
 * Added array type parsing, \(i.e. 'int\[]\[]')
 * Moved twg2.parser.codeParser.eclipseProject to another project

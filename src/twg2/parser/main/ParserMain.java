@@ -98,7 +98,7 @@ public class ParserMain {
 			HashSet<Path> processedFiles = new HashSet<>();
 
 			// TODO should add a consumeBlocks or similar function, since we don't have a result to return
-			ParallelWork.transformBlocks(WorkBlockPolicy.newWithExecutorService(40, executor), files, (f) -> {
+			ParallelWork.transformBlocks(WorkBlockPolicy.newFixedBlockSize(40, executor), files, (f) -> {
 				synchronized(processedFiles) {
 					if(processedFiles.contains(f)) {
 						System.err.println("already parsed '" + f + "'");

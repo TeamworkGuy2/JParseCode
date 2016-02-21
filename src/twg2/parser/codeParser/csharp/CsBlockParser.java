@@ -12,6 +12,7 @@ import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.BaseAccessModifierExtractor;
 import twg2.parser.codeParser.BaseBlockParser;
 import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.codeParser.BaseFieldExtractor;
@@ -60,8 +61,9 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 	@Override
 	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
-		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, false);
-		return new BaseFieldExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
+		val lang = CodeLanguageOptions.C_SHARP;
+		val typeParser = new BaseDataTypeExtractor(lang, false);
+		return new BaseFieldExtractor("C#", CsKeyword.check, block, typeParser, annotationParser, lang.getAstUtil());
 	}
 
 
@@ -115,21 +117,22 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 					val prevNode = childIter.hasPrevious() ? childIter.previous() : null;
 
 					// if a block keyword ("class", "interface", etc.) and an identifier were found, then this is probably a valid block declaration
-					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeyword().isBlockKeyword(prevNode.getData())) {
+					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
 						addBlockCount = 1;
 						val blockTypeStr = prevNode.getData().getText();
 						CsBlock blockType = CsBlock.tryFromKeyword(CsKeyword.check.tryToKeyword(blockTypeStr));
-						val accessModifiers = readAccessModifier(childIter);
+						val accessModifiers = BaseAccessModifierExtractor.readAccessModifierFromIter(lang.getKeywordUtil(), childIter);
+						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
 						AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						val blockSig = BaseDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope));
+						val blockSig = BaseDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), lang.getKeywordUtil());
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
-						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(access, blockFqName, blockTypes, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);
@@ -143,31 +146,6 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 				addBlockCount--;
 			}
 		}
-	}
-
-
-	/** Read backward through any available access modifiers (i.e. 'abstract', 'public', 'static', ...).
-	 * Returns the iterator where {@code next()} would return the first access modifier element.
-	 * @return access modifiers read backward from the iterator's current {@code previous()} value
-	 */
-	private static List<String> readAccessModifier(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
-		int prevCount = 0;
-		List<String> accessModifiers = new ArrayList<>();
-		SimpleTree<DocumentFragmentText<CodeFragmentType>> child = iter.hasPrevious() ? iter.previous() : null;
-
-		while(child != null && lang.getKeyword().isClassModifierKeyword(child.getData())) {
-			accessModifiers.add(0, child.getData().getText());
-			child = iter.hasPrevious() ? iter.previous() : null;
-			if(iter.hasPrevious()) { prevCount++; }
-		}
-
-		// move to next since the while loop doesn't use the last value
-		if(prevCount > 0) {
-			iter.next();
-		}
-
-		return accessModifiers;
 	}
 
 
@@ -187,7 +165,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		SimpleTree<DocumentFragmentText<CodeFragmentType>> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
-		while(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeyword().isBlockKeyword(prevNode.getData())) {
+		while(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
@@ -197,7 +175,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		if(prevNode != null && prevNode.getData().getText().trim().equals(":")) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeyword().isBlockKeyword(prevNode.getData())) {
+			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
 				val extendImplementNames = names;
 				val className = prevNode.getData().getText();
 				nameCompoundRes = Tuples.of(className, extendImplementNames);

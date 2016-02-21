@@ -1,75 +1,77 @@
 package twg2.parser.codeParser.csharp;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
+import lombok.val;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.Keyword;
+import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.tools.EnumSubSet;
 import twg2.parser.documentParser.DocumentFragmentText;
 
-public enum CsKeyword {
+public enum CsKeyword implements AccessModifier {
 	// NOTE: these must be in alphabetical order for Inst array binary searches to work
-	ABSTRACT("abstract"),
+	// TODO ASYNC("async", CsKeyword.METHOD_MOD),
+	ABSTRACT("abstract", Flag.METHOD_MOD | Flag.CLASS_MOD),
 	AS("as"),
 	BASE("base"),
-	BOOL("bool", true),
+	BOOL("bool", Flag.IS_TYPE),
 	BREAK("break"),
-	BYTE("byte", true),
+	BYTE("byte", Flag.IS_TYPE),
 	CASE("case"),
 	CATCH("catch"),
-	CHAR("char", true),
+	CHAR("char", Flag.IS_TYPE),
 	CHECKED("checked"),
-	CLASS("class"),
+	CLASS("class", Flag.BLOCK_MOD),
 	CONST("const"),
 	CONTINUE("continue"),
-	DECIMAL("decimal", true),
+	DECIMAL("decimal", Flag.IS_TYPE),
 	DEFAULT("default"),
 	DELEGATE("delegate"),
 	DO("do"),
-	DOUBLE("double", true),
+	DOUBLE("double", Flag.IS_TYPE),
 	ELSE("else"),
 	ENUM("enum"),
 	EVENT("event"),
 	EXPLICIT("explicit"),
-	EXTERN("extern"),
+	EXTERN("extern", Flag.METHOD_MOD),
 	FALSE("false"),
 	FINALLY("finally"),
 	FIXED("fixed"),
-	FLOAT("float", true),
+	FLOAT("float", Flag.IS_TYPE),
 	FOR("for"),
 	FOREACH("foreach"),
 	GOTO("goto"),
 	IF("if"),
 	IMPLICIT("implicit"),
 	IN("in"),
-	INT("int", true),
-	INTERFACE("interface"),
-	INTERNAL("internal"),
+	INT("int", Flag.IS_TYPE),
+	INTERFACE("interface", Flag.BLOCK_MOD),
+	INTERNAL("internal", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	IS("is"),
 	LOCK("lock"),
-	LONG("long", true),
-	NAMESPACE("namespace"),
-	NEW("new"),
+	LONG("long", Flag.IS_TYPE),
+	NAMESPACE("namespace", Flag.BLOCK_MOD),
+	NEW("new", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	NULL("null"),
-	OBJECT("object", true),
+	OBJECT("object", Flag.IS_TYPE),
 	OPERATOR("operator"),
 	OUT("out"),
-	OVERRIDE("override"),
+	OVERRIDE("override", Flag.METHOD_MOD),
 	PARAMS("params"),
-	PRIVATE("private"),
-	PROTECTED("protected"),
-	PUBLIC("public"),
-	READONLY("readonly"),
+	PRIVATE("private", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
+	PROTECTED("protected", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
+	PUBLIC("public", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
+	READONLY("readonly", Flag.FIELD_MOD),
 	REF("ref"),
 	RETURN("return"),
-	SBYTE("sbyte", true),
-	SEALED("sealed"),
-	SHORT("short", true),
+	SBYTE("sbyte", Flag.IS_TYPE),
+	SEALED("sealed", Flag.METHOD_MOD | Flag.CLASS_MOD),
+	SHORT("short", Flag.IS_TYPE),
 	SIZEOF("sizeof"),
 	STACKALLOC("stackalloc"),
-	STATIC("static"),
-	STRING("string", true),
+	STATIC("static", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
+	STRING("string", Flag.IS_TYPE),
 	STRUCT("struct"),
 	SWITCH("switch"),
 	THIS("this"),
@@ -77,15 +79,15 @@ public enum CsKeyword {
 	TRUE("true"),
 	TRY("try"),
 	TYPEOF("typeof"),
-	UINT("uint", true),
-	ULONG("ulong", true),
+	UINT("uint", Flag.IS_TYPE),
+	ULONG("ulong", Flag.IS_TYPE),
 	UNCHECKED("unchecked"),
 	UNSAFE("unsafe"),
-	USHORT("ushort", true),
+	USHORT("ushort", Flag.IS_TYPE),
 	USING("using"),
-	VIRTUAL("virtual"),
+	VIRTUAL("virtual", Flag.METHOD_MOD),
 	VOID("void"),
-	VOLATILE("volatile"),
+	VOLATILE("volatile", Flag.FIELD_MOD),
 	WHILE("while");
 
 
@@ -93,27 +95,35 @@ public enum CsKeyword {
 
 	public final String srcName;
 	public final boolean isType;
+	public final boolean isClassModifier;
+	public final boolean isFieldModifier;
+	public final boolean isMethodModifier;
+	public final boolean isBlockModifier;
 
 
 	CsKeyword(String name) {
 		this.srcName = name;
 		this.isType = false;
+		this.isClassModifier = false;
+		this.isFieldModifier = false;
+		this.isMethodModifier = false;
+		this.isBlockModifier = false;
 	}
 
 
-	CsKeyword(String name, boolean isType) {
+	CsKeyword(String name, int typeFlags) {
 		this.srcName = name;
-		this.isType = isType;
+		this.isType = (typeFlags & Flag.IS_TYPE) == Flag.IS_TYPE;
+		this.isClassModifier = (typeFlags & Flag.CLASS_MOD) == Flag.CLASS_MOD;
+		this.isFieldModifier = (typeFlags & Flag.FIELD_MOD) == Flag.FIELD_MOD;
+		this.isMethodModifier = (typeFlags & Flag.METHOD_MOD) == Flag.METHOD_MOD;
+		this.isBlockModifier = (typeFlags & Flag.BLOCK_MOD) == Flag.BLOCK_MOD;
 	}
 
 
-	public String getSrcName() {
+	@Override
+	public String toSrc() {
 		return srcName;
-	}
-
-
-	public boolean isType() {
-		return isType;
 	}
 
 
@@ -123,32 +133,47 @@ public enum CsKeyword {
 	 * @author TeamworkGuy2
 	 * @since 2016-1-14
 	 */
-	public static class Inst implements Keyword {
+	public static class Inst implements KeywordUtil {
 		public final String[] keywords;
 		private final CsKeyword[] values;
 		private final String[] primitives;
-		private final String[] types;
+		private final EnumSubSet<CsKeyword> types;
+		private final EnumSubSet<CsKeyword> classMods;
+		private final EnumSubSet<CsKeyword> fieldMods;
+		private final EnumSubSet<CsKeyword> methodMods;
+		private final EnumSubSet<CsKeyword> blockMods;
 
 
 		{
-			List<String> typesList = new ArrayList<>();
 			CsKeyword[] keywordEnums = CsKeyword.values();
+			EnumSubSet.Builder<CsKeyword> typesSet = new EnumSubSet.Builder<>((e) -> e.isType, (e) -> e.srcName);
+			EnumSubSet.Builder<CsKeyword> classModsSet = new EnumSubSet.Builder<>((e) -> e.isClassModifier, (e) -> e.srcName);
+			EnumSubSet.Builder<CsKeyword> fieldModsSet = new EnumSubSet.Builder<>((e) -> e.isFieldModifier, (e) -> e.srcName);
+			EnumSubSet.Builder<CsKeyword> methodModsSet = new EnumSubSet.Builder<>((e) -> e.isMethodModifier, (e) -> e.srcName);
+			EnumSubSet.Builder<CsKeyword> blockModsSet = new EnumSubSet.Builder<>((e) -> e.isBlockModifier, (e) -> e.srcName);
 
 			values = keywordEnums;
 
 			keywords = new String[keywordEnums.length];
 
 			for(int i = 0, size = keywordEnums.length; i < size; i++) {
-				keywords[i] = keywordEnums[i].srcName;
-				if(keywordEnums[i].isType) {
-					typesList.add(keywordEnums[i].srcName);
-				}
+				val enm = keywordEnums[i];
+				keywords[i] = enm.srcName;
+
+				typesSet.add(enm);
+				classModsSet.add(enm);
+				fieldModsSet.add(enm);
+				methodModsSet.add(enm);
+				blockModsSet.add(enm);
 			}
 
 			//Arrays.sort(keywords);
 
-			types = typesList.toArray(new String[typesList.size()]);
-			Arrays.sort(types);
+			types = typesSet.build();
+			classMods = classModsSet.build();
+			fieldMods = fieldModsSet.build();
+			methodMods = methodModsSet.build();
+			blockMods = blockModsSet.build();
 
 			// from: https://msdn.microsoft.com/en-us/library/system.type.isprimitive%28v=vs.110%29.aspx
 			// IntPtr and UIntPtr aren't keywords, so they are string literals here
@@ -188,7 +213,7 @@ public enum CsKeyword {
 
 		@Override
 		public boolean isType(String str) {
-			return Arrays.binarySearch(types, str) > -1;
+			return types.find(str) != null;
 		}
 
 
@@ -199,25 +224,80 @@ public enum CsKeyword {
 		 */
 		@Override
 		public boolean isDataTypeKeyword(String str) {
-			return Arrays.binarySearch(types, str) > -1;
+			return types.find(str) != null;
 		}
 
 
 		@Override
 		public boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-					(CsKeyword.CLASS.getSrcName().equals(node.getText()) || CsKeyword.INTERFACE.getSrcName().equals(node.getText()) || CsKeyword.NAMESPACE.getSrcName().equals(node.getText())));
+			return parseKeyword(node, blockMods) != null;
 		}
 
 
 		@Override
 		public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			String text = null;
-			return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD &&
-					(CsKeyword.PUBLIC.getSrcName().equals((text = node.getText())) || CsKeyword.PROTECTED.getSrcName().equals(text) || CsKeyword.INTERNAL.getSrcName().equals(text) || CsKeyword.PRIVATE.getSrcName().equals(text) ||
-					CsKeyword.ABSTRACT.getSrcName().equals(text) || CsKeyword.SEALED.getSrcName().equals(text) || CsKeyword.STATIC.getSrcName().equals(text)));
+			return parseKeyword(node, classMods) != null;
+		}
+
+
+		@Override
+		public boolean isFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, fieldMods) != null;
+		}
+
+
+		@Override
+		public boolean isMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, methodMods) != null;
+		}
+
+
+		@Override
+		public AccessModifier parseBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, blockMods);
+		}
+
+
+		@Override
+		public AccessModifier parseClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, classMods);
+		}
+
+
+		@Override
+		public AccessModifier parseFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, fieldMods);
+		}
+
+
+		@Override
+		public AccessModifier parseMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
+			return parseKeyword(node, methodMods);
+		}
+
+
+		private static CsKeyword parseKeyword(DocumentFragmentText<CodeFragmentType> node, EnumSubSet<CsKeyword> enums) {
+			if(node != null && node.getFragmentType() == CodeFragmentType.KEYWORD) {
+				return enums.find(node.getText());
+			}
+			return null;
 		}
 
 	}
 
+}
+
+
+
+
+/**
+ * @author TeamworkGuy2
+ * @since 2016-2-20
+ */
+class Flag {
+	static final int IS_TYPE = 1;
+	static final int CLASS_MOD = 2;
+	static final int FIELD_MOD = 4;
+	static final int METHOD_MOD = 8;
+	static final int BLOCK_MOD = 16;
 }

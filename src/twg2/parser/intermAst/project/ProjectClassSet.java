@@ -1,7 +1,6 @@
 package twg2.parser.intermAst.project;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +11,8 @@ import twg2.collections.builder.ListUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
+import twg2.parser.codeParser.CodeFileSrc;
+import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.field.IntermFieldSig;
@@ -202,7 +203,8 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 	 * Some namespaces may not be found and some simple names may not be resolvable, these issues can be tracked and returned via optional destination parameters.
 	 * If these optional parameters are null, errors are thrown instead
 	 */
-	public static <_T_ID, _T_BLOCK extends CompoundBlock> ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resolveClasses(ProjectClassSet.Simple<_T_ID, _T_BLOCK> projFiles, _T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+	public static <_T_ID extends CodeFileSrc<? extends CodeLanguage>, _T_BLOCK extends CompoundBlock> ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resolveClasses(ProjectClassSet.Simple<_T_ID, _T_BLOCK> projFiles,
+			_T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 
 		ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resFiles = new ProjectClassSet.Resolved<>();
 
@@ -211,8 +213,9 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 		for(val fileEntry : projFiles.compilationUnitsByFullyQualifyingName.entrySet()) {
 			val file = fileEntry.getValue().getParsedClass();
 			val namespaces = file.getUsingStatements();
-			val resSig = IntermClassSig.resolveClassSigFrom(file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
-			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(mthd, file, projFiles, missingNamespacesDst));
+			val lang = fileEntry.getValue().getId().getLanguage();
+			val resSig = IntermClassSig.resolveClassSigFrom(lang.getKeywordUtil(), file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(lang.getKeywordUtil(), mthd, file, projFiles, missingNamespacesDst));
 			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFiles, missingNamespacesDst));
 			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockType());
 

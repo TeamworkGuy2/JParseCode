@@ -13,23 +13,23 @@ public class JsonWrite {
 
 
 	// ==== Consumer ====
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, IoFunc.ConsumerIo<T> toString) {
+	public static final <T extends Object> void joinStr(Iterable<T> objs, String delimiter, StringBuilder dst, IoFunc.FunctionIo<T, String> toString) {
 		try {
-			joinStrConsumer(objs, delimiter, (Appendable)dst, toString);
+			joinStr(objs, delimiter, (Appendable)dst, toString);
 		} catch(IOException ioe) {
 			throw new UncheckedIOException(ioe);
 		}
 	}
 
 
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, Appendable dst, IoFunc.ConsumerIo<T> toString) throws IOException {
+	public static final <T extends Object> void joinStr(Iterable<T> objs, String delimiter, Appendable dst, IoFunc.FunctionIo<T, String> toString) throws IOException {
 		boolean firstLoop = true;
 		for(T obj : objs) {
 			if(!firstLoop) {
 				dst.append(delimiter);
 			}
 			if(obj != null) {
-				toString.accept(obj);
+				dst.append(toString.apply(obj));
 			}
 			else {
 				dst.append("null");
@@ -39,23 +39,23 @@ public class JsonWrite {
 	}
 
 
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, StringBuilder dst, IoFunc.BiConsumerIo<T, Appendable> toString) {
+	public static final <T extends Object> void joinStrConsume(Iterable<T> objs, String delimiter, StringBuilder dst, IoFunc.ConsumerIo<T> toString) {
 		try {
-			joinStrConsumer(objs, delimiter, (Appendable)dst, toString);
+			joinStrConsume(objs, delimiter, (Appendable)dst, toString);
 		} catch(IOException ioe) {
 			throw new UncheckedIOException(ioe);
 		}
 	}
 
 
-	public static final <T extends Object> void joinStrConsumer(Iterable<T> objs, String delimiter, Appendable dst, IoFunc.BiConsumerIo<T, Appendable> toString) throws IOException {
+	public static final <T extends Object> void joinStrConsume(Iterable<T> objs, String delimiter, Appendable dst, IoFunc.ConsumerIo<T> toString) throws IOException {
 		boolean firstLoop = true;
 		for(T obj : objs) {
 			if(!firstLoop) {
 				dst.append(delimiter);
 			}
 			if(obj != null) {
-				toString.accept(obj, dst);
+				toString.accept(obj);
 			}
 			else {
 				dst.append("null");

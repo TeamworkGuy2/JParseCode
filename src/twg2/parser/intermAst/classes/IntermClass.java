@@ -74,15 +74,15 @@ public interface IntermClass<T_SIG extends IntermClassSig, T_METHOD extends Json
 			dst.append("\"blockType\": \"" + blockType + "\",\n");
 
 			dst.append("\"using\": [");
-			JsonWrite.joinStrConsumer(usingStatements, ", ", dst, (us) -> dst.append('"' + NameUtil.joinFqName(us) + '"'));
+			JsonWrite.joinStr(usingStatements, ", ", dst, (us) -> '"' + NameUtil.joinFqName(us) + '"');
 			dst.append("],\n");
 
 			dst.append("\"fields\": [");
-			JsonWrite.joinStrConsumer(fields, ", ", dst, (f) -> f.toJson(dst, st));
+			JsonWrite.joinStrConsume(fields, ", ", dst, (f) -> f.toJson(dst, st));
 			dst.append("],\n");
 
 			dst.append("\"methods\": [");
-			JsonWrite.joinStrConsumer(methods, ", ", dst, (m) -> m.toJson(dst, st));
+			JsonWrite.joinStrConsume(methods, ", ", dst, (m) -> m.toJson(dst, st));
 			dst.append("]\n");
 
 			dst.append("}");

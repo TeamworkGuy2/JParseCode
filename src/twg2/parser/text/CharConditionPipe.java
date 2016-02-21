@@ -140,12 +140,6 @@ public class CharConditionPipe {
 				}
 			}
 			curCondition = conditionSets.size() > 0 && conditionSets.get(0).size() > 0 ? conditionSets.get(0).get(0) : null;
-
-			/* TODO testing
-			if(this.funcs.resetFunc != null) {
-				this.funcs.resetFunc.run();
-			}
-			*/
 		}
 
 
@@ -173,14 +167,7 @@ public class CharConditionPipe {
 
 
 		public static <S extends ParserCondition> BasePipe<S> copyTo(BasePipe<S> src, BasePipe<S> dst) {
-			// TODO testing BasePipe<T> copy = new BasePipe<>(condCopies);
 			dst.subseqentConditionSetsOptional = src.subseqentConditionSetsOptional;
-
-			/* TODO testing
-			if(funcs.copyFunc != null) {
-				funcs.copyFunc.accept(copy);
-			}
-			*/
 			return dst;
 		}
 
@@ -278,6 +265,20 @@ public class CharConditionPipe {
 		
 		val cond = new AllRequired<S>(name, requiredSets);
 		return cond;
+	}
+
+
+
+	@SafeVarargs
+	public static <S extends CharParser> BasePipe<CharParser> createPipePlainAllRequired(String name, boolean ignoreFirstConditionCoords, Iterable<S>... requiredConditionSets) {
+		val requiredSets = new ArrayList<List<S>>();
+		for(Iterable<S> requiredCondSet : requiredConditionSets) {
+			val requiredSet = ListBuilder.mutable(requiredCondSet);
+			requiredSets.add(requiredSet);
+		}
+		
+		val cond = new AllRequiredPlain<S>(name, ignoreFirstConditionCoords, requiredSets);
+		return (BasePipe)cond;
 	}
 
 
@@ -423,6 +424,99 @@ public class CharConditionPipe {
 
 
 
+	// TODO nearly duplicate of AllRequired, combine and refactor WithMarks into a separate factory parameter
+	public static class AllRequiredPlain<S extends CharParser> extends BasePipe<S> {
+		private TextFragmentRef.ImplMut coords = null;
+		private boolean ignoreFirstConditionCoords;
+
+
+		@SafeVarargs
+		public AllRequiredPlain(String name, boolean ignoreFirstConditionCoords, S... filters) {
+			super(name, filters);
+			this.ignoreFirstConditionCoords = ignoreFirstConditionCoords;
+		}
+
+
+		public AllRequiredPlain(String name, boolean ignoreFirstConditionCoords, Collection<S> filters) {
+			super(name, filters);
+			this.ignoreFirstConditionCoords = ignoreFirstConditionCoords;
+		}
+
+
+		public AllRequiredPlain(String name, boolean ignoreFirstConditionCoords, List<? extends List<S>> filterSets) {
+			super(name, filterSets);
+			this.ignoreFirstConditionCoords = ignoreFirstConditionCoords;
+		}
+
+
+		@Override
+		public TextFragmentRef getCompleteMatchedTextCoords() {
+			return this.coords;
+		}
+
+
+		@Override
+		public boolean acceptNext(char ch, TextParser buf) {
+			if(this.curCondition == null) {
+				this.failed = true;
+				return false;
+			}
+
+			boolean res = this.curCondition.acceptNext(ch, buf);
+			// when complete
+			if(this.curCondition.isComplete()) {
+				val curCondCoords = this.curCondition.getCompleteMatchedTextCoords();
+				if(!this.ignoreFirstConditionCoords || super.curCondIndex > 0) {
+					this.coords = this.coords == null ? TextFragmentRef.copyMutable(curCondCoords) : TextFragmentRef.merge(this.coords, this.coords, curCondCoords);
+				}
+
+				// get the next condition
+				this.curCondIndex++;
+				if(this.curCondIndex < this.conditionSets.get(this.curSetIndex).size()) {
+					this.curCondition = this.conditionSets.get(this.curSetIndex).get(this.curCondIndex);
+				}
+				else if(this.curSetIndex < this.conditionSets.size() - 1) {
+					this.curSetIndex++;
+					this.curCondIndex = 0;
+					this.curCondition = this.conditionSets.get(this.curSetIndex).get(this.curCondIndex);
+				}
+				// or there are no conditions left (this precondition filter is complete)
+				else {
+					this.anyComplete = true;
+					this.curCondition = null;
+				}
+			}
+
+			if(!res) {
+				this.failed = true;
+			}
+			else {
+				this.dstBuf.append(ch);
+			}
+
+			return res;
+		}
+
+
+		@Override
+		void reset() {
+			super.reset();
+			this.coords = null;
+		}
+
+
+		@Override
+		public CharParser copy() {
+			val copy = new AllRequiredPlain<>(name, this.ignoreFirstConditionCoords, BasePipe.copyConditionSets(this));
+			BasePipe.copyTo(this, copy);
+			return copy;
+		}
+
+	}
+
+
+
+
 	public static abstract class AcceptMultiple<S extends CharParser> extends WithMarks<S> {
 		private TextFragmentRef.ImplMut coords = null;
 
@@ -457,11 +551,6 @@ public class CharConditionPipe {
 			if(this.curCondition == null) {
 				this.failed = true;
 				return false;
-			}
-
-			// TODO debugging
-			if(this.name.equals("type parser") && twg2.parser.textParserUtils.ReadIsMatching.isNext(buf, "List<String")) {
-				System.out.println();
 			}
 
 			boolean res = super.curCondition.acceptNext(ch, buf);

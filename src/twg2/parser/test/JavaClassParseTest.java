@@ -43,11 +43,20 @@ public class JavaClassParseTest {
 		" */\n" +
 		"public class SimpleJava {\n" +
 		"\n" +
+		"    /** The modification count. */\n" +
+		"    private int mod;\n" +
+		"\n" +
+		"    /** The name. */\n" +
+		"    private String _name;\n" +
+		"\n" +
 		"    /** The names. */\n" +
 		"    public List<String> Names;\n" +
 		"\n" +
 		"    /** The number of names. */\n" +
 		"    public int Count;\n" +
+		"\n" +
+		"    /** The access timestamps. */\n" +
+		"    public ZonedDateTime[] accesses;\n" +
 		"\n" +
         "    /** Add name\n" +
         "     * @param name the name\n" +
@@ -75,7 +84,7 @@ public class JavaClassParseTest {
 			simpleJavaBlocks.add(fileParsed);
 
 			try {
-				val ws = new WriteSettings(true, true, true);
+				val ws = new WriteSettings(true, true, true, true);
 				val sb = new StringBuilder();
 				fileParsed.getParsedClass().toJson(sb, ws);
 				System.out.println(sb.toString());
@@ -87,7 +96,7 @@ public class JavaClassParseTest {
 
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java")), FileReadUtil.defaultInst()).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java")), FileReadUtil.threadLocalInst()).get(0);
 
 
 	public JavaClassParseTest() throws IOException {
@@ -111,20 +120,33 @@ public class JavaClassParseTest {
 	public void simpleJavaParseTest() {
 		Assert.assertEquals(1, simpleJavaBlocks.size());
 		val csClass = simpleJavaBlocks.get(0).getParsedClass();
-		Assert.assertEquals(2, csClass.getFields().size());
+		Assert.assertEquals(5, csClass.getFields().size());
 
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava", NameUtil.joinFqName(csClass.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
 		Assert.assertEquals("class", csClass.getSignature().getDeclarationType());
 
 		IntermFieldSig f = csClass.getFields().get(0);
+		Assert.assertEquals("ParserExamples.Samples.SimpleJava.mod", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("int", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(1);
+		Assert.assertEquals("ParserExamples.Samples.SimpleJava._name", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("String", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(2);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.Names", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("List", f.getFieldType().getTypeName());
 		Assert.assertEquals("String", f.getFieldType().getParams().get(0).getTypeName());
 
-		f = csClass.getFields().get(1);
+		f = csClass.getFields().get(3);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.Count", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(4);
+		Assert.assertEquals("ParserExamples.Samples.SimpleJava.accesses", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("ZonedDateTime", f.getFieldType().getTypeName());
+		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
 		Assert.assertEquals(1, csClass.getMethods().size());
 		IntermMethodSig.SimpleImpl m = csClass.getMethods().get(0);

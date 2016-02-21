@@ -46,8 +46,9 @@ public class CharMultiConditionParser {
 		// add conditions that match
 		for(int i = 0, size = conditions.size(); i < size; i++) {
 			CharParserFactory cond = conditions.getKey(i);
+
 			// as possible tokens are encountered (based on one char), add them to the list of current matches
-			if(cond.isMatch(ch)) {
+			if(cond.isMatch(ch, buf)) {
 				if(cond.isCompound() || !curMatches.containsKey(cond)) {
 					CharParser parserCond = cond.createParser();
 					curMatches.add(cond, Tuples.of(parserCond, conditions.getValue(i)));

@@ -43,14 +43,23 @@ public class CsClassParseTest {
 		"  /// </summary>\n" +
 		"  public class SimpleCs {\n" +
 		"\n" +
+		"    /// <value>The modification count.</value>\n" +
+		"    private int mod;\n" +
+		"\n" +
+		"    /// <value>The name.</value>\n" +
+		"    private string _name;\n" +
+		"\n" +
 		"    /// <value>The names.</value>\n" +
-		"    public IList<string> Names { get; set; }\n" +
+		"    public IList<string> Names { get; }\n" +
 		"\n" +
 		"    /// <value>The number of names.</value>\n" +
-		"    public int Count { get; set; }\n" +
+		"    public int Count { set; }\n" +
 		"\n" +
 		"    /// <value>The access timestamps.</value>\n" +
-		"    public DateTime[] accesses { get; set; }\n" +
+		"    public DateTime[] accesses { set { this.mod++; this.accesses = value; } }\n" +
+		"\n" +
+		"    /// <value>The access timestamps.</value>\n" +
+		"    public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }\n" +
 		"\n" +
         "    /// <summary>Add name</summary>\n" +
         "    /// <param name=\"name\">the name</param>\n" +
@@ -79,7 +88,7 @@ public class CsClassParseTest {
 			simpleCsBlocks.add(fileParsed);
 
 			try {
-				val ws = new WriteSettings(true, true, true);
+				val ws = new WriteSettings(true, true, true, true);
 				val sb = new StringBuilder();
 				fileParsed.getParsedClass().toJson(sb, ws);
 				System.out.println(sb.toString());
@@ -91,7 +100,7 @@ public class CsClassParseTest {
 
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.defaultInst()).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst()).get(0);
 
 
 	public CsClassParseTest() throws IOException {
@@ -115,22 +124,30 @@ public class CsClassParseTest {
 	public void simpleCsParseTest() {
 		Assert.assertEquals(1, simpleCsBlocks.size());
 		val csClass = simpleCsBlocks.get(0).getParsedClass();
-		Assert.assertEquals(3, csClass.getFields().size());
+		Assert.assertEquals(6, csClass.getFields().size());
 
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs", NameUtil.joinFqName(csClass.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
 		Assert.assertEquals("class", csClass.getSignature().getDeclarationType());
 
 		IntermFieldSig f = csClass.getFields().get(0);
+		Assert.assertEquals("ParserExamples.Samples.SimpleCs.mod", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("int", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(1);
+		Assert.assertEquals("ParserExamples.Samples.SimpleCs._name", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("string", f.getFieldType().getTypeName());
+
+		f = csClass.getFields().get(2);
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Names", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("IList", f.getFieldType().getTypeName());
 		Assert.assertEquals("string", f.getFieldType().getParams().get(0).getTypeName());
 
-		f = csClass.getFields().get(1);
+		f = csClass.getFields().get(3);
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Count", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
 
-		f = csClass.getFields().get(2);
+		f = csClass.getFields().get(4);
 		Assert.assertEquals("ParserExamples.Samples.SimpleCs.accesses", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());

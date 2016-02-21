@@ -1,12 +1,13 @@
 package twg2.parser.codeParser;
 
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.documentParser.DocumentFragmentText;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public interface Keyword {
+public interface KeywordUtil {
 
 	public boolean isKeyword(String str);
 
@@ -15,11 +16,11 @@ public interface Keyword {
 	public boolean isType(String str);
 
 	/**
-	 * @param str
 	 * @return true for any string which is a type keyword (i.e. {@link #isType(String)}) or any non-keyword strings,
 	 * returns false for any other keywords 
 	 */
 	public boolean isDataTypeKeyword(String str);
+
 
 	/** Checks for block identifying keywords (i.e. 'namespace', 'module', 'class', 'interface')
 	 */
@@ -29,4 +30,20 @@ public interface Keyword {
 	 */
 	public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
 
+	/** Checks for field modifier keywords (i.e. 'volatile', 'readonly', 'static', 'private')
+	 */
+	public boolean isFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+
+	/** Checks for method modifier keywords (i.e. 'synchronized', 'static', 'final', 'protected')
+	 */
+	public boolean isMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+
+
+	public AccessModifier parseBlockKeyword(DocumentFragmentText<CodeFragmentType> node);
+
+	public AccessModifier parseClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+
+	public AccessModifier parseFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+
+	public AccessModifier parseMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
 }

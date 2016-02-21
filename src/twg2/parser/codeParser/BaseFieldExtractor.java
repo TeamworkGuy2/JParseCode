@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstParser;
+import twg2.parser.baseAst.AstTypeChecker;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.baseAst.tools.AstUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.intermAst.annotation.AnnotationSig;
@@ -24,6 +25,7 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 	static enum State {
 		INIT,
+		FINDING_ACCESS_MODIFIERS,
 		FINDING_DATA_TYPE,
 		FINDING_NAME,
 		FOUND_NAME_CHECK,
@@ -32,26 +34,29 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 	}
 
 
-	Keyword keyword;
+	KeywordUtil keywordUtil;
 	IntermBlock<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
+	AstParser<TypeSig.Simple> typeParser;
+	List<AccessModifier> accessModifiers = new ArrayList<>();
 	List<IntermFieldSig> fields = new ArrayList<>();
 	TypeSig.Simple fieldTypeSig;
 	String fieldName;
-	AstParser<TypeSig.Simple> typeParser;
+	AstTypeChecker<?> typeChecker;
 	State state = State.INIT;
 	String langName;
 	String name;
 
 
-	public BaseFieldExtractor(String langName, Keyword keyword, IntermBlock<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public BaseFieldExtractor(String langName, KeywordUtil keywordUtil, IntermBlock<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstTypeChecker<?> typeChecker) {
 		this.langName = langName;
 		this.name = langName + " field";
-		this.keyword = keyword;
+		this.keywordUtil = keywordUtil;
 		this.parentBlock = parentBlock;
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
+		this.typeChecker = typeChecker;
 	}
 
 
@@ -66,50 +71,41 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
+		Consume res = null;
 
-		if(state == State.INIT && BaseDataTypeExtractor.isPossiblyType(keyword, tokenNode, false)) {
-			state = State.FINDING_DATA_TYPE;
-			val res = updateAndCheckTypeParser(tokenNode);
-			return res;
+		if(state == State.INIT) {
+			if(keywordUtil.isFieldModifierKeyword(tokenNode.getData())) {
+				state = State.FINDING_ACCESS_MODIFIERS;
+				res = findingAccessModifiers(tokenNode);
+				if(res.isAccept()) { return true; }
+			}
+			if(BaseDataTypeExtractor.isPossiblyType(keywordUtil, tokenNode, false)) {
+				state = State.FINDING_DATA_TYPE;
+				res = updateAndCheckTypeParser(tokenNode);
+				if(res.isAccept()) { return true; }
+			}
+		}
+		else if(state == State.FINDING_ACCESS_MODIFIERS) {
+			res = findingAccessModifiers(tokenNode);
+			if(res.isAccept()) { return true; }
 		}
 		else if(state == State.FINDING_DATA_TYPE) {
-			val res = updateAndCheckTypeParser(tokenNode);
-			// TODO because the type parser has to look ahead for now, but may not consume the look ahead token while also completing based on a look ahead
-			if(!res && state == State.FINDING_NAME) {
-				// copied from below
-				if(AstFragType.isIdentifier(tokenNode.getData())) {
-					fieldName = tokenNode.getData().getText();
-					state = State.FOUND_NAME_CHECK;
-					return true;
-				}
-				state = State.FAILED;
-			}
-			return res;
+			res = findingDataType(tokenNode);
+			if(res.isAccept()) { return true; }
 		}
 		else if(state == State.FINDING_NAME) {
-			if(AstFragType.isIdentifier(tokenNode.getData())) {
-				fieldName = tokenNode.getData().getText();
-				state = State.FOUND_NAME_CHECK;
-				return true;
-			}
-			state = State.FAILED;
+			res = findingName(tokenNode);
+			if(res.isAccept()) { return true; }
 		}
 		else if(state == State.FOUND_NAME_CHECK) {
-			if((tokenNode == null || tokenNode.getData().getFragmentType() != CodeFragmentType.BLOCK ||
-					AstUtil.blockContainsOnly(tokenNode, (node, type) -> type == CodeFragmentType.IDENTIFIER && ("get".equals(node.getText()) || "set".equals(node.getText())), true, CodeFragmentType.SEPARATOR, CodeFragmentType.COMMENT))) {
-				state = State.COMPLETE;
-				val annotations = new ArrayList<>(annotationParser.getParserResult());
-				annotationParser.recycle();
-				fields.add(new IntermFieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, annotations));
-				return true;
-			}
-			state = State.FAILED;
+			res = foundNameCheck(tokenNode);
+			if(res.isAccept()) { return true; }
 		}
 		return false;
 	}
 
 
-	private boolean updateAndCheckTypeParser(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	private Consume updateAndCheckTypeParser(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
 		boolean res = typeParser.acceptNext(tokenNode);
 		boolean complete = typeParser.isComplete();
 		boolean failed = typeParser.isFailed();
@@ -120,9 +116,68 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 		}
 		else if(failed) {
 			typeParser = typeParser.recycle();
+			accessModifiers.clear();
 			state = State.FAILED;
 		}
+		return res ? Consume.ACCEPTED : Consume.REJECTED;
+	}
+
+
+	private Consume findingAccessModifiers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+		AccessModifier accessMod = BaseAccessModifierExtractor.readAccessModifier(keywordUtil, tokenNode);
+		if(accessMod != null) {
+			this.accessModifiers.add(accessMod);
+			return Consume.ACCEPTED;
+		}
+		else {
+			state = State.FINDING_DATA_TYPE;
+			val res2 = findingDataType(tokenNode);
+			if(res2 == Consume.REJECTED) {
+				accessModifiers.clear();
+				state = State.FAILED;
+			}
+			return res2;
+		}
+	}
+
+
+	private Consume findingDataType(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+		val res = updateAndCheckTypeParser(tokenNode);
+		// TODO because the type parser has to look ahead for now, but may not consume the look ahead token while also completing based on a look ahead
+		if(res == Consume.REJECTED && state == State.FINDING_NAME) {
+			val res2 = findingName(tokenNode);
+			if(res2.isAccept()) { return res2; }
+		}
 		return res;
+	}
+
+
+	private Consume findingName(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+		if(AstFragType.isIdentifier(tokenNode.getData())) {
+			fieldName = tokenNode.getData().getText();
+			state = State.FOUND_NAME_CHECK;
+			return Consume.ACCEPTED;
+		}
+		accessModifiers.clear();
+		state = State.FAILED;
+		return Consume.REJECTED;
+	}
+
+
+	private Consume foundNameCheck(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+		if((tokenNode == null || tokenNode.getData().getFragmentType() != CodeFragmentType.BLOCK || typeChecker.isFieldBlock(tokenNode))) {
+			state = State.COMPLETE;
+			val annotations = new ArrayList<>(annotationParser.getParserResult());
+			annotationParser.recycle();
+			val accessMods = new ArrayList<>(accessModifiers);
+
+			fields.add(new IntermFieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, accessMods, annotations));
+			accessModifiers.clear();
+			return Consume.ACCEPTED;
+		}
+		accessModifiers.clear();
+		state = State.FAILED;
+		return Consume.REJECTED;
 	}
 
 
@@ -159,14 +214,17 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 	@Override
 	public BaseFieldExtractor copy() {
-		val copy = new BaseFieldExtractor(this.langName, this.keyword, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy());
+		val copy = new BaseFieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.typeChecker);
 		return copy;
 	}
 
 
 	// package-private
 	void reset() {
-		fields.clear();
+		this.fields.clear();
+		this.accessModifiers.clear();
+		this.typeParser = typeParser.recycle();
+		this.annotationParser = annotationParser.recycle();
 	}
 
 }

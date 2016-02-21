@@ -12,7 +12,6 @@ import twg2.annotations.Immutable;
 import twg2.collections.builder.ListBuilder;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.project.ProjectClassSet;
@@ -51,10 +50,10 @@ public enum TypeSig {
 		}
 
 		if(childSigs.size() > 0) {
-			return new TypeSig.ResolvedGenericImpl(resolvedType, childSigs, intermSig.getArrayDimensions(), intermSig.isNullable());
+			return new TypeSig.ResolvedGenericImpl(resolvedType, childSigs, intermSig.getArrayDimensions(), intermSig.isNullable(), intermSig.isPrimitive());
 		}
 		else {
-			return new TypeSig.ResolvedBaseImpl(resolvedType, intermSig.getArrayDimensions(), intermSig.isNullable());
+			return new TypeSig.ResolvedBaseImpl(resolvedType, intermSig.getArrayDimensions(), intermSig.isNullable(), intermSig.isPrimitive());
 		}
 	}
 
@@ -70,6 +69,8 @@ public enum TypeSig {
 		public String getTypeName();
 
 		public boolean isNullable();
+
+		public boolean isPrimitive();
 
 		public boolean isArray();
 
@@ -99,12 +100,11 @@ public enum TypeSig {
 		private final @Getter boolean primitive;
 
 
-		public SimpleBaseImpl(String typeName, int arrayDimensions, boolean nullable) {
+		public SimpleBaseImpl(String typeName, int arrayDimensions, boolean nullable, boolean primitive) {
 			this.typeName = typeName;
 			this.nullable = nullable;
 			this.arrayDimensions = arrayDimensions;
-			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.check.isPrimitive(typeName);
+			this.primitive = primitive;
 		}
 
 
@@ -172,7 +172,7 @@ public enum TypeSig {
 		private final @Getter boolean primitive;
 
 
-		public SimpleGenericImpl(String typeName, List<? extends TypeSig.Simple> genericParams, int arrayDimensions, boolean nullable) {
+		public SimpleGenericImpl(String typeName, List<? extends TypeSig.Simple> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
 			val genericParamsCast = (List<TypeSig.Simple>)genericParams;
 
@@ -180,8 +180,7 @@ public enum TypeSig {
 			this.params = genericParamsCast;
 			this.nullable = nullable;
 			this.arrayDimensions = arrayDimensions;
-			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.check.isPrimitive(typeName);
+			this.primitive = primitive;
 		}
 
 
@@ -203,7 +202,7 @@ public enum TypeSig {
 			dst.append("\"typeName\": \"" + typeName + "\", ");
 
 			dst.append("\"genericParameters\": [");
-			JsonWrite.joinStrConsumer(params, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonWrite.joinStrConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
 			dst.append("]");
 
 			if(arrayDimensions > 0) {
@@ -247,6 +246,8 @@ public enum TypeSig {
 
 		public boolean isNullable();
 
+		public boolean isPrimitive();
+
 		public boolean isArray();
 
 		public boolean isGeneric();
@@ -276,13 +277,12 @@ public enum TypeSig {
 		private final @Getter boolean primitive;
 
 
-		public ResolvedBaseImpl(List<String> fullyQualifyingName, int arrayDimensions, boolean nullable) {
+		public ResolvedBaseImpl(List<String> fullyQualifyingName, int arrayDimensions, boolean nullable, boolean primitive) {
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
 			this.fullName = fullyQualifyingName;
 			this.nullable = nullable;
 			this.arrayDimensions = arrayDimensions;
-			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.check.isPrimitive(simpleName);
+			this.primitive = primitive;
 		}
 
 
@@ -352,7 +352,7 @@ public enum TypeSig {
 		private final @Getter boolean primitive;
 
 
-		public ResolvedGenericImpl(List<String> fullyQualifyingName, List<? extends TypeSig.Resolved> genericParams, int arrayDimensions, boolean nullable) {
+		public ResolvedGenericImpl(List<String> fullyQualifyingName, List<? extends TypeSig.Resolved> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
 			val genericParamsCast = (List<TypeSig.Resolved>)genericParams;
 
@@ -361,8 +361,7 @@ public enum TypeSig {
 			this.params = genericParamsCast;
 			this.nullable = nullable;
 			this.arrayDimensions = arrayDimensions;
-			// TODO shouldn't rely on CsKeyword, a TypeSig should be language agnostic
-			this.primitive = CsKeyword.check.isPrimitive(simpleName);
+			this.primitive = primitive;
 		}
 
 
@@ -384,7 +383,7 @@ public enum TypeSig {
 			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullName) + "\", ");
 
 			dst.append("\"genericParameters\": [");
-			JsonWrite.joinStrConsumer(params, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonWrite.joinStrConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
 			dst.append("]");
 
 			if(arrayDimensions > 0) {

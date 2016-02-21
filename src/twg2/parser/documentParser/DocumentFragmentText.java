@@ -1,28 +1,29 @@
 package twg2.parser.documentParser;
 
-import lombok.Getter;
 import twg2.parser.textFragment.TextFragmentRef;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public class DocumentFragmentText<T> implements DocumentFragment<TextFragmentRef, T> {
-	private @Getter final TextFragmentRef textFragment;
-	private @Getter final T fragmentType;
-	private @Getter final String text;
+public class DocumentFragmentText<T> extends DocumentFragmentRef<T> implements DocumentFragment<TextFragmentRef, T> {
+	private final String text;
 
 
 	public DocumentFragmentText(T type, TextFragmentRef textFrag, String text) {
-		this.fragmentType = type;
-		this.textFragment = textFrag;
+		super(type, textFrag);
 		this.text = text;
+	}
+
+
+	public String getText() {
+		return text;
 	}
 
 
 	@Override
 	public String toString() {
-		return "DocumentFragmentRef: { type: " + fragmentType + ", " + textFragment.toString() + " }";
+		return "DocumentFragmentText: { type: " + fragmentType + ", " + textFragment.toString() + " }";
 	}
 
 }

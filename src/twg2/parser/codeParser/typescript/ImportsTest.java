@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import twg2.io.files.FileUtility;
+import twg2.io.files.FileRecursion;
 import twg2.streams.StreamUtil;
 import twg2.text.stringUtils.StringJoin;
 
@@ -24,7 +24,7 @@ public class ImportsTest {
 		File folder = Paths.get("C:/Users/TeamworkGuy2/Documents/Visual Studio 2015/Projects/ps/l/ca/app/scripts/modules/psServices").toFile();
 		//projectPath.res
 
-		FileUtility.forEachFileByFolderRecursively(folder, (f) -> f.getName().toLowerCase().endsWith(".ts"), Integer.MAX_VALUE, (parent, file) -> {
+		FileRecursion.forEachFileByFolderRecursively(folder, (f) -> f.getName().toLowerCase().endsWith(".ts"), Integer.MAX_VALUE, (parent, file) -> {
 			try {
 				Path parentPath = parent.toPath();
 				List<String> lines = StreamUtil.toList(Files.lines(file.toPath()), new ArrayList<>());

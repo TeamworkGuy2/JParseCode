@@ -6,6 +6,7 @@ import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.CommentStyle;
+import twg2.parser.codeParser.NumberParser;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.codeParser.parsers.CodeBlockParser;
@@ -25,6 +26,7 @@ public class CsClassParser {
 	public static CodeFileSrc<CodeLanguageOptions.CSharp> parse(ParseInput params) {
 		try {
 			val identifierParser = IdentifierParser.createIdentifierWithGenericTypeParser();
+			val numericLiteralParser = NumberParser.createNumericLiteralParser();
 
 			val parser = new ParserBuilder()
 				.addConstParser(CommentParser.createCommentParser(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)
@@ -36,7 +38,8 @@ public class CsClassParser {
 					return CsKeyword.check.isKeyword(text.toString()) ? CodeFragmentType.KEYWORD : CodeFragmentType.IDENTIFIER; // possible bad performance
 				})
 				.addConstParser(createOperatorParser(), CodeFragmentType.OPERATOR)
-				.addConstParser(createSeparatorParser(), CodeFragmentType.SEPARATOR);
+				.addConstParser(createSeparatorParser(), CodeFragmentType.SEPARATOR)
+				.addConstParser(numericLiteralParser, CodeFragmentType.NUMBER);
 			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP, params.getFileName());
 		} catch(Exception e) {
 			if(params.getErrorHandler() != null) {
