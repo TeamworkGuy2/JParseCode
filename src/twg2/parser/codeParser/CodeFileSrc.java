@@ -16,7 +16,7 @@ public class CodeFileSrc<T_LANG extends CodeLanguage> {
 	@Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> doc;
 	@Getter String srcName;
 	@Getter String src;
-	@Getter List<String> lines;
+	@Getter List<char[]> lines;
 	@Getter T_LANG language;
 
 
@@ -26,7 +26,7 @@ public class CodeFileSrc<T_LANG extends CodeLanguage> {
 	 * @param lines
 	 * @param language optional
 	 */
-	public CodeFileSrc(SimpleTree<DocumentFragmentText<CodeFragmentType>> doc, String srcName, String src, List<String> lines, T_LANG language) {
+	public CodeFileSrc(SimpleTree<DocumentFragmentText<CodeFragmentType>> doc, String srcName, String src, List<char[]> lines, T_LANG language) {
 		this.doc = doc;
 		this.srcName = srcName;
 		this.src = src;

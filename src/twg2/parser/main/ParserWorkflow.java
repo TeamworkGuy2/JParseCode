@@ -404,7 +404,7 @@ public class ParserWorkflow {
 
 		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
 			// get a subset of all the parsed files
-			val writeSettings = new WriteSettings(true, false, false, false);
+			val writeSettings = new WriteSettings(true, false, false, true);
 
 			// fill indices with null so we can random access any valid index
 			for(val dstSet : resSets.entrySet()) {

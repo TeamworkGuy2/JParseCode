@@ -13,6 +13,7 @@ import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
+import twg2.text.stringUtils.StringCheck;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
 import twg2.treeLike.parameters.SimpleTreeTraverseParameters;
@@ -42,7 +43,7 @@ public class ParseCommentsAndWhitespace {
 	}
 
 
-	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, int srcCharCount, List<String> lines, SimpleTree<DocumentFragmentText<CodeFragmentType>> tree) {
+	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, int srcCharCount, List<char[]> lines, SimpleTree<DocumentFragmentText<CodeFragmentType>> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
 		val tokensPerLine = documentTreeToTokensPerLine(tree);
 
@@ -50,6 +51,8 @@ public class ParseCommentsAndWhitespace {
 		IntArrayList commentLines = new IntArrayList();
 		IntArrayList whitespaceLines = new IntArrayList();
 		for(int i = 0, size = lines.size(); i < size; i++) {
+			char[] line = lines.get(i);
+
 			if(tokensPerLine.size() <= i) {
 				tokensPerLine.add(new ArrayList<>());
 			}
@@ -62,12 +65,12 @@ public class ParseCommentsAndWhitespace {
 				}
 				else {
 					TextFragmentRef comment = lineTokens.get(0).getTextFragment();
-					String line = lines.get(i);
-					String prefix = comment.getLineStart() < i ? "" : line.substring(0, comment.getColumnStart()); // if the token started on a previous line, there is no prefix text before it starts on this line
+					String prefix = comment.getLineStart() < i ? "" : new String(line, 0, comment.getColumnStart()); // if the token started on a previous line, there is no prefix text before it starts on this line
 					String suffix = "";
 					// in case the token ends at the end of the line
-					if(comment.getColumnEnd() + 1 < line.length()) {
-						line.substring(comment.getColumnEnd() + 1, line.length());
+					if(comment.getColumnEnd() + 1 < line.length) {
+						// TODO not sure why this was originally here
+						//new String(line, comment.getColumnEnd() + 1, line.length - (comment.getColumnEnd() + 1));
 					}
 
 					if(prefix.trim().length() == 0 && suffix.trim().length() == 0) {
@@ -75,7 +78,7 @@ public class ParseCommentsAndWhitespace {
 					}
 				}
 			}
-			else if(lines.get(i).trim().length() == 0) {
+			else if(StringCheck.isWhitespace(line, 0, line.length)) {
 				whitespaceLines.add(i + 1);
 			}
 			System.out.println("line " + i + " tokens: " + lineTokens);

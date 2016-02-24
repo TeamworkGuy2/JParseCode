@@ -37,7 +37,10 @@ public class IntermFieldSig implements JsonWritableSig {
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
 		dst.append("{ ");
 		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
-		dst.append("\"type\": \"" + fieldType + "\", ");
+
+		dst.append("\"type\": ");
+		fieldType.toJson(dst, st);
+		dst.append(", ");
 
 		dst.append("\"accessModifiers\": [");
 		JsonWrite.joinStr(accessModifiers, ", ", dst, (acs) -> '"' + acs.toSrc() + '"');

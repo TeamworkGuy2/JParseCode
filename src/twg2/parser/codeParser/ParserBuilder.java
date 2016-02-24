@@ -11,8 +11,8 @@ import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.textParser.TextParserImpl;
+import twg2.parser.textStream.CharsLineSupplier;
 import twg2.streams.EnhancedIterator;
-import twg2.streams.StringLineSupplier;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -47,19 +47,19 @@ public class ParserBuilder {
 	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
 	 */
 	public <L extends CodeLanguage> CodeFileSrc<L> buildAndParse(String src, L language, String srcName) {
-		List<String> lines = new ArrayList<>();
+		List<char[]> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
-		StringLineSupplier srcLineReader = new StringLineSupplier(src, 0, src.length(), true, true, true, true);
-		EnhancedIterator<String> lineReader = new EnhancedIterator<>(() -> {
-			String str = srcLineReader.get();
-			if(str != null) {
-				lines.add(str);
+		CharsLineSupplier srcLineReader = new CharsLineSupplier(src, 0, src.length(), true, true, true, true);
+		EnhancedIterator<char[]> lineReader = new EnhancedIterator<>(() -> {
+			char[] chs = srcLineReader.get();
+			if(chs != null) {
+				lines.add(chs);
 			}
-			return str;
+			return chs;
 		});
 
-		TextParser input = new TextParserImpl(lineReader);
+		TextParser input = TextParserImpl.fromCharArrays(lineReader);
 
 		val docTextFragment = new TextFragmentRef.ImplMut(0, src.length(), 0, 0, -1, -1);
 		val docRoot = new DocumentFragmentText<>(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src).toString());

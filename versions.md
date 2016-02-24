@@ -1,8 +1,22 @@
 --------
+####0.7.0
+date: 2016-2-24
+
+commit: ?
+
+* Updated to latest version of JTextParser and JStreamish
+* Switched from StringLineSupplier for reading lines from a source string to CharLineSupplier (slightly less garbage generated due to less conversion between strings and char arrays)
+* Fixed toJson() not formatting generic types correctly
+* By default, annotation arguments map is include in toJson() output even if empty
+* ITrackSearchService.cs test file was using '\r' for newlines, replaced with '\n'
+* Moved twg2.parser.test package to separate test directory
+
+
+--------
 ####0.6.0
 date: 2016-2-21
 
-commit: ?
+commit: 5ae0793feb0475654bbdf835ef5d350e91cdd438
 
 * Added numeric literal parsing \(i.e. '23' or '1.5f')
 * Added field and method access modifier parsing \(i.e. public, static, synchronized, volatile)
