@@ -3,8 +3,8 @@ package twg2.parser.miscellaneous;
 import java.io.IOException;
 import java.util.Random;
 
-import twg2.parser.test.CsClassParseTest;
 import lombok.val;
+import twg2.parser.test.CsClassParseTest;
 
 /**
  * @author TeamworkGuy2

@@ -1,8 +1,21 @@
 --------
+####0.8.0
+date: 2016-2-28
+
+commit: ?
+
+* Moved/renamed ParserWorkFlow SourceInfo and LoadResult \(renamed to SourceFiles) nested classes and ParserMain.getFilesByExtension() to [JFileIo] (https://github.com/TeamworkGuy2/JFileIo) library
+* Moved twg2.parser.output JsonWrite and JsonWritable to JFileIO project's twg2.io.write package
+* Renamed ParserMain -> ParserMisc
+* Implemented new CharParserMatchable with getFirstCharMatcher() methods in place of old CharParser.WithMarks interface from JTextParser
+* Updated to use latest version of JFileIo and JTextParser
+
+
+--------
 ####0.7.0
 date: 2016-2-24
 
-commit: ?
+commit: 218036c37673615e6bced0eecfb8a9b7d6eb7808
 
 * Updated to latest version of JTextParser and JStreamish
 * Switched from StringLineSupplier for reading lines from a source string to CharLineSupplier (slightly less garbage generated due to less conversion between strings and char arrays)

@@ -1,5 +1,6 @@
 package twg2.parser.baseAst.java;
 
+import twg2.dataUtil.dataUtils.EnumUtil;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -11,7 +12,6 @@ import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
-import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2

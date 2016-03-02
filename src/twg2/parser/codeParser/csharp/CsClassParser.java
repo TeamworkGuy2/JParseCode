@@ -40,7 +40,7 @@ public class CsClassParser {
 				.addConstParser(createOperatorParser(), CodeFragmentType.OPERATOR)
 				.addConstParser(createSeparatorParser(), CodeFragmentType.SEPARATOR)
 				.addConstParser(numericLiteralParser, CodeFragmentType.NUMBER);
-			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP, params.getFileName());
+			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.C_SHARP, params.getFileName(), true);
 		} catch(Exception e) {
 			if(params.getErrorHandler() != null) {
 				params.getErrorHandler().accept(e);

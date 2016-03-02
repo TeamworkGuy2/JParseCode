@@ -39,7 +39,7 @@ public class ParseCommentsAndWhitespace {
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)
 			.addConstParser(stringParser, CodeFragmentType.STRING);
-		return parser.buildAndParse(src, null, srcName);
+		return parser.buildAndParse(src, null, srcName, true);
 	}
 
 

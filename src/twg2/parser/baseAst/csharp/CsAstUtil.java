@@ -1,6 +1,7 @@
 package twg2.parser.baseAst.csharp;
 
 import lombok.val;
+import twg2.dataUtil.dataUtils.EnumUtil;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -12,7 +13,6 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
-import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2

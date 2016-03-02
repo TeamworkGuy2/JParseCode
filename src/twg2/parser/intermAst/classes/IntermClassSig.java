@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.io.write.JsonWrite;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
@@ -19,7 +20,6 @@ import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
-import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
 
 /**

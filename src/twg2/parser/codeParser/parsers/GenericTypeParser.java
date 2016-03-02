@@ -7,6 +7,7 @@ import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.text.CharConditionPipe;
 import twg2.parser.text.CharConditions;
 import twg2.parser.text.StringConditions;
@@ -21,12 +22,12 @@ public class GenericTypeParser {
 	 * @param genericTypeDepth the nesting depth of generic type statements that the returned parser can support.
 	 * i.e. {@code A<B>} would require depth=1, {@code A<B<C>>} would require depth=2
 	 */
-	public static CharParser createGenericTypeParser(int genericTypeDepth, Supplier<CharParser> singleIdentifierParserConstructor) {
+	public static CharParserMatchable createGenericTypeParser(int genericTypeDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
 		return _createGenericTypeParser(genericTypeDepth, singleIdentifierParserConstructor);
 	}
 
 
-	public static CharParser _createGenericTypeParser(int recursionDepth, Supplier<CharParser> singleIdentifierParserConstructor) {
+	public static CharParserMatchable _createGenericTypeParser(int recursionDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
 		// the condition that parses identifiers nested inside the generic type definition
 		val nestedGenericTypeIdentifierCond = recursionDepth > 1 ? _createGenericTypeParser(recursionDepth - 1, singleIdentifierParserConstructor) : singleIdentifierParserConstructor.get();
 

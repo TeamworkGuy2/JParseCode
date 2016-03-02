@@ -6,9 +6,10 @@ import java.util.Collection;
 import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.collections.dataStructures.Bag;
-import twg2.collections.primitiveCollections.CharList;
+import twg2.functions.BiPredicates;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 
@@ -23,8 +24,9 @@ public class StringConditions {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-21
 	 */
-	public static abstract class BaseStringParser implements CharParser.WithMarks {
+	public static abstract class BaseStringParser implements CharParserMatchable {
 		String[] originalStrs;
+		char[] firstChars;
 		Bag<String> matchingStrs;
 		boolean anyComplete = false;
 		boolean failed = false;
@@ -35,6 +37,7 @@ public class StringConditions {
 		Inclusion includeMatchInRes;
 		StringBuilder dstBuf = new StringBuilder();
 		TextFragmentRef.ImplMut coords = new TextFragmentRef.ImplMut();
+		BiPredicates.CharObject<TextParser> firstCharMatcher;
 		String name;
 
 
@@ -47,10 +50,17 @@ public class StringConditions {
 		// package-private
 		BaseStringParser(String name, String[] strs, Inclusion includeCondMatchInRes) {
 			this.originalStrs = strs;
+			this.firstChars = new char[strs.length];
+			for(int i = 0, size = strs.length; i < size; i++) {
+				this.firstChars[i] = strs[i].charAt(0);
+			}
 			this.matchingStrs = new Bag<String>(this.originalStrs, 0, this.originalStrs.length);
 			this.anyComplete = false;
 			this.includeMatchInRes = includeCondMatchInRes;
 			this.name = name;
+			this.firstCharMatcher = (char ch, TextParser buf) -> {
+				return ArrayUtil.indexOf(firstChars, ch) > -1;
+			};
 		}
 
 
@@ -79,10 +89,8 @@ public class StringConditions {
 
 
 		@Override
-		public void getMatchFirstChars(CharList dst) {
-			for(int i = 0, size = originalStrs.length; i < size; i++) {
-				dst.add(originalStrs[i].charAt(0));
-			}
+		public BiPredicates.CharObject<TextParser> getFirstCharMatcher() {
+			return firstCharMatcher;
 		}
 
 

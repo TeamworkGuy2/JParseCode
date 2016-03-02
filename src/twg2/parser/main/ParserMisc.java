@@ -1,21 +1,17 @@
 package twg2.parser.main;
 
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import dataUtils.ParallelWork;
-import dataUtils.ParallelWork.WorkBlockPolicy;
 import lombok.val;
+import twg2.dataUtil.dataUtils.ParallelWork;
+import twg2.dataUtil.dataUtils.ParallelWork.WorkBlockPolicy;
 import twg2.io.files.FileReadUtil;
-import twg2.io.files.FileVisitorUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.CodeFileParsed;
@@ -31,7 +27,7 @@ import twg2.treeLike.simpleTree.SimpleTreeUtil;
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class ParserMain {
+public class ParserMisc {
 
 
 	public static void printParseFileInfo(String fileName, CodeFileSrc<CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
@@ -73,19 +69,6 @@ public class ParserMain {
 			System.out.println("====\n");
 		}
 
-	}
-
-
-	public static List<Path> getFilesByExtension(Path fileOrDir, int depth, String... extensions) throws IOException {
-		val fileFilterBldr = new FileVisitorUtil.Builder();
-		if(extensions.length > 0) {
-			fileFilterBldr.getVisitFileFilter().addFileExtensionFilters(true, extensions);
-		}
-		fileFilterBldr.getVisitFileFilter().setTrackMatches(true);
-		val fileFilterCache = fileFilterBldr.build();
-		Files.walkFileTree(fileOrDir, EnumSet.noneOf(FileVisitOption.class), depth, fileFilterCache.getFileVisitor());
-		val files = fileFilterCache.getVisitFileFilterCache().getMatches();
-		return files;
 	}
 
 

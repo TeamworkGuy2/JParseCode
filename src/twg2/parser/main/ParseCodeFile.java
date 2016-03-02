@@ -100,7 +100,7 @@ public class ParseCodeFile {
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);
-			ParserMain.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
+			ParserMisc.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
 		}
 	}
 

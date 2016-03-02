@@ -39,7 +39,7 @@ public class JavaClassParser {
 				.addConstParser(createOperatorParser(), CodeFragmentType.OPERATOR)
 				.addConstParser(createSeparatorParser(), CodeFragmentType.SEPARATOR)
 				.addConstParser(numericLiteralParser, CodeFragmentType.NUMBER);
-			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.JAVA, params.getFileName());
+			return parser.buildAndParse(params.getSrc(), CodeLanguageOptions.JAVA, params.getFileName(), true);
 		} catch(Exception e) {
 			if(params.getErrorHandler() != null) {
 				params.getErrorHandler().accept(e);

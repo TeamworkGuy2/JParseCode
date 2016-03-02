@@ -23,7 +23,7 @@ public class ParserBuilder {
 	private DocumentParser<CodeFragmentType> fileParser;
 
 
-	{
+	public ParserBuilder() {
 		this.fileParser = new DocumentParser<>();
 	}
 
@@ -46,14 +46,14 @@ public class ParserBuilder {
 	 * @param srcName optional
 	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
 	 */
-	public <L extends CodeLanguage> CodeFileSrc<L> buildAndParse(String src, L language, String srcName) {
+	public <L> CodeFileSrc<L> buildAndParse(String src, L language, String srcName, boolean includeLines) {
 		List<char[]> lines = new ArrayList<>();
 
 		// intercept each line request and add the line to our list of lines
 		CharsLineSupplier srcLineReader = new CharsLineSupplier(src, 0, src.length(), true, true, true, true);
 		EnhancedIterator<char[]> lineReader = new EnhancedIterator<>(() -> {
 			char[] chs = srcLineReader.get();
-			if(chs != null) {
+			if(includeLines && chs != null) {
 				lines.add(chs);
 			}
 			return chs;

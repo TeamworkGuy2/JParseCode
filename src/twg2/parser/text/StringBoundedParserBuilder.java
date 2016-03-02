@@ -2,18 +2,23 @@ package twg2.parser.text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
+import twg2.collections.tuple.Tuples;
+import twg2.functions.BiPredicates;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserMatchable;
+import twg2.parser.textParser.TextParser;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-2-13
  */
 public class StringBoundedParserBuilder {
-	private List<CharParser> filters;
+	private List<Entry<BiPredicates.CharObject<TextParser>, CharParser>> filters;
 	private boolean compound;
 	private String name;
 
@@ -25,14 +30,15 @@ public class StringBoundedParserBuilder {
 
 
 	public CharParserFactory build() {
-		return new CharParserFactoryImpl<CharParser>(name, compound, filters.toArray(new CharParser[filters.size()]));
+		return new CharParserPlainFactoryImpl<CharParser>(name, compound, filters.toArray(new Entry[filters.size()]));
 	}
 
 
 	public StringBoundedParserBuilder addStartEndMarkers(String name, String start, String end, Inclusion includeEnd) {
 		val startFilter = new StringConditions.Start(name + "-start", new String[] { start }, Inclusion.INCLUDE);
 		val endFilter = new StringConditions.End(name + "-end", new String[] { end }, includeEnd);
-		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
+		val cond = new CharConditionPipe.AllRequired<>(name, startFilter, endFilter);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
@@ -40,7 +46,8 @@ public class StringBoundedParserBuilder {
 	public StringBoundedParserBuilder addStartEndMarkers(String name, String start, char end, Inclusion includeEnd) {
 		val startFilter = new StringConditions.Start(name + "-start", new String[] { start }, Inclusion.INCLUDE);
 		val endFilter = new CharConditions.End(name + "-end", CharArrayList.of(end), includeEnd);
-		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
+		val cond = new CharConditionPipe.AllRequired<>(name, startFilter, endFilter);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
@@ -48,7 +55,8 @@ public class StringBoundedParserBuilder {
 	public StringBoundedParserBuilder addStartEndMarkers(String name, char start, String end, Inclusion includeEnd) {
 		val startFilter = new CharConditions.Start(name + "-start", CharArrayList.of(start), Inclusion.INCLUDE);
 		val endFilter = new StringConditions.End(name + "-end", new String[] { end }, includeEnd);
-		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
+		val cond = new CharConditionPipe.AllRequired<>(name, startFilter, endFilter);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
@@ -56,7 +64,8 @@ public class StringBoundedParserBuilder {
 	public StringBoundedParserBuilder addStartEndMarkers(String name, char start, char end, Inclusion includeEnd) {
 		val startFilter = new CharConditions.Start(name + "-start", CharArrayList.of(start), Inclusion.INCLUDE);
 		val endFilter = new CharConditions.End(name + "-end", CharArrayList.of(end), includeEnd);
-		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
+		val cond = new CharConditionPipe.AllRequired<>(name, startFilter, endFilter);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
@@ -69,25 +78,28 @@ public class StringBoundedParserBuilder {
 	public StringBoundedParserBuilder addStartEndNotPrecededByMarkers(String name, char start, char notPreced, char end, int minPreEndChars, Inclusion includeEnd) {
 		val startFilter = new CharConditions.Start(name + "-start", CharArrayList.of(start), Inclusion.INCLUDE);
 		val endFilter = new CharConditions.EndNotPrecededBy(name + "-end", CharArrayList.of(end), minPreEndChars, includeEnd, CharArrayList.of(notPreced));
-		this.filters.add(new CharConditionPipe.AllRequired<>(name, startFilter, endFilter));
+		val cond = new CharConditionPipe.AllRequired<>(name, startFilter, endFilter);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
 
 	public StringBoundedParserBuilder addStringLiteralMarker(String name, String str) {
-		this.filters.add(new StringConditions.Literal(name, new String[] { str }, Inclusion.INCLUDE));
+		val cond = new StringConditions.Literal(name, new String[] { str }, Inclusion.INCLUDE);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
 
 	public StringBoundedParserBuilder addCharLiteralMarker(String name, char ch) {
-		this.filters.add(new CharConditions.Literal(name, CharArrayList.of(ch), Inclusion.INCLUDE));
+		val cond = new CharConditions.Literal(name, CharArrayList.of(ch), Inclusion.INCLUDE);
+		this.filters.add(Tuples.of(cond.getFirstCharMatcher(), cond));
 		return this;
 	}
 
 
-	public StringBoundedParserBuilder addConditionMarker(CharParser condition) {
-		this.filters.add(condition);
+	public StringBoundedParserBuilder addConditionMarker(CharParser condition, CharParserMatchable conditionFilter) {
+		this.filters.add(Tuples.of(conditionFilter.getFirstCharMatcher(), condition));
 		return this;
 	}
 

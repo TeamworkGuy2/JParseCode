@@ -7,7 +7,7 @@ import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
-import twg2.text.stringUtils.StringEscape;
+import twg2.text.stringEscape.StringEscapeJson;
 
 /** Represents a method parameter
  * @author TeamworkGuy2
@@ -36,7 +36,7 @@ public class IntermParameterSig implements JsonWritableSig {
 		if(defaultValue != null) {
 			dst.append(", ");
 			dst.append("\"defaultValue\": \"");
-			StringEscape.toJsonString(defaultValue, 0, defaultValue.length(), dst);
+			StringEscapeJson.toJsonString(defaultValue, 0, defaultValue.length(), dst);
 			dst.append("\"");
 		}
 

@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 import lombok.val;
+import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
@@ -30,8 +33,8 @@ public class MainParser {
 
 	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException {
 		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
-		val files1 = ParserMain.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
-		val files2 = ParserMain.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
+		val files1 = SourceFiles.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
+		val files2 = SourceFiles.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		val files = new ArrayList<Path>();
@@ -39,7 +42,7 @@ public class MainParser {
 		files.addAll(files2);
 
 		ExecutorService executor = null;
-		ParserMain.parseFileSet(files, fileSet, executor, fileReader);
+		ParserMisc.parseFileSet(files, fileSet, executor, fileReader);
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
@@ -71,12 +74,22 @@ public class MainParser {
 
 
 	public static void main(String[] args) throws IOException {
-		ExecutorService executor = null; //Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		boolean multithread = false;
+		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		if(args.length > 0) {
+			// TODO for VisualVM pause
+			//Scanner in = new Scanner(System.in);
+			//System.out.print("press enter to continue: ");
+			//in.nextLine();
+
 			val parserWorkflow = ParserWorkflow.parseArgs(args);
 			parserWorkflow.run(Level.INFO, executor, fileReader);
+
+			// TODO for VisualVM pause
+			//System.out.print("press enter to end: ");
+			//in.nextLine();
 		}
 		else {
 			//parseAndPrintCSharpFileInfo();

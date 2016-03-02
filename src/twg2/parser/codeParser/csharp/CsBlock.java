@@ -1,7 +1,7 @@
 package twg2.parser.codeParser.csharp;
 
+import twg2.dataUtil.dataUtils.EnumUtil;
 import twg2.parser.baseAst.CompoundBlock;
-import dataUtils.EnumUtil;
 
 /**
  * @author TeamworkGuy2

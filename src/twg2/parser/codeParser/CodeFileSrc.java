@@ -12,7 +12,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-11-22
  * @param <T_LANG> the code language of the source file
  */
-public class CodeFileSrc<T_LANG extends CodeLanguage> {
+public class CodeFileSrc<T_LANG> {
 	@Getter SimpleTree<DocumentFragmentText<CodeFragmentType>> doc;
 	@Getter String srcName;
 	@Getter String src;

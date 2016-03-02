@@ -6,9 +6,12 @@ import java.util.Map.Entry;
 
 import lombok.Getter;
 import lombok.val;
+import twg2.collections.builder.ListUtil;
 import twg2.collections.primitiveCollections.CharList;
+import twg2.collections.tuple.Tuples;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.textParser.TextParser;
 
 /** A collection of {@link CharParser}
@@ -22,6 +25,11 @@ public class CharParserPlainFactoryImpl<P extends CharParser> implements CharPar
 	private List<BiPredicates.CharObject<TextParser>> firstCharConds;
 	private CharParser conditionSet;
 	private @Getter boolean compound;
+
+
+	public CharParserPlainFactoryImpl(String name, boolean compound, Iterable<CharParserMatchable> parserConditions) {
+		this(name, compound, ListUtil.map(parserConditions, (c) -> Tuples.of(c.getFirstCharMatcher(), c)).toArray(new Entry[0]));
+	}
 
 
 	@SafeVarargs
@@ -39,7 +47,7 @@ public class CharParserPlainFactoryImpl<P extends CharParser> implements CharPar
 		}
 		else {
 			@SuppressWarnings("unchecked")
-			P[] conds = (P[])new Object[parserConditions.length];
+			P[] conds = (P[])new CharParser[parserConditions.length];
 			int i = 0;
 			for(val entry : parserConditions) {
 				conds[i] = entry.getValue();

@@ -11,7 +11,11 @@ import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
 
-/**
+/** Build a token tree from text characters using multiple parser factories.<br>
+ * Given multiple char parser factories, this maintains a list of in progress parsers and accepts characters if they are accepted by any in-progress parsers or
+ * by any of the factories' {@link CharParserFactory#isMatch(char, TextParser)} methods.<br>
+ * This parser also ensures that in progress parsers get first chance to accept new input characters and that tokens can't complete parsing inside in-progress none-compound parsers.
+ * Compound parsers can contain nested tokens, the end result of the parsing process is a token tree.
  * @author TeamworkGuy2
  * @since 2015-5-29
  */
@@ -110,7 +114,7 @@ public class CharMultiConditionParser {
 	}
 
 
-	private static boolean allCompound(List<CharParserFactory> conds, int off, int len) {
+	private static final boolean allCompound(List<CharParserFactory> conds, int off, int len) {
 		if(len < 1) {
 			return true;
 		}

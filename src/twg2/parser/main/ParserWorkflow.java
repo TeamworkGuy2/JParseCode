@@ -20,15 +20,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import dataUtils.TimeUnitUtil;
-import lombok.AllArgsConstructor;
 import lombok.val;
-import twg2.annotations.Immutable;
-import twg2.arrays.ArrayUtil;
-import twg2.collections.tuple.Tuples;
+import twg2.dataUtil.dataUtils.TimeUnitUtil;
+import twg2.io.fileLoading.SourceFiles;
+import twg2.io.fileLoading.SourceInfo;
 import twg2.io.files.FileReadUtil;
-import twg2.io.log.Logging;
-import twg2.io.log.LoggingImpl;
+import twg2.io.write.JsonWrite;
+import twg2.logging.Logging;
+import twg2.logging.LoggingImpl;
+import twg2.logging.LoggingPrefixFormat;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
@@ -37,7 +37,6 @@ import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.project.ProjectClassSet;
-import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;
@@ -47,7 +46,7 @@ import twg2.text.stringUtils.StringTrim;
  * @since 2016-1-9
  */
 public class ParserWorkflow {
-	private static String newline = System.lineSeparator();
+	static String newline = System.lineSeparator();
 
 	List<SourceInfo> sources;
 	List<DestinationInfo> destinations;
@@ -63,10 +62,10 @@ public class ParserWorkflow {
 
 	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader) throws IOException {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingImpl.PrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
+		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
 		try {
-			val loadRes = LoadResult.load(this.sources);
+			val loadRes = SourceFiles.load(this.sources);
 			if(log != null) {
 				loadRes.log(log, logLevel, true);
 			}
@@ -74,7 +73,7 @@ public class ParserWorkflow {
 			// TODO debugging
 			long start = System.nanoTime();
 
-			val parseRes = ParsedResult.parse(loadRes.sources, executor, fileReader);
+			val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader);
 
 			// TODO debugging
 			System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
@@ -98,57 +97,6 @@ public class ParserWorkflow {
 		} catch(IOException ioe) {
 			throw new UncheckedIOException(ioe);
 		}
-	}
-
-
-
-
-	public static class SourceInfo {
-		private static int DEFAULT_MAX_RECURSIVE_DEPTH = 20;
-		String path;
-		int maxRecursiveDepth;
-		String[] validFileExtensions;
-
-
-		@Override
-		public String toString() {
-			return path + "=" + maxRecursiveDepth + (validFileExtensions.length > 0 ? ",[" + String.join(",", validFileExtensions) + "]" : "");
-		}
-
-
-		public static SourceInfo parse(String str, String argName) {
-			val values = StringSplit.split(str, "=", 2);
-
-			if(values[0] == null) {
-				throw new IllegalArgumentException("argument '" + argName + "' should contain an argument value");
-			}
-
-			val srcInfo = new SourceInfo();
-			srcInfo.validFileExtensions = ArrayUtil.EMPTY_STRING_ARRAY;
-			srcInfo.maxRecursiveDepth = DEFAULT_MAX_RECURSIVE_DEPTH;
-			srcInfo.path = values[0];
-
-			if(values[1] != null) {
-				val depthAndExtensions = StringSplit.split(values[1], ',', new String[2]);
-				int idx = 0;
-				if(depthAndExtensions[0] != null) {
-					val depth = Integer.parseInt(depthAndExtensions[0]);
-					srcInfo.maxRecursiveDepth = depth;
-					idx++;
-				}
-
-				val extensionsAryStr = depthAndExtensions[idx];
-				if(extensionsAryStr != null) {
-					if(!extensionsAryStr.startsWith("[") || !extensionsAryStr.endsWith("]")) {
-						throw new IllegalArgumentException("second portion of '" + argName + "' value should be a '[file_extension_string,..]'");
-					}
-					val extensions = StringSplit.split(extensionsAryStr.substring(1, extensionsAryStr.length() - 1), ',');
-					srcInfo.validFileExtensions = extensions.toArray(new String[extensions.size()]);
-				}
-			}
-			return srcInfo;
-		}
-
 	}
 
 
@@ -191,53 +139,12 @@ public class ParserWorkflow {
 
 
 
-	@AllArgsConstructor
-	@Immutable
-	public static class LoadResult {
-		final List<Entry<SourceInfo, List<Path>>> sources;
-
-
-		public void log(Logging log, Level level, boolean includeHeader) {
-			if(Logging.wouldLog(log, level)) {
-				val sb = new StringBuilder();
-				if(includeHeader) {
-					sb.append(newline);
-					sb.append("files by source:");
-					sb.append(newline);
-				}
-				for(val src : sources) {
-					sb.append(newline);
-					sb.append(src.getKey());
-					sb.append(newline);
-					JsonWrite.joinStr(src.getValue(), newline, sb, (f) -> f.toString());
-					sb.append(newline);
-				}
-
-				log.log(level, this.getClass(), sb.toString());
-			}
-		}
-
-
-		public static LoadResult load(List<SourceInfo> sourceInfos) throws IOException {
-			val allFiles = new ArrayList<Entry<SourceInfo, List<Path>>>();
-
-			for(val srcInfo : sourceInfos) {
-				val fileSet = ParserMain.getFilesByExtension(Paths.get(srcInfo.path), srcInfo.maxRecursiveDepth, srcInfo.validFileExtensions);
-				allFiles.add(Tuples.of(srcInfo, fileSet));
-			}
-
-			return new LoadResult(Collections.unmodifiableList(allFiles));
-		}
-
-	}
-
-
-
-
 	public static class ParsedResult {
 		/** The set of all parsed files */
 		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> compilationUnits; 
 
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public ParsedResult(ProjectClassSet.Simple<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock> compilationUnits) {
 			this.compilationUnits = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>)(ProjectClassSet)compilationUnits;
 		}
@@ -278,7 +185,7 @@ public class ParserWorkflow {
 			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>();
 
 			for(val filesWithSrc : files) {
-				ParserMain.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader);
+				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader);
 			}
 
 			return new ParsedResult(fileSet);
@@ -295,6 +202,7 @@ public class ParserWorkflow {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public ResolvedResult(ProjectClassSet.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock> compilationUnits,
 				HashSet<List<String>> missingNamespaces) {
 			this.compilationUnits = (ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>)(ProjectClassSet)compilationUnits;
@@ -355,6 +263,8 @@ public class ParserWorkflow {
 		/** List of names associated with parser results */
 		Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> filterSets;
 
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public FilterResult(Map<? extends DestinationInfo, ? extends List<? extends CodeFileParsed.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock>>> filterSets) {
 			this.filterSets = (Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>>)(Map)filterSets;
 		}
@@ -482,7 +392,7 @@ public class ParserWorkflow {
 
 				if("sources".equals(name)) {
 					for(val valueStr : values) {
-						val value = SourceInfo.parse(valueStr, "sources");
+						val value = SourceInfo.parseFromArgs(valueStr, "sources");
 						srcs.add(value);
 					}
 				}

@@ -27,5 +27,6 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-util/jar/jtext_util.jar" sourcepath="/JTextUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/jar/jtree_walker.jar" sourcepath="/JTreeWalker"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/jar/jfile_io.jar" sourcepath="/JFileIo"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtwg2-logging/jar/jtwg2_logging.jar" sourcepath="/JTwg2Logging"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

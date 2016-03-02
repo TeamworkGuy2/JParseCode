@@ -4,12 +4,13 @@ import java.util.Arrays;
 
 import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
+import twg2.collections.tuple.Tuples;
 import twg2.parser.Inclusion;
-import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.text.CharConditionPipe;
 import twg2.parser.text.CharConditions;
 import twg2.parser.text.CharParserFactory;
-import twg2.parser.text.CharParserFactoryImpl;
+import twg2.parser.text.CharParserPlainFactoryImpl;
 import twg2.parser.text.StringParserBuilder;
 import twg2.ranges.CharSearchSet;
 
@@ -21,8 +22,8 @@ public class IdentifierParser {
 	static int genericTypeDepth = 3;
 
 	public static CharParserFactory createIdentifierWithGenericTypeParser() {
-		val typeStatementCondition = GenericTypeParser.createGenericTypeParser(genericTypeDepth, IdentifierParser::createCompoundIdentifierParser);
-		CharParserFactory identifierWithGenericTypeParser = new CharParserFactoryImpl<>("compound identifier with optional generic type", false, typeStatementCondition);
+		val typeStatementCond = GenericTypeParser.createGenericTypeParser(genericTypeDepth, IdentifierParser::createCompoundIdentifierParser);
+		CharParserFactory identifierWithGenericTypeParser = new CharParserPlainFactoryImpl<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
 		return identifierWithGenericTypeParser;
 	}
 
@@ -38,7 +39,7 @@ public class IdentifierParser {
 	/**
 	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'mySpecialLoopCount', '$thing', or '_stspr')
 	 */
-	public static CharConditions.BaseCharParserWithMarks newIdentifierParser() {
+	public static CharConditions.BaseCharParserMatchable newIdentifierParser() {
 		CharSearchSet firstCharSet = new CharSearchSet();
 		firstCharSet.addChar('$');
 		firstCharSet.addChar('_');
@@ -56,7 +57,7 @@ public class IdentifierParser {
 	/**
 	 * @return a compound identifier parser (i.e. can parse 'Aa.Bb.Cc' as one identifier token')
 	 */
-	public static CharParser createCompoundIdentifierParser() {
+	public static CharParserMatchable createCompoundIdentifierParser() {
 		val identifierParser = Arrays.asList(newIdentifierParser());
 		val separatorParser = Arrays.asList(new CharConditions.Literal("identifier namespace separator", CharArrayList.of('.'), Inclusion.INCLUDE));
 		return CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser);

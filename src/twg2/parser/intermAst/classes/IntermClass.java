@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.io.write.JsonWrite;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.intermAst.field.IntermFieldSig;
@@ -14,7 +15,6 @@ import twg2.parser.intermAst.method.IntermMethodSig;
 import twg2.parser.intermAst.method.IntermParameterSig;
 import twg2.parser.intermAst.method.ResolvedParameterSig;
 import twg2.parser.output.JsonWritableSig;
-import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringJoin;
 

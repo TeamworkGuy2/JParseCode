@@ -10,13 +10,13 @@ import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.collections.builder.ListBuilder;
+import twg2.io.write.JsonWrite;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.intermAst.classes.IntermClass;
 import twg2.parser.intermAst.classes.IntermClassSig;
 import twg2.parser.intermAst.project.ProjectClassSet;
 import twg2.parser.output.JsonWritableSig;
-import twg2.parser.output.JsonWrite;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringJoin;
 
