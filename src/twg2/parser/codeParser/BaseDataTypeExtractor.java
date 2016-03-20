@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.ast.interm.type.TypeSig;
 import twg2.collections.builder.ListBuilder;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.type.TypeSig;
+import twg2.parser.language.CodeLanguage;
 import twg2.text.stringUtils.StringCheck;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;

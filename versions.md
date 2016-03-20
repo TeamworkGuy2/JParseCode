@@ -1,9 +1,23 @@
 --------
-####0.8.0
-date: 2016-2-28
+####0.9.0
+date: 2016-3-20
 
 commit: ?
 
+* Added commented parsing for comments attached to methods and fields (future TODO: add comment parsing for comments attached to classes and namespaces)
+* Renamed intermAst packages to 'twg2.ast.interm'
+* Removed 'interm' from most AST class names
+* Moved type resolution out of AST classes into new 'twg2.parser.resolver' classes (i.e. ClassSigResolver, FieldSigResolver, etc.)
+* Created 'twg2.parser.language' package for language management classes
+
+
+--------
+####0.8.0
+date: 2016-2-28
+
+commit: 32ee2a5ec5c218d3f90d1438f893a86e34b9c716
+
+Move from assuming that conditions can list the initial chars that match them (CharParser.WithMarks.getMatchFirstChars()) to CharParserMatchable and new getFirstCharMatcher() method which allows for a flexible definition of matching first chars
 * Moved/renamed ParserWorkFlow SourceInfo and LoadResult \(renamed to SourceFiles) nested classes and ParserMain.getFilesByExtension() to [JFileIo] (https://github.com/TeamworkGuy2/JFileIo) library
 * Moved twg2.parser.output JsonWrite and JsonWritable to JFileIO project's twg2.io.write package
 * Renamed ParserMain -> ParserMisc

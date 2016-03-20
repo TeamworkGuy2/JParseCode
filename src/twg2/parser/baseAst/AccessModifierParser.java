@@ -1,6 +1,6 @@
 package twg2.parser.baseAst;
 
-import twg2.parser.codeParser.CodeLanguage;
+import twg2.parser.language.CodeLanguage;
 
 /**
  * @author TeamworkGuy2

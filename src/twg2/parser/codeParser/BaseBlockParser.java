@@ -5,15 +5,15 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.val;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.block.BlockAst;
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.method.MethodSig;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.method.IntermMethodSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /** Base static methods for helping {@link AstExtractor} implementations
@@ -25,17 +25,17 @@ public class BaseBlockParser {
 	/** Parses a simple AST tree using an {@link AstExtractor}
 	 * @param extractor provides parsers and extract method to consume the astTree
 	 * @param astTree the tree of basic {@link DocumentFragmentText}{@code <}{@link CodeFragmentType}{@code >} tokens
-	 * @return a list of entries with simple AST tree blocks as keys and {@link IntermClass} as values
+	 * @return a list of entries with simple AST tree blocks as keys and {@link ClassAst} as values
 	 */
 	// TODO this only parses some fields and interface methods
-	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
+	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
 			AstExtractor<_T_BLOCK> extractor, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
 
 		val nameScope = new ArrayList<String>();
 
-		List<IntermBlock<_T_BLOCK>> blockDeclarations = extractor.extractBlocks(nameScope, astTree, null);
+		List<BlockAst<_T_BLOCK>> blockDeclarations = extractor.extractBlocks(nameScope, astTree, null);
 
-		List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<_T_BLOCK>>> resBlocks = new ArrayList<>();
+		List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<_T_BLOCK>>> resBlocks = new ArrayList<>();
 
 		AstParser<List<List<String>>> usingStatementExtractor = extractor.createImportStatementParser();
 
@@ -50,14 +50,15 @@ public class BaseBlockParser {
 			List<List<String>> tmpUsingStatements = usingStatementExtractor.getParserResult();
 			usingStatements.addAll(tmpUsingStatements);
 
-			List<IntermFieldSig> fields = null;
-			List<IntermMethodSig.SimpleImpl> intfMethods = null;
+			List<FieldSig> fields = null;
+			List<MethodSig.SimpleImpl> intfMethods = null;
 
 			AstParser<List<AnnotationSig>> annotationExtractor = extractor.createAnnotationParser(block);
-			AstParser<List<IntermFieldSig>> fieldExtractor = extractor.createFieldParser(block, annotationExtractor);
-			AstParser<List<IntermMethodSig.SimpleImpl>> methodExtractor = extractor.createMethodParser(block, annotationExtractor);
+			AstParser<List<String>> commentExtractor = extractor.createCommentParser(block);
+			AstParser<List<FieldSig>> fieldExtractor = extractor.createFieldParser(block, annotationExtractor, commentExtractor);
+			AstParser<List<MethodSig.SimpleImpl>> methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
 
-			runParsers(block.getBlockTree(), annotationExtractor, fieldExtractor, methodExtractor);
+			runParsers(block.getBlockTree(), annotationExtractor, commentExtractor, fieldExtractor, methodExtractor);
 
 			if(block.getBlockType().canContainFields()) {
 				fields = fieldExtractor.getParserResult();
@@ -67,7 +68,7 @@ public class BaseBlockParser {
 			}
 
 			if(block.getBlockType().canContainFields() && block.getBlockType().canContainMethods()) {
-				resBlocks.add(Tuples.of(block.getBlockTree(), new IntermClass.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
+				resBlocks.add(Tuples.of(block.getBlockTree(), new ClassAst.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
 			}
 		}
 

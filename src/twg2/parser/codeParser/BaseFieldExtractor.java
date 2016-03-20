@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.block.BlockAst;
+import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.type.TypeSig;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -11,17 +15,13 @@ import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.type.TypeSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
+public class BaseFieldExtractor implements AstParser<List<FieldSig>> {
 
 	static enum State {
 		INIT,
@@ -35,11 +35,12 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 
 	KeywordUtil keywordUtil;
-	IntermBlock<? extends CompoundBlock> parentBlock;
+	BlockAst<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
+	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.Simple> typeParser;
 	List<AccessModifier> accessModifiers = new ArrayList<>();
-	List<IntermFieldSig> fields = new ArrayList<>();
+	List<FieldSig> fields = new ArrayList<>();
 	TypeSig.Simple fieldTypeSig;
 	String fieldName;
 	AstTypeChecker<?> typeChecker;
@@ -48,14 +49,15 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 	String name;
 
 
-	public BaseFieldExtractor(String langName, KeywordUtil keywordUtil, IntermBlock<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstTypeChecker<?> typeChecker) {
+	public BaseFieldExtractor(String langName, KeywordUtil keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser, AstTypeChecker<?> typeChecker) {
 		this.langName = langName;
 		this.name = langName + " field";
-		this.keywordUtil = keywordUtil;
 		this.parentBlock = parentBlock;
+		this.keywordUtil = keywordUtil;
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
+		this.commentParser = commentParser;
 		this.typeChecker = typeChecker;
 	}
 
@@ -169,9 +171,13 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 			state = State.COMPLETE;
 			val annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
+
+			val comments = new ArrayList<>(commentParser.getParserResult());
+			commentParser.recycle();
+
 			val accessMods = new ArrayList<>(accessModifiers);
 
-			fields.add(new IntermFieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, accessMods, annotations));
+			fields.add(new FieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}
@@ -182,7 +188,7 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 
 	@Override
-	public List<IntermFieldSig> getParserResult() {
+	public List<FieldSig> getParserResult() {
 		return fields;
 	}
 
@@ -214,7 +220,7 @@ public class BaseFieldExtractor implements AstParser<List<IntermFieldSig>> {
 
 	@Override
 	public BaseFieldExtractor copy() {
-		val copy = new BaseFieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.typeChecker);
+		val copy = new BaseFieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy(), this.typeChecker);
 		return copy;
 	}
 

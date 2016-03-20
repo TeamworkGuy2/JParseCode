@@ -8,8 +8,8 @@ import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

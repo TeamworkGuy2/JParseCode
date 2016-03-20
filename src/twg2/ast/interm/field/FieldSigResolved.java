@@ -1,4 +1,4 @@
-package twg2.parser.intermAst.field;
+package twg2.ast.interm.field;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,13 +6,14 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.type.TypeSig;
 import twg2.io.write.JsonWrite;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
+import twg2.text.stringEscape.StringEscapeJson;
 
 
 /**
@@ -21,12 +22,13 @@ import twg2.parser.output.WriteSettings;
  */
 @Immutable
 @AllArgsConstructor
-public class ResolvedFieldSig implements JsonWritableSig {
+public class FieldSigResolved implements JsonWritableSig {
 	private final @Getter String name;
 	private final @Getter List<String> fullName;
 	private final @Getter TypeSig.Resolved fieldType;
 	private final @Getter List<AccessModifier> accessModifiers;
 	private final @Getter List<AnnotationSig> annotations;
+	private final @Getter List<String> comments;
 
 
 	@Override
@@ -44,6 +46,10 @@ public class ResolvedFieldSig implements JsonWritableSig {
 
 		dst.append("\"annotations\": [");
 		JsonWrite.joinStrConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
+		dst.append("], ");
+
+		dst.append("\"comments\": [");
+		JsonWrite.joinStrConsume(comments, ", ", dst, (str) -> { dst.append('"'); dst.append(StringEscapeJson.toJsonString(str)); dst.append('"'); });
 		dst.append("]");
 
 		dst.append(" }");

@@ -6,11 +6,11 @@ import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
 import twg2.parser.baseAst.AstUtil;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.CodeLanguage;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.language.CodeLanguage;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

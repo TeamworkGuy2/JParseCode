@@ -1,4 +1,4 @@
-package twg2.parser.intermAst.method;
+package twg2.ast.interm.method;
 
 import java.io.IOException;
 
@@ -15,7 +15,7 @@ import twg2.text.stringEscape.StringEscapeJson;
  */
 @Immutable
 @AllArgsConstructor
-public class IntermParameterSig implements JsonWritableSig {
+public class ParameterSig implements JsonWritableSig {
 	private @Getter String name;
 	private @Getter String typeSimpleName;
 	private @Getter boolean optional;

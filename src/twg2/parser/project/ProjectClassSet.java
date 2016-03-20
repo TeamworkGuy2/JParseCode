@@ -1,4 +1,4 @@
-package twg2.parser.intermAst.project;
+package twg2.parser.project;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,24 +7,25 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.val;
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.classes.ClassSig;
 import twg2.collections.builder.ListUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeLanguage;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.classes.IntermClassSig;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.method.IntermMethodSig;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.JsonWritableSig;
+import twg2.parser.resolver.ClassSigResolver;
+import twg2.parser.resolver.FieldSigResolver;
+import twg2.parser.resolver.MethodSigResolver;
 
 /** A group of classes/interfaces representing all of the compilation units in a project.
  * Provides {@link #resolveSimpleName(String, List, Collection)} for resolving simple names to fully qualifying names
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extends IntermClass<? extends IntermClassSig, ? extends JsonWritableSig, T_BLOCK>, T_CODE_FILE extends CodeFileParsed<? extends T_ID, ? extends T_CLASS>> {
+public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extends ClassAst<? extends ClassSig, ? extends JsonWritableSig, T_BLOCK>, T_CODE_FILE extends CodeFileParsed<? extends T_ID, ? extends T_CLASS>> {
 	Map<String, T_CODE_FILE> compilationUnitsByFullyQualifyingName = new HashMap<>();
 	Map<String, List<T_CODE_FILE>> compilationUnitsByNamespaces = new HashMap<>();
 
@@ -144,8 +145,8 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 	}
 
 
-	public T_CLASS resolveSimpleNameToClass(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
-		IntermClassSig.SimpleImpl classSig = classScope.getSignature();
+	public T_CLASS resolveSimpleNameToClass(String simpleName, ClassAst.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
+		ClassSig.SimpleImpl classSig = classScope.getSignature();
 
 		// try resolve using the class' nested classes
 		T_CLASS resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, classSig.getFullName(), missingNamespacesDst);
@@ -167,7 +168,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 	}
 
 
-	public List<String> resolveSimpleName(String simpleName, IntermClass.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
+	public List<String> resolveSimpleName(String simpleName, ClassAst.SimpleImpl<? extends CompoundBlock> classScope, Collection<List<String>> missingNamespacesDst) {
 		val resolvedClass = resolveSimpleNameToClass(simpleName, classScope, missingNamespacesDst);
 		return resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
 	}
@@ -175,7 +176,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 
 
-	public static class Simple<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, IntermClass.SimpleImpl<T_BLOCK>, CodeFileParsed.Simple<T_ID, T_BLOCK>> {
+	public static class Simple<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Simple<T_ID, T_BLOCK>> {
 
 		@Override
 		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Simple<T_ID, T_BLOCK> classUnit) {
@@ -187,7 +188,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 
 
 
-	public static class Resolved<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, IntermClass.ResolvedImpl<T_BLOCK>, CodeFileParsed.Resolved<T_ID, T_BLOCK>> {
+	public static class Resolved<T_ID, T_BLOCK extends CompoundBlock> extends ProjectClassSet<T_ID, T_BLOCK, ClassAst.ResolvedImpl<T_BLOCK>, CodeFileParsed.Resolved<T_ID, T_BLOCK>> {
 
 		@Override
 		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Resolved<T_ID, T_BLOCK> classUnit) {
@@ -214,10 +215,10 @@ public class ProjectClassSet<T_ID, T_BLOCK extends CompoundBlock, T_CLASS extend
 			val file = fileEntry.getValue().getParsedClass();
 			val namespaces = file.getUsingStatements();
 			val lang = fileEntry.getValue().getId().getLanguage();
-			val resSig = IntermClassSig.resolveClassSigFrom(lang.getKeywordUtil(), file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
-			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> IntermMethodSig.resolveFrom(lang.getKeywordUtil(), mthd, file, projFiles, missingNamespacesDst));
-			val resFields = ListUtil.map(file.getFields(), (fld) -> IntermFieldSig.resolveFrom(fld, file, projFiles, missingNamespacesDst));
-			val resClass = new IntermClass.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockType());
+			val resSig = ClassSigResolver.resolveClassSigFrom(lang.getKeywordUtil(), file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
+			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> MethodSigResolver.resolveFrom(lang.getKeywordUtil(), mthd, file, projFiles, missingNamespacesDst));
+			val resFields = ListUtil.map(file.getFields(), (fld) -> FieldSigResolver.resolveFrom(fld, file, projFiles, missingNamespacesDst));
+			val resClass = new ClassAst.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, file.getBlockType());
 
 			resFiles.addCompilationUnit(resSig.getFullName(), new CodeFileParsed.Resolved<_T_ID, _T_BLOCK>(fileEntry.getValue().getId(), resClass, fileEntry.getValue().getAstTree()));
 		}

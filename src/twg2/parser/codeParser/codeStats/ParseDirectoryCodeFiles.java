@@ -21,9 +21,9 @@ import twg2.collections.tuple.Tuples;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
-import twg2.parser.codeParser.CodeLanguage;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.ParseCommentsAndWhitespace;
+import twg2.parser.language.CodeLanguage;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 

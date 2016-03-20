@@ -1,23 +1,19 @@
-package twg2.parser.intermAst.field;
+package twg2.ast.interm.field;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.type.TypeSig;
 import twg2.io.write.JsonWrite;
 import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.classes.IntermClassSig;
-import twg2.parser.intermAst.project.ProjectClassSet;
-import twg2.parser.intermAst.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
+import twg2.text.stringEscape.StringEscapeJson;
 
 /**
  * @author TeamworkGuy2
@@ -25,12 +21,13 @@ import twg2.parser.output.WriteSettings;
  */
 @Immutable
 @AllArgsConstructor
-public class IntermFieldSig implements JsonWritableSig {
+public class FieldSig implements JsonWritableSig {
 	private final @Getter String name;
 	private final @Getter List<String> fullName;
 	private final @Getter TypeSig.Simple fieldType;
 	private final @Getter List<AccessModifier> accessModifiers;
 	private final @Getter List<AnnotationSig> annotations;
+	private final @Getter List<String> comments;
 
 
 	@Override
@@ -48,6 +45,10 @@ public class IntermFieldSig implements JsonWritableSig {
 
 		dst.append("\"annotations\": [");
 		JsonWrite.joinStrConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
+		dst.append("], ");
+
+		dst.append("\"comments\": [");
+		JsonWrite.joinStrConsume(comments, ", ", dst, (str) -> { dst.append('"'); dst.append(StringEscapeJson.toJsonString(str)); dst.append('"'); });
 		dst.append("]");
 
 		dst.append(" }");
@@ -57,18 +58,6 @@ public class IntermFieldSig implements JsonWritableSig {
 	@Override
 	public String toString() {
 		return fieldType + " " + NameUtil.joinFqName(fullName);
-	}
-
-
-	/** Resolves simple name fields from {@link IntermFieldSig} into fully qualifying names and creates a new {@link IntermClassSig} with all other fields the same
-	 */
-	public static <T_FIELD extends IntermFieldSig> ResolvedFieldSig resolveFrom(T_FIELD intermField, IntermClass.SimpleImpl<? extends CompoundBlock> namespaceClass,
-			ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
-		// TODO also resolve annotations
-
-		TypeSig.Resolved resolvedFieldType = TypeSig.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);
-
-		return new ResolvedFieldSig(intermField.getName(), intermField.getFullName(), resolvedFieldType, intermField.getAccessModifiers(), intermField.getAnnotations());
 	}
 
 }

@@ -11,6 +11,7 @@ import twg2.parser.codeParser.codeStats.ParsedFileStats;
 import twg2.parser.codeParser.parsers.CodeStringParser;
 import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.text.stringUtils.StringCheck;

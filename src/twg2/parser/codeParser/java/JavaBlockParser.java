@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.val;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.block.BlockAst;
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.Simple;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AstParser;
@@ -14,21 +22,14 @@ import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BaseAccessModifierExtractor;
 import twg2.parser.codeParser.BaseBlockParser;
+import twg2.parser.codeParser.BaseCommentBlockExtractor;
 import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.codeParser.BaseFieldExtractor;
 import twg2.parser.codeParser.BaseMethodExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.classes.IntermClassSig;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.method.IntermMethodSig;
-import twg2.parser.intermAst.type.TypeSig;
-import twg2.parser.intermAst.type.TypeSig.Simple;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -48,40 +49,49 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 	@Override
 	public AstParser<Simple> createTypeParser() {
-		return new BaseDataTypeExtractor(CodeLanguageOptions.JAVA, true);
+		val lang = CodeLanguageOptions.JAVA;
+		return new BaseDataTypeExtractor(lang, true);
 	}
 
 
 	@Override
-	public AstParser<List<AnnotationSig>> createAnnotationParser(IntermBlock<JavaBlock> block) {
+	public AstParser<List<AnnotationSig>> createAnnotationParser(BlockAst<JavaBlock> block) {
 		return new JavaAnnotationExtractor();
 	}
 
 
 	@Override
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<String>> createCommentParser(BlockAst<JavaBlock> block) {
+		val lang = CodeLanguageOptions.JAVA;
+		return new BaseCommentBlockExtractor(lang.displayName(), block);
+	}
+
+
+	@Override
+	public AstParser<List<FieldSig>> createFieldParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.JAVA;
 		val typeParser = new BaseDataTypeExtractor(lang, false);
-		return new BaseFieldExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser, lang.getAstUtil());
+		return new BaseFieldExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
 
 	@Override
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
-		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.JAVA, true);
-		return new BaseMethodExtractor("Java", JavaKeyword.check, block, typeParser, annotationParser);
+	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
+		val lang = CodeLanguageOptions.JAVA;
+		val typeParser = new BaseDataTypeExtractor(lang, true);
+		return new BaseMethodExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser);
 	}
 
 
 	@Override
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
 		return extractBlockFieldsAndInterfaceMethods(astTree);
 	}
 
 
 	@Override
-	public List<IntermBlock<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, IntermBlock<JavaBlock> parentScope) {
-		List<IntermBlock<JavaBlock>> blocks = new ArrayList<>();
+	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, BlockAst<JavaBlock> parentScope) {
+		List<BlockAst<JavaBlock>> blocks = new ArrayList<>();
 		// parse package name and push it into the name scope
 		String pkgName = parsePackageDeclaration(astTree);
 		if(pkgName == null) {
@@ -95,7 +105,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	// TODO this only parses some fields and interface methods
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
 		// TODO are all Java blocks valid blocks possibly containing fields/methods
 		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, tokenTree);
 		return blocks;
@@ -109,8 +119,8 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
 	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
-			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, IntermBlock<JavaBlock> parentScope, List<IntermBlock<JavaBlock>> blocks) {
-		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
+			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
+		val lang = CodeLanguageOptions.JAVA;
 		val children = blockTree.getChildren();
 
 		val childIterable = new TokenListIterable(children);
@@ -145,7 +155,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
-						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new BlockAst<>(new ClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);
@@ -163,7 +173,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	private static String parsePackageDeclaration(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
-		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
+		val lang = CodeLanguageOptions.JAVA;
 		List<SimpleTree<DocumentFragmentText<CodeFragmentType>>> childs = null;
 		if(astTree.hasChildren() && (childs = astTree.getChildren()).size() > 1) {
 			if(lang.getAstUtil().isKeyword(childs.get(0).getData(), JavaKeyword.PACKAGE) &&
@@ -181,7 +191,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
-		CodeLanguageOptions.Java lang = CodeLanguageOptions.JAVA;
+		val lang = CodeLanguageOptions.JAVA;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		List<String> names = new ArrayList<>();

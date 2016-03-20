@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.val;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.block.BlockAst;
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.Simple;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AstParser;
@@ -14,21 +22,14 @@ import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BaseAccessModifierExtractor;
 import twg2.parser.codeParser.BaseBlockParser;
+import twg2.parser.codeParser.BaseCommentBlockExtractor;
 import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.codeParser.BaseFieldExtractor;
 import twg2.parser.codeParser.BaseMethodExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.classes.IntermClassSig;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.method.IntermMethodSig;
-import twg2.parser.intermAst.type.TypeSig;
-import twg2.parser.intermAst.type.TypeSig.Simple;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -49,41 +50,50 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 	@Override
 	public AstParser<Simple> createTypeParser() {
-		return new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, true);
+		val lang = CodeLanguageOptions.C_SHARP;
+		return new BaseDataTypeExtractor(lang, true);
 	}
 
 
 	@Override
-	public AstParser<List<AnnotationSig>> createAnnotationParser(IntermBlock<CsBlock> block) {
+	public AstParser<List<AnnotationSig>> createAnnotationParser(BlockAst<CsBlock> block) {
 		return new CsAnnotationExtractor();
 	}
 
 
 	@Override
-	public AstParser<List<IntermFieldSig>> createFieldParser(IntermBlock<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
+	public AstParser<List<String>> createCommentParser(BlockAst<CsBlock> block) {
+		val lang = CodeLanguageOptions.C_SHARP;
+		return new BaseCommentBlockExtractor(lang.displayName(), block);
+	}
+
+
+	@Override
+	public AstParser<List<FieldSig>> createFieldParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.C_SHARP;
 		val typeParser = new BaseDataTypeExtractor(lang, false);
-		return new BaseFieldExtractor("C#", CsKeyword.check, block, typeParser, annotationParser, lang.getAstUtil());
+		return new BaseFieldExtractor(lang.displayName(), CsKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
 
 	@Override
-	public AstParser<List<IntermMethodSig.SimpleImpl>> createMethodParser(IntermBlock<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser) {
-		val typeParser = new BaseDataTypeExtractor(CodeLanguageOptions.C_SHARP, true);
-		return new BaseMethodExtractor("C#", CsKeyword.check, block, typeParser, annotationParser);
+	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
+		val lang = CodeLanguageOptions.C_SHARP;
+		val typeParser = new BaseDataTypeExtractor(lang, true);
+		return new BaseMethodExtractor(lang.displayName(), CsKeyword.check, block, typeParser, annotationParser, commentParser);
 	}
 
 
 	@Override
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
 		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, astTree);
 		return blocks;
 	}
 
 
 	@Override
-	public List<IntermBlock<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, IntermBlock<CsBlock> parentScope) {
-		List<IntermBlock<CsBlock>> blocks = new ArrayList<>();
+	public List<BlockAst<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, BlockAst<CsBlock> parentScope) {
+		List<BlockAst<CsBlock>> blocks = new ArrayList<>();
 		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, blocks);
 		return blocks;
 	}
@@ -96,8 +106,8 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
 	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
-			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, IntermBlock<CsBlock> parentScope, List<IntermBlock<CsBlock>> blocks) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
+			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, BlockAst<CsBlock> parentScope, List<BlockAst<CsBlock>> blocks) {
+		val lang = CodeLanguageOptions.C_SHARP;
 		val children = blockTree.getChildren();
 
 		val childIterable = new TokenListIterable(children);
@@ -132,7 +142,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
-						blocks.add(new IntermBlock<>(new IntermClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new BlockAst<>(new ClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);
@@ -154,7 +164,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
-		CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
+		val lang = CodeLanguageOptions.C_SHARP;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		List<String> names = new ArrayList<>();

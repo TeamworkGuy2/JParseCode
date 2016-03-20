@@ -1,6 +1,6 @@
 package twg2.parser.output;
 
-/**
+/** Code AST serialization settings
  * @author TeamworkGuy2
  * @since 2015-12-10
  */

@@ -13,19 +13,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.ParameterSig;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeLanguage;
-import twg2.parser.codeParser.CodeLanguageOptions;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaBlockParser;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.field.IntermFieldSig;
-import twg2.parser.intermAst.method.IntermMethodSig;
-import twg2.parser.intermAst.method.IntermParameterSig;
+import twg2.parser.language.CodeLanguage;
+import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.output.WriteSettings;
 
@@ -126,7 +126,7 @@ public class JavaClassParseTest {
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
 		Assert.assertEquals("class", csClass.getSignature().getDeclarationType());
 
-		IntermFieldSig f = csClass.getFields().get(0);
+		FieldSig f = csClass.getFields().get(0);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.mod", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
 
@@ -149,9 +149,9 @@ public class JavaClassParseTest {
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
 		Assert.assertEquals(1, csClass.getMethods().size());
-		IntermMethodSig.SimpleImpl m = csClass.getMethods().get(0);
+		MethodSig.SimpleImpl m = csClass.getMethods().get(0);
 		Assert.assertEquals("ParserExamples.Samples.SimpleJava.AddName", NameUtil.joinFqName(m.getFullName()));
-		IntermParameterSig p = m.getParamSigs().get(0);
+		ParameterSig p = m.getParamSigs().get(0);
 		Assert.assertEquals("name", p.getName());
 		Assert.assertEquals("String", p.getTypeSimpleName());
 		//annotations:

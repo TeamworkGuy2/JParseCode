@@ -17,15 +17,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.ast.interm.classes.ClassAst;
 import twg2.collections.builder.ListUtil;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.project.ProjectClassSet;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.main.ParserMisc;
+import twg2.parser.project.ProjectClassSet;
 import checks.CheckCollections;
 
 /**
@@ -33,14 +33,14 @@ import checks.CheckCollections;
  * @since 2016-1-8
  */
 public class CsParserExamples {
-	private IntermClass.ResolvedImpl<CsBlock> trackSearchServiceDef;
-	private IntermClass.ResolvedImpl<CsBlock> albumInfoDef;
-	private IntermClass.ResolvedImpl<CsBlock> trackInfoDef;
+	private ClassAst.ResolvedImpl<CsBlock> trackSearchServiceDef;
+	private ClassAst.ResolvedImpl<CsBlock> albumInfoDef;
+	private ClassAst.ResolvedImpl<CsBlock> trackInfoDef;
 
 	@Parameter
 	private ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock> projFiles;
 	@Parameter
-	private List<IntermClass.ResolvedImpl<CsBlock>> resClasses;
+	private List<ClassAst.ResolvedImpl<CsBlock>> resClasses;
 
 
 	public CsParserExamples() throws IOException {

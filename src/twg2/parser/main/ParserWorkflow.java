@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import lombok.val;
+import twg2.ast.interm.classes.ClassAst;
 import twg2.dataUtil.dataUtils.TimeUnitUtil;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.fileLoading.SourceInfo;
@@ -33,11 +34,10 @@ import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.project.ProjectClassSet;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.project.ProjectClassSet;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;
 
@@ -153,9 +153,9 @@ public class ParserWorkflow {
 		public void log(Logging log, Level level, boolean includeHeader) {
 			if(Logging.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<IntermClass.SimpleImpl<CompoundBlock>>>();
+				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.SimpleImpl<CompoundBlock>>>();
 				for(val file : files) {
-					List<IntermClass.SimpleImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
+					List<ClassAst.SimpleImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
 						fileSets.put(file.getId(), fileSet);
@@ -212,9 +212,9 @@ public class ParserWorkflow {
 		public void log(Logging log, Level level, boolean includeHeader) {
 			if(Logging.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<IntermClass.ResolvedImpl<CompoundBlock>>>();
+				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.ResolvedImpl<CompoundBlock>>>();
 				for(val file : files) {
-					List<IntermClass.ResolvedImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
+					List<ClassAst.ResolvedImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
 						fileSets.put(file.getId(), fileSet);

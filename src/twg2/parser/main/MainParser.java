@@ -13,15 +13,15 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 import lombok.val;
+import twg2.ast.interm.classes.ClassAst;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeLanguage;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.intermAst.classes.IntermClass;
-import twg2.parser.intermAst.project.ProjectClassSet;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.project.ProjectClassSet;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -49,7 +49,7 @@ public class MainParser {
 
 		// get a subset of all the parsed files
 		List<String> resFiles = new ArrayList<>();
-		List<IntermClass.ResolvedImpl<CsBlock>> resClasses = new ArrayList<>();
+		List<ClassAst.ResolvedImpl<CsBlock>> resClasses = new ArrayList<>();
 
 		// fill indices with null so we can random access any valid index
 		for(val classInfo : res) {

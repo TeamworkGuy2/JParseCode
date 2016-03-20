@@ -4,23 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
+import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.ast.interm.block.BlockAst;
+import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.type.TypeSig;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.annotation.AnnotationSig;
-import twg2.parser.intermAst.block.IntermBlock;
-import twg2.parser.intermAst.method.IntermMethodSig;
-import twg2.parser.intermAst.type.TypeSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.SimpleImpl>> {
+public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
 
 	static enum State {
 		INIT,
@@ -34,13 +34,14 @@ public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.Simpl
 
 
 	KeywordUtil keywordUtil;
-	IntermBlock<? extends CompoundBlock> parentBlock;
+	BlockAst<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
+	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.Simple> typeParser;
 	List<AccessModifier> accessModifiers = new ArrayList<>();
 	String methodName;
 	TypeSig.Simple returnTypeSig;
-	List<IntermMethodSig.SimpleImpl> methods = new ArrayList<>();
+	List<MethodSig.SimpleImpl> methods = new ArrayList<>();
 	State state = State.INIT;
 	String langName;
 	String name;
@@ -57,15 +58,16 @@ public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.Simpl
 	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
 	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
 	 */
-	public BaseMethodExtractor(String langName, KeywordUtil keywordUtil, IntermBlock<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser) {
+	public BaseMethodExtractor(String langName, KeywordUtil keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		this.langName = langName;
 		this.name = langName + " method signature";
+		this.parentBlock = parentBlock;
 		this.keywordUtil = keywordUtil;
 		this.methods = new ArrayList<>();
-		this.parentBlock = parentBlock;
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
+		this.commentParser = commentParser;
 	}
 
 
@@ -173,10 +175,13 @@ public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.Simpl
 			val annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
 
+			val comments = new ArrayList<>(commentParser.getParserResult());
+			commentParser.recycle();
+
 			val params = BaseMethodParametersParser.extractParamsFromSignature(tokenNode);
 			val accessMods = new ArrayList<>(accessModifiers);
 
-			methods.add(new IntermMethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, accessMods, annotations));
+			methods.add(new MethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}
@@ -187,7 +192,7 @@ public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.Simpl
 
 
 	@Override
-	public List<IntermMethodSig.SimpleImpl> getParserResult() {
+	public List<MethodSig.SimpleImpl> getParserResult() {
 		return methods;
 	}
 
@@ -219,7 +224,7 @@ public class BaseMethodExtractor implements AstParser<List<IntermMethodSig.Simpl
 
 	@Override
 	public BaseMethodExtractor copy() {
-		val copy = new BaseMethodExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy());
+		val copy = new BaseMethodExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
 		return copy;
 	}
 

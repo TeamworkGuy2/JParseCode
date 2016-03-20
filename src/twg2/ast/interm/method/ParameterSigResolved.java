@@ -1,11 +1,11 @@
-package twg2.parser.intermAst.method;
+package twg2.ast.interm.method;
 
 import java.io.IOException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
-import twg2.parser.intermAst.type.TypeSig;
+import twg2.ast.interm.type.TypeSig;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
@@ -17,7 +17,7 @@ import twg2.text.stringEscape.StringEscapeJson;
  */
 @Immutable
 @AllArgsConstructor
-public class ResolvedParameterSig implements JsonWritableSig {
+public class ParameterSigResolved implements JsonWritableSig {
 	private @Getter String name;
 	private @Getter TypeSig.Resolved type;
 	private @Getter boolean optional;

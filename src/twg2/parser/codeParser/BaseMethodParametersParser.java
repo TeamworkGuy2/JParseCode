@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.val;
+import twg2.ast.interm.method.ParameterSig;
 import twg2.parser.documentParser.DocumentFragmentText;
-import twg2.parser.intermAst.method.IntermParameterSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -16,7 +16,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
 public class BaseMethodParametersParser {
 
 	// TODO does not support default parameters
-	public static List<IntermParameterSig> extractParamsFromSignature(SimpleTree<DocumentFragmentText<CodeFragmentType>> sigNode) {
+	public static List<ParameterSig> extractParamsFromSignature(SimpleTree<DocumentFragmentText<CodeFragmentType>> sigNode) {
 		val childs = sigNode.getChildren();
 		int size = childs.size();
 
@@ -24,7 +24,7 @@ public class BaseMethodParametersParser {
 			return Collections.emptyList();
 		}
 
-		List<IntermParameterSig> params = new ArrayList<>();
+		List<ParameterSig> params = new ArrayList<>();
 
 		for(int i = 0; i < size; i += 2) {
 			val type = childs.get(i + 0).getData().getText();
@@ -35,7 +35,7 @@ public class BaseMethodParametersParser {
 				i++;
 			}
 			val name = childs.get(i + 1).getData().getText();
-			val param = new IntermParameterSig(name, type, optional, null);
+			val param = new ParameterSig(name, type, optional, null);
 			params.add(param);
 		}
 
