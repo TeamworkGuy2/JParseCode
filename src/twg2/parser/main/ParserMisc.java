@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import lombok.val;
 import twg2.dataUtil.dataUtils.ParallelWork;
 import twg2.dataUtil.dataUtils.ParallelWork.WorkBlockPolicy;
+import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.codeParser.AstExtractor;
@@ -31,7 +32,7 @@ public class ParserMisc {
 
 
 	public static void printParseFileInfo(String fileName, CodeFileSrc<CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
-			boolean printBlockSignatures, boolean printFieldSignatures, boolean printMethodSignatures) {
+			boolean printBlockSignatures, boolean printFieldSignatures, boolean printMethodSignatures) throws FileFormatException {
 		val tree = parsedFile.getDoc();
 
 		System.out.println("\nFile: " + fileName);
@@ -46,33 +47,37 @@ public class ParserMisc {
 			System.out.println("\n====\n" + DocumentParser.toSource(tree, parsedFile.getSrc(), false));
 		}
 
-		@SuppressWarnings("unchecked")
-		val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+		try {
+			@SuppressWarnings("unchecked")
+			val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
-		if(printBlockSignatures) {
-			System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
-		}
+			if(printBlockSignatures) {
+				System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
+			}
 
-		for(val blockInfo : blockDeclarations) {
-			val block = blockInfo.getValue();
-			System.out.println("\n==== Block: \n" + block.getSignature());
-			if(printFieldSignatures) {
-				if(block.getBlockType().canContainFields()) {
-					System.out.println("\n\t==== Fields: \n\t" + StringJoin.Objects.join(block.getFields(), "\n\t"));
+			for(val blockInfo : blockDeclarations) {
+				val block = blockInfo.getValue();
+				System.out.println("\n==== Block: \n" + block.getSignature());
+				if(printFieldSignatures) {
+					if(block.getBlockType().canContainFields()) {
+						System.out.println("\n\t==== Fields: \n\t" + StringJoin.Objects.join(block.getFields(), "\n\t"));
+					}
 				}
-			}
-			if(printMethodSignatures) {
-				if(block.getBlockType().canContainMethods()) {
-					System.out.println("\n\t==== Methods: \n\t" + StringJoin.Objects.join(block.getMethods(), "\n\t"));
+				if(printMethodSignatures) {
+					if(block.getBlockType().canContainMethods()) {
+						System.out.println("\n\t==== Methods: \n\t" + StringJoin.Objects.join(block.getMethods(), "\n\t"));
+					}
 				}
+				System.out.println("====\n");
 			}
-			System.out.println("====\n");
+		} catch(Exception e) {
+			throw new FileFormatException(parsedFile.getSrcName(), null, e);
 		}
 
 	}
 
 
-	public static <T_BLOCK extends CompoundBlock> void parseFileSet(List<Path> files, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet, ExecutorService executor, FileReadUtil fileReader) throws IOException {
+	public static <T_BLOCK extends CompoundBlock> void parseFileSet(List<Path> files, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
 		@SuppressWarnings("unchecked")
 		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> dstFileSetCast = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>)dstFileSet;
 
@@ -114,13 +119,17 @@ public class ParserMisc {
 
 			for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 				val parsedFile = parsedFiles.get(i);
-	
-				@SuppressWarnings("unchecked")
-				val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
-	
-				for(val block : blockDeclarations) {
-					val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
-					dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullName(), fileParsed);
+
+				try {
+					@SuppressWarnings("unchecked")
+					val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+
+					for(val block : blockDeclarations) {
+						val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+						dstFileSetCast.addCompilationUnit(block.getValue().getSignature().getFullName(), fileParsed);
+					}
+				} catch(Exception e) {
+					throw new FileFormatException(parsedFile.getSrcName(), null, e);
 				}
 			}
 		}

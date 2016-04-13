@@ -10,7 +10,7 @@ import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.text.CharConditionPipe;
 import twg2.parser.text.CharConditions;
 import twg2.parser.text.CharParserFactory;
-import twg2.parser.text.CharParserPlainFactoryImpl;
+import twg2.parser.text.CharParserMatchableFactory;
 import twg2.parser.text.StringParserBuilder;
 import twg2.ranges.CharSearchSet;
 
@@ -23,7 +23,7 @@ public class IdentifierParser {
 
 	public static CharParserFactory createIdentifierWithGenericTypeParser() {
 		val typeStatementCond = GenericTypeParser.createGenericTypeParser(genericTypeDepth, IdentifierParser::createCompoundIdentifierParser);
-		CharParserFactory identifierWithGenericTypeParser = new CharParserPlainFactoryImpl<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
+		CharParserFactory identifierWithGenericTypeParser = new CharParserMatchableFactory<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
 		return identifierWithGenericTypeParser;
 	}
 

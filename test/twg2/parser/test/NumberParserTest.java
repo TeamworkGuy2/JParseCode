@@ -4,7 +4,7 @@ import lombok.val;
 
 import org.junit.Test;
 
-import twg2.parser.codeParser.NumberParser;
+import twg2.parser.codeParser.parsers.NumberParser;
 
 /**
  * @author TeamworkGuy2

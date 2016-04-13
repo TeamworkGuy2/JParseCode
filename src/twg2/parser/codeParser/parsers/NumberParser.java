@@ -1,11 +1,11 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.parsers;
 
 import lombok.val;
 import twg2.collections.tuple.Tuples;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.primitive.NumericParser;
-import twg2.parser.text.CharParserPlainFactoryImpl;
+import twg2.parser.text.CharParserMatchableFactory;
 import twg2.parser.textParser.TextParser;
 import twg2.ranges.CharSearchSet;
 
@@ -15,7 +15,7 @@ import twg2.ranges.CharSearchSet;
  */
 public class NumberParser {
 
-	public static CharParserPlainFactoryImpl<CharParser> createNumericLiteralParser() {
+	public static CharParserMatchableFactory<CharParser> createNumericLiteralParser() {
 		// TODO create a C# numeric literal parse
 		CharSearchSet notPreceedingSet = new CharSearchSet();
 		notPreceedingSet.addChar('_');
@@ -23,7 +23,8 @@ public class NumberParser {
 		notPreceedingSet.addRange('A', 'Z');
 		notPreceedingSet.addRange('a', 'z');
 
-		val numParser = new NumericParser("numeric literal");
+		// do not parse number sign -/+
+		val numParser = new NumericParser("numeric literal", false);
 
 		BiPredicates.CharObject<TextParser> charCheck = (ch, buf) -> {
 			boolean isFirst = numParser.getFirstCharMatcher().test(ch, buf);
@@ -35,8 +36,8 @@ public class NumberParser {
 			return isFirst && !notPreceedingSet.contains(prevCh);
 		};
 
-		val numericLiteralParser = new CharParserPlainFactoryImpl<>("numeric literal", false, Tuples.of(charCheck, numParser));
-		return (CharParserPlainFactoryImpl)numericLiteralParser;
+		val numericLiteralParser = new CharParserMatchableFactory<CharParser>("numeric literal", false, Tuples.of(charCheck, numParser));
+		return numericLiteralParser;
 	}
 
 }

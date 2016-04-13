@@ -1,4 +1,4 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,45 +6,63 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstParser;
+import twg2.parser.baseAst.AstTypeChecker;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.Consume;
+import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
- * @since 2015-11-24
+ * @since 2015-12-4
  */
-public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
+public class FieldExtractor implements AstParser<List<FieldSig>> {
 
 	static enum State {
 		INIT,
 		FINDING_ACCESS_MODIFIERS,
-		FINDING_RETURN_TYPE,
+		FINDING_DATA_TYPE,
 		FINDING_NAME,
-		FINDING_PARAMS,
+		FOUND_NAME_CHECK,
 		COMPLETE,
 		FAILED;
 	}
 
 
-	KeywordUtil keywordUtil;
+	KeywordUtil<? extends AccessModifier> keywordUtil;
 	BlockAst<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.Simple> typeParser;
 	List<AccessModifier> accessModifiers = new ArrayList<>();
-	String methodName;
-	TypeSig.Simple returnTypeSig;
-	List<MethodSig.SimpleImpl> methods = new ArrayList<>();
+	List<FieldSig> fields = new ArrayList<>();
+	TypeSig.Simple fieldTypeSig;
+	String fieldName;
+	AstTypeChecker<?> typeChecker;
 	State state = State.INIT;
 	String langName;
 	String name;
+
+
+	public FieldExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
+			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser, AstTypeChecker<?> typeChecker) {
+		this.langName = langName;
+		this.name = langName + " field";
+		this.parentBlock = parentBlock;
+		this.keywordUtil = keywordUtil;
+		this.typeParser = typeParser;
+		this.annotationParser = annotationParser;
+		this.commentParser = commentParser;
+		this.typeChecker = typeChecker;
+	}
 
 
 	@Override
@@ -53,39 +71,21 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 	}
 
 
-	/**
-	 * @param parentBlock
-	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
-	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
-	 */
-	public BaseMethodExtractor(String langName, KeywordUtil keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
-		this.langName = langName;
-		this.name = langName + " method signature";
-		this.parentBlock = parentBlock;
-		this.keywordUtil = keywordUtil;
-		this.methods = new ArrayList<>();
-		this.typeParser = typeParser;
-		this.annotationParser = annotationParser;
-		this.commentParser = commentParser;
-	}
-
-
 	@Override
-	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
 		Consume res = null;
 
 		if(state == State.INIT) {
-			if(keywordUtil.isMethodModifierKeyword(tokenNode.getData())) {
+			if(keywordUtil.fieldModifiers().is(tokenNode.getData())) {
 				state = State.FINDING_ACCESS_MODIFIERS;
 				res = findingAccessModifiers(tokenNode);
 				if(res.isAccept()) { return true; }
 			}
-			if(BaseDataTypeExtractor.isPossiblyType(keywordUtil, tokenNode, true)) {
-				state = State.FINDING_RETURN_TYPE;
+			if(DataTypeExtractor.isPossiblyType(keywordUtil, tokenNode, false)) {
+				state = State.FINDING_DATA_TYPE;
 				res = updateAndCheckTypeParser(tokenNode);
 				if(res.isAccept()) { return true; }
 			}
@@ -94,28 +94,28 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 			res = findingAccessModifiers(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
-		else if(state == State.FINDING_RETURN_TYPE) {
-			res = findingReturnType(tokenNode);
+		else if(state == State.FINDING_DATA_TYPE) {
+			res = findingDataType(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
 		else if(state == State.FINDING_NAME) {
 			res = findingName(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
-		else if(state == State.FINDING_PARAMS) {
-			res = findingParams(tokenNode);
+		else if(state == State.FOUND_NAME_CHECK) {
+			res = foundNameCheck(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
 		return false;
 	}
 
 
-	private Consume updateAndCheckTypeParser(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	private Consume updateAndCheckTypeParser(SimpleTree<CodeFragment> tokenNode) {
 		boolean res = typeParser.acceptNext(tokenNode);
 		boolean complete = typeParser.isComplete();
 		boolean failed = typeParser.isFailed();
 		if(complete) {
-			returnTypeSig = typeParser.getParserResult();
+			fieldTypeSig = typeParser.getParserResult();
 			typeParser = typeParser.recycle();
 			state = State.FINDING_NAME;
 		}
@@ -128,15 +128,15 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 	}
 
 
-	private Consume findingAccessModifiers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
-		AccessModifier accessMod = BaseAccessModifierExtractor.readAccessModifier(keywordUtil, tokenNode);
+	private Consume findingAccessModifiers(SimpleTree<CodeFragment> tokenNode) {
+		AccessModifier accessMod = AccessModifierExtractor.readAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
 			return Consume.ACCEPTED;
 		}
 		else {
-			state = State.FINDING_RETURN_TYPE;
-			val res2 = findingReturnType(tokenNode);
+			state = State.FINDING_DATA_TYPE;
+			val res2 = findingDataType(tokenNode);
 			if(res2 == Consume.REJECTED) {
 				accessModifiers.clear();
 				state = State.FAILED;
@@ -146,10 +146,10 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 	}
 
 
-	private Consume findingReturnType(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	private Consume findingDataType(SimpleTree<CodeFragment> tokenNode) {
 		val res = updateAndCheckTypeParser(tokenNode);
-		// TODO required because type parser has to look ahead
-		if(state == State.FINDING_NAME) {
+		// TODO because the type parser has to look ahead for now, but may not consume the look ahead token while also completing based on a look ahead
+		if(res == Consume.REJECTED && state == State.FINDING_NAME) {
 			val res2 = findingName(tokenNode);
 			if(res2.isAccept()) { return res2; }
 		}
@@ -157,10 +157,10 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 	}
 
 
-	private Consume findingName(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	private Consume findingName(SimpleTree<CodeFragment> tokenNode) {
 		if(AstFragType.isIdentifier(tokenNode.getData())) {
-			methodName = tokenNode.getData().getText();
-			state = State.FINDING_PARAMS;
+			fieldName = tokenNode.getData().getText();
+			state = State.FOUND_NAME_CHECK;
 			return Consume.ACCEPTED;
 		}
 		accessModifiers.clear();
@@ -169,8 +169,8 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 	}
 
 
-	private Consume findingParams(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
-		if(AstFragType.isBlock(tokenNode.getData(), "(")) {
+	private Consume foundNameCheck(SimpleTree<CodeFragment> tokenNode) {
+		if((tokenNode == null || tokenNode.getData().getFragmentType() != CodeFragmentType.BLOCK || typeChecker.isFieldBlock(tokenNode))) {
 			state = State.COMPLETE;
 			val annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
@@ -178,10 +178,9 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 			val comments = new ArrayList<>(commentParser.getParserResult());
 			commentParser.recycle();
 
-			val params = BaseMethodParametersParser.extractParamsFromSignature(tokenNode);
 			val accessMods = new ArrayList<>(accessModifiers);
 
-			methods.add(new MethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
+			fields.add(new FieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}
@@ -192,8 +191,8 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 
 
 	@Override
-	public List<MethodSig.SimpleImpl> getParserResult() {
-		return methods;
+	public List<FieldSig> getParserResult() {
+		return fields;
 	}
 
 
@@ -216,26 +215,25 @@ public class BaseMethodExtractor implements AstParser<List<MethodSig.SimpleImpl>
 
 
 	@Override
-	public BaseMethodExtractor recycle() {
+	public FieldExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public BaseMethodExtractor copy() {
-		val copy = new BaseMethodExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
+	public FieldExtractor copy() {
+		val copy = new FieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy(), this.typeChecker);
 		return copy;
 	}
 
 
 	// package-private
 	void reset() {
-		this.methods.clear();
+		this.fields.clear();
 		this.accessModifiers.clear();
 		this.typeParser = typeParser.recycle();
 		this.annotationParser = annotationParser.recycle();
-		this.state = State.INIT;
 	}
 
 }

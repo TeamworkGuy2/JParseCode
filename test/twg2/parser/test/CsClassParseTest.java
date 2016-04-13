@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
-import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
@@ -34,7 +33,8 @@ import twg2.parser.output.WriteSettings;
  * @since 2016-1-1
  */
 public class CsClassParseTest {
-	private static String simpleCsName = "SimpleCs.cs";
+	private static String fileName = "SimpleCs.cs";
+	private static String fullClassName = "ParserExamples.Samples.SimpleCs";
 	private static final String simpleCsCode =
 		"namespace ParserExamples.Samples {\n" +
 		"\n" +
@@ -44,6 +44,13 @@ public class CsClassParseTest {
 		"  public class SimpleCs {\n" +
 		"\n" +
 		"    /// <value>The modification count.</value>\n" +
+		"    [EmptyAnnotation()]\n" +
+		"    [IntAnnotation(-1)]\n" +
+		"    [BoolAnnotation(true)]\n" +
+		"    [IdentifierAnnotation(Integer.TYPE)]\n" +
+		"    [StringAnnotation(\"\")]\n" +
+		"    [MultiArgAnnotation(\"abc\", false , 1.23)]\n" +
+		"    [MultiNamedArgAnnotation(num =1.23, flag=false ,value = \"abc\")]\n" +
 		"    private int mod;\n" +
 		"\n" +
 		"    /// <value>The name.</value>\n" +
@@ -75,17 +82,17 @@ public class CsClassParseTest {
         "  }\n" +
 		"\n" +
 		"}\n";
-	private static CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode(simpleCsName, CodeLanguageOptions.C_SHARP, simpleCsCode);
-	private static List<CodeFileParsed.Simple<String, CsBlock>> simpleCsBlocks = new ArrayList<>();
+	private static CodeFileSrc<CodeLanguage> simpleAst = ParseCodeFile.parseCode(fileName, CodeLanguageOptions.C_SHARP, simpleCsCode);
+	private static List<CodeFileParsed.Simple<String, CsBlock>> parsedBlocks = new ArrayList<>();
 
 	static {
 		System.out.println(simpleCsCode);
 
-		val blockDeclarations = CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc());
+		val blockDeclarations = CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleAst.getDoc());
 		for(val block : blockDeclarations) {
 			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
-			CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>(simpleCsName, block.getValue(), block.getKey());
-			simpleCsBlocks.add(fileParsed);
+			CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
+			parsedBlocks.add(fileParsed);
 
 			try {
 				val ws = new WriteSettings(true, true, true, true);
@@ -122,63 +129,69 @@ public class CsClassParseTest {
 
 	@Test
 	public void simpleCsParseTest() {
-		Assert.assertEquals(1, simpleCsBlocks.size());
-		val csClass = simpleCsBlocks.get(0).getParsedClass();
-		Assert.assertEquals(6, csClass.getFields().size());
+		Assert.assertEquals(1, parsedBlocks.size());
+		val clas = parsedBlocks.get(0).getParsedClass();
+		Assert.assertEquals(6, clas.getFields().size());
 
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs", NameUtil.joinFqName(csClass.getSignature().getFullName()));
-		Assert.assertEquals(AccessModifierEnum.PUBLIC, csClass.getSignature().getAccessModifier());
-		Assert.assertEquals("class", csClass.getSignature().getDeclarationType());
+		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
+		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
+		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 
-		FieldSig f = csClass.getFields().get(0);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs.mod", NameUtil.joinFqName(f.getFullName()));
+		FieldSig f = clas.getFields().get(0);
+		Assert.assertEquals(fullClassName + ".mod", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
+		Assert.assertEquals(Arrays.asList(" <value>The modification count.</value>\n"), f.getComments());
+		// annotation: EmptyAnnotation()
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 0, "EmptyAnnotation", new String[0], new String[0]);
+		// annotation: IntAnnotation(-1)
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 1, "IntAnnotation", new String[] { "value" }, "-1");
+		// annotation: BoolAnnotation(-1)
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 2, "BoolAnnotation", new String[] { "value" }, "true");
+		// annotation: IdentifierAnnotation(Integer.TYPE)
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
+		// annotation: StringAnnotation("")
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 4, "StringAnnotation", new String[] { "value" }, "");
+		// annotation: MultiArgAnnotation(\"abc\", false, 1.23)
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
+		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
-		f = csClass.getFields().get(1);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs._name", NameUtil.joinFqName(f.getFullName()));
+		f = clas.getFields().get(1);
+		Assert.assertEquals(fullClassName + "._name", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("string", f.getFieldType().getTypeName());
 
-		f = csClass.getFields().get(2);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Names", NameUtil.joinFqName(f.getFullName()));
+		f = clas.getFields().get(2);
+		Assert.assertEquals(fullClassName + ".Names", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("IList", f.getFieldType().getTypeName());
 		Assert.assertEquals("string", f.getFieldType().getParams().get(0).getTypeName());
 
-		f = csClass.getFields().get(3);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs.Count", NameUtil.joinFqName(f.getFullName()));
+		f = clas.getFields().get(3);
+		Assert.assertEquals(fullClassName + ".Count", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
 
-		f = csClass.getFields().get(4);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs.accesses", NameUtil.joinFqName(f.getFullName()));
+		f = clas.getFields().get(4);
+		Assert.assertEquals(fullClassName + ".accesses", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
-		Assert.assertEquals(1, csClass.getMethods().size());
-		MethodSig.SimpleImpl m = csClass.getMethods().get(0);
-		Assert.assertEquals("ParserExamples.Samples.SimpleCs.AddName", NameUtil.joinFqName(m.getFullName()));
+		Assert.assertEquals(1, clas.getMethods().size());
+		MethodSig.SimpleImpl m = clas.getMethods().get(0);
+		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.getFullName()));
 		ParameterSig p = m.getParamSigs().get(0);
 		Assert.assertEquals("name", p.getName());
 		Assert.assertEquals("string", p.getTypeSimpleName());
-		//annotations:
+		Assert.assertEquals(Arrays.asList(" <summary>Add name</summary>\n",
+				" <param name=\"name\">the name</param>\n",
+				" <returns>the names</returns>\n"), m.getComments());
+		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
-		AnnotationSig sig = m.getAnnotations().get(0);
-		Assert.assertEquals("OperationContract", NameUtil.joinFqName(sig.getFullName()));
-		Assert.assertEquals(0, sig.getArguments().size());
+		ParseAnnotationTest.assertAnnotation(m.getAnnotations(), 0, "OperationContract", new String[0], new String[0]);
 
 		//{"name": "WebInvoke", "arguments": { "ResponseFormat": "WebMessageFormat.Json", "Method": "POST", "UriTemplate": "/AddName?name={name}" } },
-		sig = m.getAnnotations().get(1);
-		Assert.assertEquals("WebInvoke", NameUtil.joinFqName(sig.getFullName()));
-		Assert.assertTrue(sig.getArguments().containsKey("ResponseFormat"));
-		Assert.assertEquals("WebMessageFormat.Json", sig.getArguments().get("ResponseFormat"));
-		Assert.assertTrue(sig.getArguments().containsKey("Method"));
-		Assert.assertEquals("POST", sig.getArguments().get("Method"));
-		Assert.assertTrue(sig.getArguments().containsKey("UriTemplate"));
-		Assert.assertEquals("/AddName?name={name}", sig.getArguments().get("UriTemplate"));
+		ParseAnnotationTest.assertAnnotation(m.getAnnotations(), 1, "WebInvoke", new String[] { "ResponseFormat", "Method", "UriTemplate" }, new String[] { "WebMessageFormat.Json", "POST", "/AddName?name={name}" });
 
 		//{"name": "TransactionFlow", "arguments": { "value": "TransactionFlowOption.Allowed" } }
-		sig = m.getAnnotations().get(2);
-		Assert.assertEquals("TransactionFlow", NameUtil.joinFqName(sig.getFullName()));
-		Assert.assertTrue(sig.getArguments().containsKey("value"));
-		Assert.assertEquals("TransactionFlowOption.Allowed", sig.getArguments().get("value"));
+		ParseAnnotationTest.assertAnnotation(m.getAnnotations(), 2, "TransactionFlow", new String[] { "value" }, new String[] { "TransactionFlowOption.Allowed" });
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
 		Assert.assertEquals("Result", m.getReturnType().getTypeName());

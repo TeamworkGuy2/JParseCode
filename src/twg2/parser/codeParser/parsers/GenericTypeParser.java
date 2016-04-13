@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
-import twg2.parser.condition.text.CharParser;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.text.CharConditionPipe;
 import twg2.parser.text.CharConditions;

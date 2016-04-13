@@ -200,11 +200,11 @@ public class CharConditionPipe {
 	 * @author TeamworkGuy2
 	 * @since 2015-2-22
 	 */
-	public static abstract class WithMarks<T extends CharParser> extends BasePipe<T> implements CharParserMatchable {
+	public static abstract class BasePipeMatchable<T extends CharParser> extends BasePipe<T> implements CharParserMatchable {
 		private BiPredicates.CharObject<TextParser> firstCharFilter;
 
 
-		public WithMarks(String name, CharParserMatchable firstFilter, T filter) {
+		public BasePipeMatchable(String name, CharParserMatchable firstFilter, T filter) {
 			super(name, (T)firstFilter);
 			val condSet = super.conditionSets.get(0);
 			condSet.add(filter);
@@ -214,7 +214,7 @@ public class CharConditionPipe {
 
 
 		@SafeVarargs
-		public WithMarks(String name, CharParserMatchable firstFilter, T... filters) {
+		public BasePipeMatchable(String name, CharParserMatchable firstFilter, T... filters) {
 			super(name, (T)firstFilter);
 			val condSet = super.conditionSets.get(0);
 			Collections.addAll(condSet, filters);
@@ -223,7 +223,7 @@ public class CharConditionPipe {
 		}
 
 
-		public WithMarks(String name, CharParserMatchable firstFilter, Collection<T> filters) {
+		public BasePipeMatchable(String name, CharParserMatchable firstFilter, Collection<T> filters) {
 			super(name, (T)firstFilter);
 			val condSet = super.conditionSets.get(0);
 			condSet.addAll(filters);
@@ -233,7 +233,7 @@ public class CharConditionPipe {
 
 
 		@SuppressWarnings("unchecked")
-		public WithMarks(String name, List<? extends List<? extends T>> filterSets) {
+		public BasePipeMatchable(String name, List<? extends List<? extends T>> filterSets) {
 			super(name, (List<List<T>>)filterSets);
 			initFirstChars((CharParserMatchable)super.conditionSets.get(0).get(0));
 		}
@@ -252,12 +252,13 @@ public class CharConditionPipe {
 	}
 
 
+
+
 	@SafeVarargs
 	public static <S extends CharParser> AllRequired<S> createPipeAllRequired(String name, Iterable<S>... requiredConditionSets) {
 		val requiredSets = new ArrayList<List<S>>();
 		for(Iterable<S> requiredCondSet : requiredConditionSets) {
-			val requiredSet = ListBuilder.mutable(requiredCondSet);
-			requiredSets.add(requiredSet);
+			requiredSets.add(ListBuilder.mutable(requiredCondSet));
 		}
 		
 		val cond = new AllRequired<S>(name, requiredSets);
@@ -270,8 +271,7 @@ public class CharConditionPipe {
 	public static <S extends CharParser> AllRequiredPlain<S> createPipePlainAllRequired(String name, boolean ignoreFirstConditionCoords, Iterable<S>... requiredConditionSets) {
 		val requiredSets = new ArrayList<List<S>>();
 		for(Iterable<S> requiredCondSet : requiredConditionSets) {
-			val requiredSet = ListBuilder.mutable(requiredCondSet);
-			requiredSets.add(requiredSet);
+			requiredSets.add(ListBuilder.mutable(requiredCondSet));
 		}
 		
 		val cond = new AllRequiredPlain<S>(name, ignoreFirstConditionCoords, requiredSets);
@@ -281,9 +281,7 @@ public class CharConditionPipe {
 
 	public static <S extends CharParser> RepeatableSeparator<S> createPipeRepeatableSeparator(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S> separatorConditions) {
 		val conds = new ArrayList<List<? extends S>>();
-
-		val elementSet = ListBuilder.mutable(requiredConditions);
-		conds.add(elementSet);
+		conds.add(ListBuilder.mutable(requiredConditions));
 
 		if(separatorConditions != null) {
 			val separatorSet = ListBuilder.mutable(separatorConditions);
@@ -295,18 +293,14 @@ public class CharConditionPipe {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	@SafeVarargs
 	public static <S extends CharParser> OptionalSuffix<S> createPipeOptionalSuffix(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
 		val conditionSets = new ArrayList<List<S>>();
-		@SuppressWarnings("unchecked")
-		List<S> requiredCondsCopy = ListBuilder.mutable((Iterable<S>)requiredConditions);
-		conditionSets.add(requiredCondsCopy);
+		conditionSets.add(ListBuilder.mutable((Iterable<S>)requiredConditions));
 
-		@SuppressWarnings("unchecked")
-		Iterable<S>[] optionalCondsCast = (Iterable<S>[])optionalConditions;
-		for(Iterable<S> condSet : optionalCondsCast) {
-			val requiredSet = ListBuilder.mutable(condSet);
-			conditionSets.add(requiredSet);
+		for(Iterable<S> condSet : (Iterable<S>[])optionalConditions) {
+			conditionSets.add(ListBuilder.mutable(condSet));
 		}
 
 		val cond = new OptionalSuffix<S>(name, conditionSets);
@@ -314,18 +308,14 @@ public class CharConditionPipe {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	@SafeVarargs
 	public static <S extends CharParser> BasePipe<S> createPipeOptionalSuffixesAny(String name, Iterable<? extends S> requiredConditions, Iterable<? extends S>... optionalConditions) {
 		val conditionSets = new ArrayList<List<S>>();
-		@SuppressWarnings("unchecked")
-		List<S> requiredCondsCopy = ListBuilder.mutable((Iterable<S>)requiredConditions);
-		conditionSets.add(requiredCondsCopy);
+		conditionSets.add(ListBuilder.mutable((Iterable<S>)requiredConditions));
 
-		@SuppressWarnings("unchecked")
-		Iterable<S>[] optionalCondsCast = (Iterable<S>[])optionalConditions;
-		for(Iterable<S> condSet : optionalCondsCast) {
-			val requiredSet = ListBuilder.mutable(condSet);
-			conditionSets.add(requiredSet);
+		for(Iterable<S> condSet : (Iterable<S>[])optionalConditions) {
+			conditionSets.add(ListBuilder.mutable(condSet));
 		}
 
 		val cond = new OptionalSuffixesAny<S>(name, conditionSets);
@@ -335,7 +325,7 @@ public class CharConditionPipe {
 
 
 
-	public static class AllRequired<S extends CharParser> extends WithMarks<S> {
+	public static class AllRequired<S extends CharParser> extends BasePipeMatchable<S> {
 		private TextFragmentRef.ImplMut coords = null;
 
 
@@ -427,13 +417,6 @@ public class CharConditionPipe {
 		private boolean ignoreFirstConditionCoords;
 
 
-		@SafeVarargs
-		public AllRequiredPlain(String name, boolean ignoreFirstConditionCoords, S... filters) {
-			super(name, filters);
-			this.ignoreFirstConditionCoords = ignoreFirstConditionCoords;
-		}
-
-
 		public AllRequiredPlain(String name, boolean ignoreFirstConditionCoords, Collection<S> filters) {
 			super(name, filters);
 			this.ignoreFirstConditionCoords = ignoreFirstConditionCoords;
@@ -514,14 +497,8 @@ public class CharConditionPipe {
 
 
 
-	public static abstract class AcceptMultiple<S extends CharParser> extends WithMarks<S> {
+	public static abstract class AcceptMultiple<S extends CharParser> extends BasePipeMatchable<S> {
 		private TextFragmentRef.ImplMut coords = null;
-
-
-		@SafeVarargs
-		public AcceptMultiple(String name, CharParserMatchable filter, S... filters) {
-			super(name, filter, filters);
-		}
 
 
 		public AcceptMultiple(String name, CharParserMatchable filter, Collection<S> filters) {
@@ -609,13 +586,6 @@ public class CharConditionPipe {
 
 	public static class OptionalSuffix<S extends CharParser> extends AcceptMultiple<S> {
 
-		@SafeVarargs
-		public OptionalSuffix(String name, CharParserMatchable filter, S... filters) {
-			super(name, filter, filters);
-			setup();
-		}
-
-
 		public OptionalSuffix(String name, CharParserMatchable filter, Collection<S> filters) {
 			super(name, filter, filters);
 			setup();
@@ -683,17 +653,10 @@ public class CharConditionPipe {
 	 * @author TeamworkGuy2
 	 * @since 2016-2-7
 	 */
-	public static class OptionalSuffixesAny<S extends CharParser> extends WithMarks<S> {
+	public static class OptionalSuffixesAny<S extends CharParser> extends BasePipeMatchable<S> {
 		private TextFragmentRef.ImplMut coords = null;
 		private boolean prevCallLookAheadSucceeded;
 		private char prevCallLookAheadChar;
-
-
-		@SafeVarargs
-		public OptionalSuffixesAny(String name, CharParserMatchable filter, S... filters) {
-			super(name, filter, filters);
-			setup();
-		}
 
 
 		public OptionalSuffixesAny(String name, CharParserMatchable filter, Collection<S> filters) {
@@ -861,13 +824,6 @@ public class CharConditionPipe {
 	 * @param <S> the type of parsers in this set
 	 */
 	public static class RepeatableSeparator<S extends CharParser> extends AcceptMultiple<S> {
-
-		@SafeVarargs
-		public RepeatableSeparator(String name, CharParserMatchable filter, S... filters) {
-			super(name, filter, filters);
-			setup();
-		}
-
 
 		public RepeatableSeparator(String name, CharParserMatchable filter, Collection<S> filters) {
 			super(name, filter, filters);

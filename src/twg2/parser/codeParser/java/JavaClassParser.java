@@ -4,16 +4,15 @@ import lombok.val;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CommentStyle;
-import twg2.parser.codeParser.NumberParser;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.codeParser.parsers.CodeBlockParser;
 import twg2.parser.codeParser.parsers.CodeStringParser;
 import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.codeParser.parsers.IdentifierParser;
+import twg2.parser.codeParser.parsers.NumberParser;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.text.CharParserFactory;
-import twg2.parser.text.StringBoundedParserBuilder;
 import twg2.parser.text.StringParserBuilder;
 
 /**
@@ -54,6 +53,7 @@ public class JavaClassParser {
 		CharParserFactory operatorParser = new StringParserBuilder("Java operator")
 			.addCharLiteralMarker("+", '+')
 			.addCharLiteralMarker("-", '-')
+			//.addCharLiteralMarker("*", '*') // causes issue parsing comments..?
 			.addCharLiteralMarker("=", '=')
 			.addCharLiteralMarker("?", '?')
 			.addCharLiteralMarker(":", ':')
@@ -64,12 +64,11 @@ public class JavaClassParser {
 
 	// TODO couldn't get this working with identifier parser which needs to parse ', ' in strings like 'Map<String, String>'
 	static CharParserFactory createSeparatorParser() {
-		CharParserFactory annotationParser = new StringBoundedParserBuilder("Java separator")
+		CharParserFactory annotationParser = new StringParserBuilder("Java separator")
 			//.addCharLiteralMarker(',')
 			.addCharLiteralMarker(";", ';')
 			.addCharLiteralMarker("@", '@')
 			.addStringLiteralMarker("::", "::") // TODO technically not a separator, integrate with identifier parser
-			.isCompound(false)
 			.build();
 		return annotationParser;
 	}

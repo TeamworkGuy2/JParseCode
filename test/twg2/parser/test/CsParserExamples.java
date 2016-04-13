@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized.Parameter;
 
 import twg2.ast.interm.classes.ClassAst;
 import twg2.collections.builder.ListUtil;
+import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
@@ -43,7 +44,7 @@ public class CsParserExamples {
 	private List<ClassAst.ResolvedImpl<CsBlock>> resClasses;
 
 
-	public CsParserExamples() throws IOException {
+	public CsParserExamples() throws IOException, FileFormatException {
 		Path trackSearchServiceFile = Paths.get("rsc/csharp/ParserExamples/Services/ITrackSearchService.cs");
 		Path albumInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/AlbumInfo.cs");
 		Path trackInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs");

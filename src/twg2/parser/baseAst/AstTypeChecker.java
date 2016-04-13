@@ -1,7 +1,6 @@
 package twg2.parser.baseAst;
 
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -16,12 +15,12 @@ public interface AstTypeChecker<T_KEYWORD> {
 	 * @param tokenNode the document code fragment
 	 * @return true if the token represents a field block, false if not
 	 */
-	public boolean isFieldBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode);
+	public boolean isFieldBlock(SimpleTree<CodeFragment> tokenNode);
 
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, T_KEYWORD keyword1);
+	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1);
 
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, T_KEYWORD keyword1, T_KEYWORD keyword2);
+	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1, T_KEYWORD keyword2);
 
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, T_KEYWORD keyword1, T_KEYWORD keyword2, T_KEYWORD keyword3);
+	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1, T_KEYWORD keyword2, T_KEYWORD keyword3);
 
 }

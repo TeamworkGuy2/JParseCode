@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.documentParser.DocumentParser;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
@@ -44,7 +44,7 @@ public class ParserBuilder {
 	 * @param src the source string
 	 * @param language optional
 	 * @param srcName optional
-	 * @return a parsed {@link CodeFileSrc} containing {@link DocumentFragmentText} nodes represented the tokens parsed from {@code src}
+	 * @return a parsed {@link CodeFileSrc} containing {@link CodeFragment} nodes represented the tokens parsed from {@code src}
 	 */
 	public <L> CodeFileSrc<L> buildAndParse(String src, L language, String srcName, boolean includeLines) {
 		List<char[]> lines = new ArrayList<>();
@@ -62,10 +62,10 @@ public class ParserBuilder {
 		TextParser input = TextParserImpl.fromCharArrays(lineReader);
 
 		val docTextFragment = new TextFragmentRef.ImplMut(0, src.length(), 0, 0, -1, -1);
-		val docRoot = new DocumentFragmentText<>(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src).toString());
+		val docRoot = new CodeFragment(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src).toString());
 
-		SimpleTree<DocumentFragmentText<CodeFragmentType>> docTree = fileParser.parseDocument(input, docRoot,
-				(type, frag) -> new DocumentFragmentText<>(type, frag, frag.getText(src).toString()),
+		SimpleTree<CodeFragment> docTree = fileParser.parseDocument(input, docRoot,
+				(type, frag) -> new CodeFragment(type, frag, frag.getText(src).toString()),
 				(docFrag) -> docFrag.getFragmentType().isCompound(),
 				(parent, child) -> parent != child && parent.getTextFragment().contains(child.getTextFragment()));
 

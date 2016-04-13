@@ -7,8 +7,7 @@ import lombok.val;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
 
@@ -40,7 +39,7 @@ public class JavaImportStatementExtractor implements AstParser<List<List<String>
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
 		if(state != State.FOUND_USING) {
 			if(lang.getAstUtil().getChecker().isKeyword(tokenNode.getData(), JavaKeyword.IMPORT)) {
 				state = State.FOUND_USING;

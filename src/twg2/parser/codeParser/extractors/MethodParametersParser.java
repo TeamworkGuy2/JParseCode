@@ -1,4 +1,4 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,17 +6,17 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.method.ParameterSig;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-1-3
  */
-public class BaseMethodParametersParser {
+public class MethodParametersParser {
 
 	// TODO does not support default parameters
-	public static List<ParameterSig> extractParamsFromSignature(SimpleTree<DocumentFragmentText<CodeFragmentType>> sigNode) {
+	public static List<ParameterSig> extractParamsFromSignature(SimpleTree<CodeFragment> sigNode) {
 		val childs = sigNode.getChildren();
 		int size = childs.size();
 

@@ -12,8 +12,8 @@ import java.util.function.Predicate;
  * @since 2016-2-20
  */
 public class EnumSubSet<E> {
-	private String[] enumNames;
-	private E[] enumValues;
+	protected String[] enumNames;
+	protected E[] enumValues;
 
 
 	public EnumSubSet(String[] enumNames, E[] enumValues) {

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import lombok.val;
+import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
 import twg2.parser.codeParser.CodeFileSrc;
@@ -91,7 +92,7 @@ public class ParseCodeFile {
 	}
 
 
-	public static void parseAndPrintCSharpFileInfo() throws IOException {
+	public static void parseAndPrintCSharpFileInfo() throws IOException, FileFormatException {
 		val fileReader = FileReadUtil.threadLocalInst();
 		Path file = Paths.get("./rsc/ITrackSearchService.cs");
 		//Path file = Paths.get("./rsc/TrackInfo.cs");

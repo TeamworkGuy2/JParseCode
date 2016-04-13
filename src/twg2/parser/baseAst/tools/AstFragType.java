@@ -5,8 +5,8 @@ import java.util.function.BiPredicate;
 import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.documentParser.DocumentFragment;
-import twg2.parser.documentParser.DocumentFragmentText;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -53,33 +53,33 @@ public class AstFragType {
 	}
 
 
-	public static final boolean isOptionalTypeMarker(DocumentFragmentText<CodeFragmentType> node) {
+	public static final boolean isOptionalTypeMarker(CodeFragment node) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.OPERATOR && "?".equals(node.getText()));
 	}
 
 
-	public static final boolean isIdentifier(DocumentFragmentText<CodeFragmentType> node) {
+	public static final boolean isIdentifier(CodeFragment node) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.IDENTIFIER);
 	}
 
 
-	public static final boolean isIdentifierOrKeyword(DocumentFragmentText<CodeFragmentType> node) {
+	public static final boolean isIdentifierOrKeyword(CodeFragment node) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD || node.getFragmentType() == CodeFragmentType.IDENTIFIER);
 	}
 
 
-	public static final boolean isKeyword(DocumentFragmentText<CodeFragmentType> node) {
+	public static final boolean isKeyword(CodeFragment node) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD);
 	}
 
 
-	public static final boolean isBlock(DocumentFragmentText<CodeFragmentType> node, String blockSymbol) {
+	public static final boolean isBlock(CodeFragment node, String blockSymbol) {
 		return node != null && node.getFragmentType().isCompound() && node.getText().startsWith(blockSymbol);
 	}
 
 
 	// TODO unused
-	public static final boolean blockContainsOnly(SimpleTree<DocumentFragmentText<CodeFragmentType>> block, BiPredicate<DocumentFragmentText<CodeFragmentType>, CodeFragmentType> cond, boolean emptyTreeValid, CodeFragmentType... optionalAllows) {
+	public static final boolean blockContainsOnly(SimpleTree<CodeFragment> block, BiPredicate<CodeFragment, CodeFragmentType> cond, boolean emptyTreeValid, CodeFragmentType... optionalAllows) {
 		if(block == null) {
 			return emptyTreeValid;
 		}

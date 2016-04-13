@@ -1,4 +1,4 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,14 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.type.TypeSig;
 import twg2.collections.builder.ListBuilder;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.language.CodeLanguage;
+import twg2.parser.primitive.NumericParser;
 import twg2.text.stringUtils.StringCheck;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;
@@ -19,7 +23,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-12
  */
-public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
+public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 	static enum State {
 		INIT,
@@ -41,7 +45,7 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 	/**
 	 * @param allowVoid indicate whether 'void'/'Void' is a valid data type when parsing (true for method return types, but invalid for field/variable types)
 	 */
-	public BaseDataTypeExtractor(CodeLanguage lang, boolean allowVoid) {
+	public DataTypeExtractor(CodeLanguage lang, boolean allowVoid) {
 		this.lang = lang;
 		this.allowVoid = allowVoid;
 		this.name = lang + " data type";
@@ -55,7 +59,7 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -65,11 +69,11 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 			if(isPossiblyType(lang.getKeywordUtil(), tokenNode, allowVoid)) {
 				state = State.FOUND_TYPE_NAME;
 				typeName = tokenNode.getData().getText();
-				prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
+				prevNodeWasBlockId = lang.getKeywordUtil().blockModifiers().is(tokenNode.getData());
 				return true;
 			}
 			state = State.INIT;
-			prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
+			prevNodeWasBlockId = lang.getKeywordUtil().blockModifiers().is(tokenNode.getData());
 			return false;
 		}
 		else if(state == State.FOUND_TYPE_NAME) {
@@ -79,12 +83,12 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 				isNullable = true;
 			}
 			this.state = State.COMPLETE;
-			this.type = BaseDataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""), lang.getKeywordUtil());
-			prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
+			this.type = DataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""), lang.getKeywordUtil());
+			prevNodeWasBlockId = lang.getKeywordUtil().blockModifiers().is(tokenNode.getData());
 			return isNullable;
 		}
 		state = State.INIT;
-		prevNodeWasBlockId = lang.getKeywordUtil().isBlockKeyword(tokenNode.getData());
+		prevNodeWasBlockId = lang.getKeywordUtil().blockModifiers().is(tokenNode.getData());
 		return false;
 	}
 
@@ -114,15 +118,15 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 
 	@Override
-	public BaseDataTypeExtractor recycle() {
+	public DataTypeExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public BaseDataTypeExtractor copy() {
-		val copy = new BaseDataTypeExtractor(this.lang, this.allowVoid);
+	public DataTypeExtractor copy() {
+		val copy = new DataTypeExtractor(this.lang, this.allowVoid);
 		return copy;
 	}
 
@@ -137,14 +141,30 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 	/** Check if a tree node is the start of a data type
 	 */
-	public static <T> boolean isPossiblyType(KeywordUtil keywordType, SimpleTree<DocumentFragmentText<CodeFragmentType>> node, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordType, SimpleTree<CodeFragment> node, boolean allowVoid) {
 		val nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordType.isKeyword(nodeData.getText()) || keywordType.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
 
 
+	/** Check if one or two nodes are a number with an optiona -/+ sign
+	 * @param node1
+	 * @param node2Optional
+	 * @return the number of nodes used, 0 if neither node was a number, 1 if the first node was a number, 2 if the first node was a sign and the second node was a number
+	 */
+	public static int isNumber(CodeFragment node1, CodeFragment node2Optional) {
+		String n1Text;
+		int matches = node1.getFragmentType() == CodeFragmentType.NUMBER ? 1 : 0;
+		if(matches > 0) {
+			return matches;
+		}
+		matches = (node2Optional != null && (n1Text = node1.getText()).length() == 1 && NumericParser.isSign.test(n1Text.charAt(0)) && node2Optional.getFragmentType() == CodeFragmentType.NUMBER) ? 2 : 0;
+		return matches;
+	}
+
+
 	// TODO create a proper, full parser for generic types
-	public static TypeSig.Simple extractGenericTypes(String typeSig, KeywordUtil keywordUtil) {
+	public static TypeSig.Simple extractGenericTypes(String typeSig, KeywordUtil<? extends AccessModifier> keywordUtil) {
 		String genericMark = "#";
 
 		if(typeSig.contains(genericMark)) {
@@ -188,7 +208,7 @@ public class BaseDataTypeExtractor implements AstParser<TypeSig.Simple> {
 	}
 
 
-	public static List<TypeSig.Simple> expandGenericParamSet(KeywordUtil keywordUtil, TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
+	public static List<TypeSig.Simple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
 		String paramSetStr = remainingParamSets.get(parentParamMarker);
 		remainingParamSets.remove(parentParamMarker);
 		List<TypeSig.Simple> paramSigs = new ArrayList<>();

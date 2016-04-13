@@ -34,7 +34,7 @@ public class StringParserBuilder {
 	public CharParserFactory build() {
 		@SuppressWarnings("unchecked")
 		Entry<BiPredicates.CharObject<TextParser>, CharParser>[] conditions = ListUtil.combineArray(stringStartFilters, stringConds, Tuples::of, new Entry[stringConds.size()]);
-		return new CharParserPlainFactoryImpl<>(name, false, conditions);
+		return new CharParserMatchableFactory<>(name, false, conditions);
 	}
 
 

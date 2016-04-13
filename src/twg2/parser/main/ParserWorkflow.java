@@ -2,7 +2,6 @@ package twg2.parser.main;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +24,7 @@ import twg2.ast.interm.classes.ClassAst;
 import twg2.dataUtil.dataUtils.TimeUnitUtil;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.fileLoading.SourceInfo;
+import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.write.JsonWrite;
 import twg2.logging.Logging;
@@ -60,43 +60,38 @@ public class ParserWorkflow {
 	}
 
 
-	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader) throws IOException {
+	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
-		try {
-			val loadRes = SourceFiles.load(this.sources);
-			if(log != null) {
-				loadRes.log(log, logLevel, true);
-			}
-
-			// TODO debugging
-			long start = System.nanoTime();
-
-			val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader);
-
-			// TODO debugging
-			System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
-
-			if(log != null) {
-				parseRes.log(log, logLevel, true);
-			}
-
-			val resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
-			if(log != null) {
-				resolvedRes.log(log, logLevel, true);
-			}
-
-			val filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
-			if(log != null) {
-				filterRes.log(log, logLevel, true);
-			}
-
-			WriteResult.write(filterRes.filterSets, missingNamespaces);
-
-		} catch(IOException ioe) {
-			throw new UncheckedIOException(ioe);
+		val loadRes = SourceFiles.load(this.sources);
+		if(log != null) {
+			loadRes.log(log, logLevel, true);
 		}
+
+		// TODO debugging
+		long start = System.nanoTime();
+
+		val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader);
+
+		// TODO debugging
+		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
+
+		if(log != null) {
+			parseRes.log(log, logLevel, true);
+		}
+
+		val resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
+		if(log != null) {
+			resolvedRes.log(log, logLevel, true);
+		}
+
+		val filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
+		if(log != null) {
+			filterRes.log(log, logLevel, true);
+		}
+
+		WriteResult.write(filterRes.filterSets, missingNamespaces);
 	}
 
 
@@ -181,7 +176,7 @@ public class ParserWorkflow {
 		}
 
 
-		public static ParsedResult parse(List<Entry<SourceInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException {
+		public static ParsedResult parse(List<Entry<SourceInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
 			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>();
 
 			for(val filesWithSrc : files) {
@@ -313,10 +308,13 @@ public class ParserWorkflow {
 	public static class WriteResult {
 
 		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
-			// get a subset of all the parsed files
 			val writeSettings = new WriteSettings(true, false, false, true);
+			// associates file paths with how many times each has been written to (so we can append on subsequent writes)
+			val definitionsByOutputFile = new HashMap<String, List<char[]>>();
 
-			// fill indices with null so we can random access any valid index
+			val tmpSb = new StringBuilder(2048);
+
+			// write class definitions to JSON strings and group by output file
 			for(val dstSet : resSets.entrySet()) {
 				val dst = dstSet.getKey();
 				val classes = dstSet.getValue();
@@ -324,23 +322,39 @@ public class ParserWorkflow {
 				
 				resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getParsedClass().getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getParsedClass().getSignature().getFullName())));
 
-				try(val output = Files.newBufferedWriter(Paths.get(dst.path), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+				List<char[]> definitionStrs = definitionsByOutputFile.get(dst.path);
+				if(definitionStrs == null) {
+					definitionStrs = new ArrayList<>();
+					definitionsByOutputFile.put(dst.path, definitionStrs);
+				}
 
+				for(val classInfo : resClasses) {
+					tmpSb.setLength(0);
+					tmpSb.append("\"" + NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullName()) + "\": ");
+					classInfo.getParsedClass().toJson(tmpSb, writeSettings);
+					val dstChars = new char[tmpSb.length()];
+					tmpSb.getChars(0, tmpSb.length(), dstChars, 0);
+					definitionStrs.add(dstChars);
+				}
+
+			}
+
+			for(val dstData : definitionsByOutputFile.entrySet()) {
+				try(val output = Files.newBufferedWriter(Paths.get(dstData.getKey()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 					boolean first = true;
 					output.write("{\n\"files\": {");
-					for(val classInfo : resClasses) {
+
+					for(val defChars : dstData.getValue()) {
 						if(!first) {
 							output.append(",\n");
 						}
-						output.append("\"" + NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullName()) + "\": ");
-						classInfo.getParsedClass().toJson(output, writeSettings);
+						output.write(defChars, 0, defChars.length);
 						first = false;
 					}
-					output.write("}\n}");
 
+					output.write("}\n}");
 					//String[] nonSystemMissingNamespaces = missingNamespaces.stream().filter((ns) -> !"System".equals(ns.get(0))).map((ns) -> NameUtil.joinFqName(ns)).toArray((n) -> new String[n]);
 					//System.out.println("missing non-system namespaces: (" + nonSystemMissingNamespaces.length + "): " + Arrays.toString(nonSystemMissingNamespaces));
-
 				} catch(IOException ioe) {
 					throw ioe;
 				}
@@ -359,8 +373,8 @@ public class ParserWorkflow {
 				"example command:\n" +
 				"-sources 'C:/Users/TeamworkGuy2/Documents/Projects/app/server/Services=1,[cs];" +
 					"C:/Users/TeamworkGuy2/Documents/Projects/app/server/Entities=3,[cs]'" +
-				" -destinations 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Services.json=[Corningstone.Services];" +
-					"C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Models.json=[Corningstone.Entities]'" +
+				" -destinations 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Services.json=[App.Services];" +
+					"C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Models.json=[App.Entities]'" +
 				" -log 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/parser.log'");
 		}
 

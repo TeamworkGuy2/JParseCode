@@ -1,8 +1,7 @@
 package twg2.parser.baseAst;
 
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.condition.TokenParser;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -10,7 +9,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-12-12
  * @param <T_RESULT> the type of result object that parsed data is store in
  */
-public interface AstParser<T_RESULT> extends TokenParser<SimpleTree<DocumentFragmentText<CodeFragmentType>>, T_RESULT> {
+public interface AstParser<T_RESULT> extends TokenParser<SimpleTree<CodeFragment>, T_RESULT> {
 
 	@Override
 	public AstParser<T_RESULT> copy();

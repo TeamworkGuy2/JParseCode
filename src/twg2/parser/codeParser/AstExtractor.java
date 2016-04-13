@@ -11,7 +11,7 @@ import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -34,9 +34,9 @@ public interface AstExtractor<T_BLOCK extends CompoundBlock> {
 	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
 
 
-	public List<BlockAst<T_BLOCK>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, BlockAst<T_BLOCK> parentScope);
+	public List<BlockAst<T_BLOCK>> extractBlocks(List<String> nameScope, SimpleTree<CodeFragment> astTree, BlockAst<T_BLOCK> parentScope);
 
 
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<T_BLOCK>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree);
+	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<T_BLOCK>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeFragment> astTree);
 
 }

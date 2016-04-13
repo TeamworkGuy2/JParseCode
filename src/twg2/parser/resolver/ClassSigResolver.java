@@ -10,10 +10,11 @@ import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.type.TypeSig;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.BaseDataTypeExtractor;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.project.ProjectClassSet;
 
 /**
@@ -24,7 +25,7 @@ public class ClassSigResolver {
 
 	/** Resolves the {@link twg2.ast.interm.classes.ClassSig.SimpleImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends CompoundBlock> namespaceClass,
+	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends CompoundBlock> namespaceClass,
 			ProjectClassSet.Simple<T_ID, ? extends CompoundBlock> projFiles, CompoundBlock defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 		List<List<String>> resolvedCompilationUnitNames = new ArrayList<>();
 		List<CompoundBlock> resolvedCompilationUnitBlockTypes = new ArrayList<>();
@@ -55,7 +56,7 @@ public class ClassSigResolver {
 			// TODO maybe should check isClass() rather than !isInterface()
 			if(!firstCompilationUnitBlockType.isInterface()) {
 				val name = NameUtil.joinFqName(firstCompilationUnitName);
-				val extendClassSimpleType = BaseDataTypeExtractor.extractGenericTypes(name, keywordUtil);
+				val extendClassSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
 				extendClassType = TypeSigResolver.resolveFrom(extendClassSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 				extendsClass = true;
 			}
@@ -67,7 +68,7 @@ public class ClassSigResolver {
 						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullName() + "'");
 					}
 					val name = NameUtil.joinFqName(resolvedCompilationUnitNames.get(i));
-					val implementInterfaceSimpleType = BaseDataTypeExtractor.extractGenericTypes(name, keywordUtil);
+					val implementInterfaceSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
 					val implementInterfaceType = TypeSigResolver.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 					implementInterfaceTypes.add(implementInterfaceType);
 				}

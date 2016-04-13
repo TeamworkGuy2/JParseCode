@@ -1,4 +1,4 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,29 +13,30 @@ import twg2.ast.interm.method.MethodSig;
 import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /** Base static methods for helping {@link AstExtractor} implementations
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public class BaseBlockParser {
+public class BlockExtractor {
 
 	/** Parses a simple AST tree using an {@link AstExtractor}
 	 * @param extractor provides parsers and extract method to consume the astTree
-	 * @param astTree the tree of basic {@link DocumentFragmentText}{@code <}{@link CodeFragmentType}{@code >} tokens
+	 * @param astTree the tree of basic {@link CodeFragment} tokens
 	 * @return a list of entries with simple AST tree blocks as keys and {@link ClassAst} as values
 	 */
 	// TODO this only parses some fields and interface methods
-	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
-			AstExtractor<_T_BLOCK> extractor, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
+			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeFragment> astTree) {
 
 		val nameScope = new ArrayList<String>();
 
 		List<BlockAst<_T_BLOCK>> blockDeclarations = extractor.extractBlocks(nameScope, astTree, null);
 
-		List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<_T_BLOCK>>> resBlocks = new ArrayList<>();
+		List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> resBlocks = new ArrayList<>();
 
 		AstParser<List<List<String>>> usingStatementExtractor = extractor.createImportStatementParser();
 
@@ -77,7 +78,7 @@ public class BaseBlockParser {
 
 
 	@SafeVarargs
-	public static void runParsers(SimpleTree<DocumentFragmentText<CodeFragmentType>> tree, AstParser<?>... parsers) {
+	public static void runParsers(SimpleTree<CodeFragment> tree, AstParser<?>... parsers) {
 		val children = tree.getChildren();
 		val parserCount = parsers.length;
 
@@ -98,12 +99,5 @@ public class BaseBlockParser {
 			}
 		}
 	}
-
-
-	//public static List<IntermFieldSig> extractDataModelFields(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree, IntermBlock<? extends CompoundBlock> parentBlock) {
-	//	CsFieldExtractor extractor = new CsFieldExtractor(parentBlock);
-	//	AstUtil.forChildrenOnly(0, tokenTree, extractor::extractDataModelFieldsIndexedTreeConsumer);
-	//	return extractor.fields;
-	//}
 
 }

@@ -21,7 +21,7 @@ import twg2.collections.tuple.Tuples;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
-import twg2.parser.codeParser.ParseCommentsAndWhitespace;
+import twg2.parser.codeParser.extractors.CommentAndWhitespaceExtractor;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.text.stringUtils.StringReplace;
@@ -147,8 +147,8 @@ public class ParseDirectoryCodeFiles {
 				filesStats.add(parsedStats);
 			}
 			else {
-				val parsedFileInfo = ParseCommentsAndWhitespace.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), srcStr);
-				val parsedStats = ParseCommentsAndWhitespace.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), srcStr.length(), parsedFileInfo.getLines(), parsedFileInfo.getDoc());
+				val parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), srcStr);
+				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), srcStr.length(), parsedFileInfo.getLines(), parsedFileInfo.getDoc());
 				filesStats.add(parsedStats);
 			}
 		}

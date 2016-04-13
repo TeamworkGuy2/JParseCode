@@ -1,14 +1,29 @@
 --------
+####0.10.0
+date: 2016-4-12
+
+commit: ?
+
+* Added better annotation parsing, including support for negative numbers as arguments
+* Added CodeFragment which extends 'DocumentFragmentText<CodeFragmentType>' so don't have to keep typing that every time, updated most of the code to use CodeFragment
+* Added OperatorUtil and Operator (with C# and Java implementation enums) similar to the existing Keyword enums
+* Refactored how we use EnumSubSet and enum sub-categorization
+   * Added CodeFragmentEnumSubSet with is() and parse() methods which accept CodeFragment nodes (we were starting to duplicate this parsing code in Keyword and the new Operator class, so moved it to a reusable class)
+   * Removed KeywordUtil isXyzKeyword() and parseXyzKeyword() methods in favor of methods that return CodeFragmentEnumSubSet instances for each of the keyword categories (i.e. 'blockModifiers()' or 'operators()')
+* Moved twg2.parser.codeParser extractor classes (i.e. AccessModifierExtractor or BlockExtractor) to new twg2.parser.codeParser.extractors package
+
+
+--------
 ####0.9.0
 date: 2016-3-20
 
-commit: ?
+commit: 679778bafd13a413854bd169cabe747b12bbc894
 
 * Added commented parsing for comments attached to methods and fields (future TODO: add comment parsing for comments attached to classes and namespaces)
 * Renamed intermAst packages to 'twg2.ast.interm'
 * Removed 'interm' from most AST class names
 * Moved type resolution out of AST classes into new 'twg2.parser.resolver' classes (i.e. ClassSigResolver, FieldSigResolver, etc.)
-* Created 'twg2.parser.language' package for language management classes
+* Created 'twg2.parser.language' package for code language management classes
 
 
 --------

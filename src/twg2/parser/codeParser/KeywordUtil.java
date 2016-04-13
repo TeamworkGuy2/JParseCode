@@ -1,13 +1,13 @@
 package twg2.parser.codeParser;
 
 import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public interface KeywordUtil {
+public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
 
 	public boolean isKeyword(String str);
 
@@ -21,29 +21,28 @@ public interface KeywordUtil {
 	 */
 	public boolean isDataTypeKeyword(String str);
 
-
 	/** Checks for block identifying keywords (i.e. 'namespace', 'module', 'class', 'interface')
 	 */
-	public boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node);
+	public CodeFragmentEnumSubSet<T_KEYWORD> blockModifiers();
 
 	/** Checks for class/interface block modifier keywords (i.e. 'abstract', 'static', 'final', 'sealed')
 	 */
-	public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+	public CodeFragmentEnumSubSet<T_KEYWORD> classModifiers();
 
 	/** Checks for field modifier keywords (i.e. 'volatile', 'readonly', 'static', 'private')
 	 */
-	public boolean isFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+	public CodeFragmentEnumSubSet<T_KEYWORD> fieldModifiers();
 
 	/** Checks for method modifier keywords (i.e. 'synchronized', 'static', 'final', 'protected')
 	 */
-	public boolean isMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
+	public CodeFragmentEnumSubSet<T_KEYWORD> methodModifiers();
 
+	/** Checks for operator keywords (i.e. 'As', 'Is', 'instanceof')
+	 */
+	public CodeFragmentEnumSubSet<T_KEYWORD> operators();
 
-	public AccessModifier parseBlockKeyword(DocumentFragmentText<CodeFragmentType> node);
+	/** Checks for type literal keywords (i.e. 'true', 'false', 'null')
+	 */
+	public CodeFragmentEnumSubSet<T_KEYWORD> typeLiterals();
 
-	public AccessModifier parseClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
-
-	public AccessModifier parseFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
-
-	public AccessModifier parseMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node);
 }

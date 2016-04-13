@@ -1,4 +1,4 @@
-package twg2.parser.codeParser;
+package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,14 +7,16 @@ import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.Consume;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-3-20
  */
-public class BaseCommentBlockExtractor implements AstParser<List<String>> {
+public class CommentBlockExtractor implements AstParser<List<String>> {
 
 	static enum State {
 		INIT,
@@ -32,7 +34,7 @@ public class BaseCommentBlockExtractor implements AstParser<List<String>> {
 	String name;
 
 
-	public BaseCommentBlockExtractor(String langName, BlockAst<? extends CompoundBlock> parentBlock) {
+	public CommentBlockExtractor(String langName, BlockAst<? extends CompoundBlock> parentBlock) {
 		this.langName = langName;
 		this.name = langName + " field";
 		this.parentBlock = parentBlock;
@@ -46,7 +48,7 @@ public class BaseCommentBlockExtractor implements AstParser<List<String>> {
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -64,7 +66,7 @@ public class BaseCommentBlockExtractor implements AstParser<List<String>> {
 	}
 
 
-	private Consume findComment(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	private Consume findComment(SimpleTree<CodeFragment> tokenNode) {
 		if(tokenNode.getData().getFragmentType() == CodeFragmentType.COMMENT) {
 			this.state = State.FINDING_COMMENTS;
 			this.comments.add(extractCommentText(tokenNode.getData()));
@@ -78,7 +80,7 @@ public class BaseCommentBlockExtractor implements AstParser<List<String>> {
 
 
 	// TODO makes assumptions about comment begin and end markers
-	private String extractCommentText(DocumentFragmentText<CodeFragmentType> nodeData) {
+	private String extractCommentText(CodeFragment nodeData) {
 		String text = nodeData.getText();
 		int len = text.length();
 		if(len == 0) { return text; }
@@ -138,15 +140,15 @@ public class BaseCommentBlockExtractor implements AstParser<List<String>> {
 
 
 	@Override
-	public BaseCommentBlockExtractor recycle() {
+	public CommentBlockExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public BaseCommentBlockExtractor copy() {
-		val copy = new BaseCommentBlockExtractor(this.langName, this.parentBlock);
+	public CommentBlockExtractor copy() {
+		val copy = new CommentBlockExtractor(this.langName, this.parentBlock);
 		return copy;
 	}
 

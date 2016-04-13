@@ -9,7 +9,7 @@ import twg2.parser.baseAst.AstUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsKeyword;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -108,25 +108,25 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1) {
+	public boolean isKeyword(CodeFragment node, CsKeyword keyword1) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2) {
+	public boolean isKeyword(CodeFragment node, CsKeyword keyword1, CsKeyword keyword2) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
+	public boolean isKeyword(CodeFragment node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
-	public boolean isFieldBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> block) {
+	public boolean isFieldBlock(SimpleTree<CodeFragment> block) {
 		if(block == null) { return true; }
 		val childs = block.getChildren();
 		// properties must have at-least one indexer

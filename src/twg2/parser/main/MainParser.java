@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -15,6 +14,7 @@ import java.util.logging.Level;
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.io.fileLoading.SourceFiles;
+import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
@@ -22,6 +22,7 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.test.JavaClassParseTest;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -31,7 +32,7 @@ import twg2.text.stringUtils.StringJoin;
 public class MainParser {
 
 
-	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException {
+	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException, FileFormatException {
 		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
 		val files1 = SourceFiles.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
 		val files2 = SourceFiles.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
@@ -73,10 +74,15 @@ public class MainParser {
 	}
 
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, FileFormatException {
 		boolean multithread = false;
 		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
+
+		new JavaClassParseTest().simpleJavaParseTest();
+		if(3.5/1.1 > 1.2) {
+			return;
+		}
 
 		if(args.length > 0) {
 			// TODO for VisualVM pause
@@ -92,8 +98,8 @@ public class MainParser {
 			//in.nextLine();
 		}
 		else {
-			//parseAndPrintCSharpFileInfo();
-			//parseAndPrintFileStats();
+			//ParseCodeFile.parseAndPrintCSharpFileInfo();
+			//ParseCodeFile.parseAndPrintFileStats();
 			parseAndValidProjectCsClasses(fileReader);
 		}
 

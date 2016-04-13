@@ -7,19 +7,19 @@ import java.util.Map.Entry;
 import lombok.Getter;
 import lombok.val;
 import twg2.collections.builder.ListUtil;
-import twg2.collections.primitiveCollections.CharList;
 import twg2.collections.tuple.Tuples;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.textParser.TextParser;
 
-/** A collection of {@link CharParser}
- * Differs from {@link CharParserFactoryImpl} by allowing custom behavior instead of {@link twg2.parser.condition.text.CharParser.WithMarks#getMatchFirstChars(CharList)}
+/** A collection of {@link CharParser}s.
+ * Accepts {@link CharParserMatchable} or custom behavior similar to {@link twg2.parser.condition.text.CharParserMatchable#getFirstCharMatcher()}
+ * via separate function associated with {@link CharParser} arguments
  * @author TeamworkGuy2
  * @since 2016-2-21
  */
-public class CharParserPlainFactoryImpl<P extends CharParser> implements CharParserFactory {
+public class CharParserMatchableFactory<P extends CharParser> implements CharParserFactory {
 	private String name;
 	private List<P> conditions;
 	private List<BiPredicates.CharObject<TextParser>> firstCharConds;
@@ -27,13 +27,13 @@ public class CharParserPlainFactoryImpl<P extends CharParser> implements CharPar
 	private @Getter boolean compound;
 
 
-	public CharParserPlainFactoryImpl(String name, boolean compound, Iterable<CharParserMatchable> parserConditions) {
+	public CharParserMatchableFactory(String name, boolean compound, Iterable<CharParserMatchable> parserConditions) {
 		this(name, compound, ListUtil.map(parserConditions, (c) -> Tuples.of(c.getFirstCharMatcher(), c)).toArray(new Entry[0]));
 	}
 
 
 	@SafeVarargs
-	public CharParserPlainFactoryImpl(String name, boolean compound, Entry<BiPredicates.CharObject<TextParser>, P>... parserConditions) {
+	public CharParserMatchableFactory(String name, boolean compound, Entry<BiPredicates.CharObject<TextParser>, P>... parserConditions) {
 		this.name = name;
 		this.compound = compound;
 		this.conditions = new ArrayList<>();

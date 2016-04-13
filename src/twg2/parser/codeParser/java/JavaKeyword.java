@@ -2,12 +2,15 @@ package twg2.parser.codeParser.java;
 
 import java.util.Arrays;
 
+import lombok.Getter;
 import lombok.val;
+import lombok.experimental.Accessors;
+import twg2.arrays.ArrayUtil;
 import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.KeywordUtil;
-import twg2.parser.codeParser.tools.EnumSubSet;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.EnumSplitter;
 
 /**
  * @author TeamworkGuy2
@@ -75,6 +78,8 @@ public enum JavaKeyword implements AccessModifier {
 	public final boolean isFieldModifier;
 	public final boolean isMethodModifier;
 	public final boolean isBlockModifier;
+	public final boolean isOperator;
+	public final boolean isTypeLiteral;
 
 
 	JavaKeyword(String name) {
@@ -84,6 +89,8 @@ public enum JavaKeyword implements AccessModifier {
 		this.isFieldModifier = false;
 		this.isMethodModifier = false;
 		this.isBlockModifier = false;
+		this.isOperator = false;
+		this.isTypeLiteral = false;
 	}
 
 
@@ -94,6 +101,8 @@ public enum JavaKeyword implements AccessModifier {
 		this.isFieldModifier = (typeFlags & Flag.FIELD_MOD) == Flag.FIELD_MOD;
 		this.isMethodModifier = (typeFlags & Flag.METHOD_MOD) == Flag.METHOD_MOD;
 		this.isBlockModifier = (typeFlags & Flag.BLOCK_MOD) == Flag.BLOCK_MOD;
+		this.isOperator = (typeFlags & Flag.OPERATOR_MOD) == Flag.OPERATOR_MOD;
+		this.isTypeLiteral = (typeFlags & Flag.TYPE_LITERAL) == Flag.TYPE_LITERAL;
 	}
 
 
@@ -105,47 +114,42 @@ public enum JavaKeyword implements AccessModifier {
 
 
 
-	public static class Inst implements KeywordUtil {
+	@Accessors(fluent = true)
+	public static class Inst implements KeywordUtil<JavaKeyword> {
 		public final String[] keywords;
 		private final JavaKeyword[] values;
 		private final String[] primitives;
-		private final EnumSubSet<JavaKeyword> types;
-		private final EnumSubSet<JavaKeyword> classMods;
-		private final EnumSubSet<JavaKeyword> fieldMods;
-		private final EnumSubSet<JavaKeyword> methodMods;
-		private final EnumSubSet<JavaKeyword> blockMods;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> types;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> classModifiers;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> fieldModifiers;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> methodModifiers;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> blockModifiers;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> operators;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> typeLiterals;
 
 
 		{
-			JavaKeyword[] keywordEnums = JavaKeyword.values();
-			EnumSubSet.Builder<JavaKeyword> typesSet = new EnumSubSet.Builder<>((e) -> e.isType, (e) -> e.srcName);
-			EnumSubSet.Builder<JavaKeyword> classModsSet = new EnumSubSet.Builder<>((e) -> e.isClassModifier, (e) -> e.srcName);
-			EnumSubSet.Builder<JavaKeyword> fieldModsSet = new EnumSubSet.Builder<>((e) -> e.isFieldModifier, (e) -> e.srcName);
-			EnumSubSet.Builder<JavaKeyword> methodModsSet = new EnumSubSet.Builder<>((e) -> e.isMethodModifier, (e) -> e.srcName);
-			EnumSubSet.Builder<JavaKeyword> blockModsSet = new EnumSubSet.Builder<>((e) -> e.isBlockModifier, (e) -> e.srcName);
+			this.values = JavaKeyword.values();
+			val enumData = EnumSplitter.split(this.values, (e) -> e.srcName,
+					(e) -> e.isType,
+					(e) -> e.isClassModifier,
+					(e) -> e.isFieldModifier,
+					(e) -> e.isMethodModifier,
+					(e) -> e.isBlockModifier,
+					(e) -> e.isOperator,
+					(e) -> e.isTypeLiteral
+			);
+			this.keywords = enumData.getKey();
 
-			values = keywordEnums;
-
-			keywords = new String[keywordEnums.length];
-
-			for(int i = 0, size = keywordEnums.length; i < size; i++) {
-				val enm = keywordEnums[i];
-				keywords[i] = enm.srcName;
-
-				typesSet.add(enm);
-				classModsSet.add(enm);
-				fieldModsSet.add(enm);
-				methodModsSet.add(enm);
-				blockModsSet.add(enm);
-			}
-
-			//Arrays.sort(keywords);
-
-			types = typesSet.build();
-			classMods = classModsSet.build();
-			fieldMods = fieldModsSet.build();
-			methodMods = methodModsSet.build();
-			blockMods = blockModsSet.build();
+			int i = 0;
+			val enumSets = ArrayUtil.map(enumData.getValue(), CodeFragmentEnumSubSet.class, (es) -> new CodeFragmentEnumSubSet<>(CodeFragmentType.KEYWORD, es));
+			types = enumSets[i++];
+			classModifiers = enumSets[i++];
+			fieldModifiers = enumSets[i++];
+			methodModifiers = enumSets[i++];
+			blockModifiers = enumSets[i++];
+			operators = enumSets[i++];
+			typeLiterals = enumSets[i++];
 
 			// from: http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.2
 			primitives = new String[] { BOOLEAN.srcName, CHAR.srcName, BYTE.srcName, SHORT.srcName, INT.srcName, LONG.srcName, FLOAT.srcName, DOUBLE.srcName, LONG.srcName };
@@ -196,76 +200,23 @@ public enum JavaKeyword implements AccessModifier {
 			return types.find(str) != null;
 		}
 
-
-		@Override
-		public boolean isBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, blockMods) != null;
-		}
-
-
-		@Override
-		public boolean isClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, classMods) != null;
-		}
-
-
-		@Override
-		public boolean isFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, fieldMods) != null;
-		}
-
-
-		@Override
-		public boolean isMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, methodMods) != null;
-		}
-
-
-		@Override
-		public AccessModifier parseBlockKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, blockMods);
-		}
-
-
-		@Override
-		public AccessModifier parseClassModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, classMods);
-		}
-
-
-		@Override
-		public AccessModifier parseFieldModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, fieldMods);
-		}
-
-
-		@Override
-		public AccessModifier parseMethodModifierKeyword(DocumentFragmentText<CodeFragmentType> node) {
-			return parseKeyword(node, methodMods);
-		}
-
-
-		private static JavaKeyword parseKeyword(DocumentFragmentText<CodeFragmentType> node, EnumSubSet<JavaKeyword> enums) {
-			if(node != null && node.getFragmentType() == CodeFragmentType.KEYWORD) {
-				return enums.find(node.getText());
-			}
-			return null;
-		}
-
 	}
-	
-}
 
 
 
-/**
- * @author TeamworkGuy2
- * @since 2016-2-18
- */
-class Flag {
-	static final int IS_TYPE = 1;
-	static final int CLASS_MOD = 2;
-	static final int FIELD_MOD = 4;
-	static final int METHOD_MOD = 8;
-	static final int BLOCK_MOD = 8;
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-2-18
+	 */
+	static class Flag {
+		static final int IS_TYPE = 1;
+		static final int CLASS_MOD = 2;
+		static final int FIELD_MOD = 4;
+		static final int METHOD_MOD = 8;
+		static final int BLOCK_MOD = 16;
+		static final int OPERATOR_MOD = 32;
+		static final int TYPE_LITERAL = 64;
+	}
+
 }

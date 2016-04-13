@@ -8,7 +8,7 @@ import twg2.parser.baseAst.AstUtil;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaKeyword;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -110,19 +110,19 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1) {
+	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1, JavaKeyword keyword2) {
+	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1, JavaKeyword keyword2) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
-	public boolean isKeyword(DocumentFragmentText<CodeFragmentType> node, JavaKeyword keyword1, JavaKeyword keyword2, JavaKeyword keyword3) {
+	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1, JavaKeyword keyword2, JavaKeyword keyword3) {
 		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
 	}
 
@@ -130,7 +130,7 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 	/** Java does not have a field block
 	 */
 	@Override
-	public boolean isFieldBlock(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenNode) {
+	public boolean isFieldBlock(SimpleTree<CodeFragment> tokenNode) {
 		return false;
 	}
 

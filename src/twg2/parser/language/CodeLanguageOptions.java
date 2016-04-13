@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import lombok.Getter;
 import lombok.val;
+import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.baseAst.AstUtil;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.baseAst.csharp.CsAstUtil;
@@ -15,15 +16,18 @@ import twg2.parser.baseAst.java.JavaAstUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.OperatorUtil;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.csharp.CsClassParser;
 import twg2.parser.codeParser.csharp.CsKeyword;
+import twg2.parser.codeParser.csharp.CsOperator;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaBlockParser;
 import twg2.parser.codeParser.java.JavaClassParser;
 import twg2.parser.codeParser.java.JavaKeyword;
+import twg2.parser.codeParser.java.JavaOperator;
 
 /**
  * @author TeamworkGuy2
@@ -40,22 +44,25 @@ public enum CodeLanguageOptions {
 	 * @param <T_AST_UTIL> the {@link AstUtil} type for this language
 	 * @param <T_AST_EXTRACTOR> {@link AstExtractor} type for this language
 	 */
-	public static class CodeLanguageImpl<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_UTIL extends AstUtil<? extends CompoundBlock, T_KEYWORD>, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> implements CodeLanguage {
+	public static class CodeLanguageImpl<T_KEYWORD, T_LANG extends CodeLanguage, T_AST_UTIL extends AstUtil<? extends CompoundBlock, T_KEYWORD>, T_OP_UTIL extends OperatorUtil, T_AST_EXTRACTOR extends AstExtractor<? extends CompoundBlock>> implements CodeLanguage {
 		final String displayName;
 		@Getter final Function<ParseInput, CodeFileSrc<T_LANG>> parser;
 		@Getter final List<String> fileExtensions;
 		@Getter final T_AST_UTIL astUtil;
-		@Getter final KeywordUtil keywordUtil;
+		@Getter final KeywordUtil<AccessModifier> keywordUtil;
+		@Getter final T_OP_UTIL operatorUtil;
 		@Getter final T_AST_EXTRACTOR extractor;
 
 
 		// package-private
-		CodeLanguageImpl(String displayName, T_AST_UTIL astUtil, KeywordUtil keywordUtil, Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
+		@SuppressWarnings("unchecked")
+		CodeLanguageImpl(String displayName, T_AST_UTIL astUtil, KeywordUtil<? extends AccessModifier> keywordUtil, T_OP_UTIL operatorUtil, Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
 			this.displayName = displayName;
 			this.parser = parser;
 			this.fileExtensions = new ArrayList<>(Arrays.asList(fileExtensions));
 			this.astUtil = astUtil;
-			this.keywordUtil = keywordUtil;
+			this.keywordUtil = (KeywordUtil<AccessModifier>)keywordUtil;
+			this.operatorUtil = operatorUtil;
 			this.extractor = extractor;
 		}
 
@@ -68,27 +75,27 @@ public enum CodeLanguageOptions {
 	}
 
 
-	public static class CSharp extends CodeLanguageImpl<CsKeyword, CSharp, CsAstUtil, AstExtractor<CsBlock>> {
+	public static class CSharp extends CodeLanguageImpl<CsKeyword, CSharp, CsAstUtil, CsOperator.Inst, AstExtractor<CsBlock>> {
 
-		CSharp(String displayName, CsAstUtil astUtil, KeywordUtil keywordUtil, Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, String... fileExtensions) {
-			super(displayName, astUtil, keywordUtil, parser, extractor, fileExtensions);
+		CSharp(String displayName, CsAstUtil astUtil, KeywordUtil<CsKeyword> keywordUtil, CsOperator.Inst operatorUtil, Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, String... fileExtensions) {
+			super(displayName, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		}
 
 	}
 
 
-	public static class Java extends CodeLanguageImpl<JavaKeyword, Java, JavaAstUtil, AstExtractor<JavaBlock>> {
+	public static class Java extends CodeLanguageImpl<JavaKeyword, Java, JavaAstUtil, JavaOperator.Inst, AstExtractor<JavaBlock>> {
 
-		Java(String displayName, JavaAstUtil astUtil, KeywordUtil keywordUtil, Function<ParseInput, CodeFileSrc<Java>> parser, AstExtractor<JavaBlock> extractor, String... fileExtensions) {
-			super(displayName, astUtil, keywordUtil, parser, extractor, fileExtensions);
+		Java(String displayName, JavaAstUtil astUtil, KeywordUtil<JavaKeyword> keywordUtil, JavaOperator.Inst operatorUtil, Function<ParseInput, CodeFileSrc<Java>> parser, AstExtractor<JavaBlock> extractor, String... fileExtensions) {
+			super(displayName, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		}
 
 	}
 
 
-	public static final Java JAVA = new Java("Java", new JavaAstUtil(), JavaKeyword.check, JavaClassParser::parse, new JavaBlockParser(), "java");
-	public static final CodeLanguageImpl<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, AstExtractor<CompoundBlock>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, "js", "ts");
-	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsKeyword.check, CsClassParser::parse, new CsBlockParser(), "cs");
+	public static final Java JAVA = new Java("Java", new JavaAstUtil(), JavaKeyword.check, JavaOperator.check, JavaClassParser::parse, new JavaBlockParser(), "java");
+	public static final CodeLanguageImpl<Object, CodeLanguage, AstUtil<CompoundBlock, Object>, OperatorUtil, AstExtractor<CompoundBlock>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, null, "js", "ts");
+	public static final CSharp C_SHARP = new CSharp("C#", new CsAstUtil(), CsKeyword.check, CsOperator.check, CsClassParser::parse, new CsBlockParser(), "cs");
 
 	private static CopyOnWriteArrayList<CodeLanguage> values;
 
@@ -118,9 +125,9 @@ public enum CodeLanguageOptions {
 	 * @param fileExtensions a list of file extensions associated with this language
 	 * @return a new {@link CodeLanguage} instance
 	 */
-	public static <_T_BLOCK extends CompoundBlock, _T_KEYWORD, _T_LANG extends CodeLanguage, _T_AST_UTIL extends AstUtil<_T_BLOCK, _T_KEYWORD>, T_AST_EXTRACTOR extends AstExtractor<_T_BLOCK>> CodeLanguage registerCodeLanguage(
-			String displayName, _T_AST_UTIL astUtil, KeywordUtil keywordUtil, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
-		val inst = new CodeLanguageImpl<>(displayName, astUtil, keywordUtil, parser, extractor, fileExtensions);
+	public static <_T_BLOCK extends CompoundBlock, _T_KEYWORD, _T_LANG extends CodeLanguage, _T_AST_UTIL extends AstUtil<_T_BLOCK, _T_KEYWORD>, _T_OP_UTIL extends OperatorUtil, T_AST_EXTRACTOR extends AstExtractor<_T_BLOCK>> CodeLanguage registerCodeLanguage(
+			String displayName, _T_AST_UTIL astUtil, KeywordUtil<? extends AccessModifier> keywordUtil, OperatorUtil operatorUtil, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, T_AST_EXTRACTOR extractor, String... fileExtensions) {
+		val inst = new CodeLanguageImpl<>(displayName, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		_registerNewLanguage(inst);
 		return inst;
 	}

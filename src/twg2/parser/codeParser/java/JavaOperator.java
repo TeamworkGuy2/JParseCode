@@ -1,0 +1,182 @@
+package twg2.parser.codeParser.java;
+
+import lombok.Getter;
+import lombok.val;
+import lombok.experimental.Accessors;
+import twg2.arrays.ArrayUtil;
+import twg2.collections.primitiveCollections.IntArrayList;
+import twg2.collections.primitiveCollections.IntListReadOnly;
+import twg2.parser.baseAst.Operator;
+import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.OperatorUtil;
+import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.EnumSplitter;
+
+/** Java operators enum (i.e. '+', '==', '&&')
+ * @author TeamworkGuy2
+ * @since 2016-4-9
+ */
+public enum JavaOperator implements Operator {
+	// NOTE: these must be in alphabetical order for Inst array binary searches to work
+	ADD("+", Flag.ARITHMETIC | Flag.CONCAT | Flag.UNARY, list(1, 2)),
+	AND_ASSIGNMENT("&=", Flag.ASSIGNMENT, list(2)),
+	ASSIGNMENT("=", Flag.ASSIGNMENT, list(2)),
+	BITWISE_COMPLEMENT("~", Flag.BITWISE | Flag.UNARY, list(1)),
+	BITWISE_OR("|", Flag.BITWISE, list(2)),
+	BITWISE_AND("&", Flag.BITWISE, list(2)),
+	BITWISE_XOR("^", Flag.BITWISE, list(2)),
+	// NOTE: this implementation of ternary operators is a little weird
+	CONDITIONAL_A("?", Flag.CONDITIONAL, list(2)),
+	CONDITIONAL_B(":", Flag.CONDITIONAL, list(2)),
+	DECREMENT("--", Flag.UNARY, list(1)),
+	DECREMENT_ASSIGNMENT("-=", Flag.UNARY, list(2)),
+	DIVISION("/", Flag.ARITHMETIC, list(2)),
+	DIVISION_ASSIGNMENT("/=", Flag.ASSIGNMENT, list(2)),
+	EQUALITY("==", Flag.EQUALITY, list(2)),
+	GREATER_THAN(">", Flag.EQUALITY, list(2)),
+	GREATER_THAN_OR_EQUAL(">=", Flag.EQUALITY, list(2)),
+	INCREMENT("++", Flag.UNARY, list(1)),
+	INCREMENT_ASSIGNMENT("+=", Flag.ASSIGNMENT, list(2)),
+	LEFT_SHIFT_ASSIGNMENT("<<=", Flag.ASSIGNMENT, list(2)),
+	LESS_THAN("<", Flag.EQUALITY, list(2)),
+	LESS_THAN_OR_EQUAL("<=", Flag.EQUALITY, list(2)),
+	LOGICAL_AND("&&", Flag.CONDITIONAL, list(2)),
+	LOGICAL_NEGATION("!", Flag.UNARY, list(1)),
+	LOGICAL_OR("||", Flag.CONDITIONAL, list(2)),
+	MODULUS("%", Flag.ARITHMETIC, list(2)),
+	MODULUS_ASSIGNMENT("%=", Flag.ASSIGNMENT, list(2)),
+	MULTIPLICATION("*", Flag.ARITHMETIC, list(2)),
+	MULTIPLICATION_ASSIGNMENT("*=", Flag.ASSIGNMENT, list(2)),
+	NOT_EQUAL("!=", Flag.EQUALITY, list(2)),
+	OR_ASSIGNMENT("|=", Flag.ASSIGNMENT, list(2)),
+	RIGHT_SHIFT_ASSIGNMENT(">>=", Flag.ASSIGNMENT, list(2)),
+	RIGHT_SHIFT_UNSIGNED_ASSIGNMENT(">>>=", Flag.ASSIGNMENT, list(2)),
+	SHIFT_LEFT("<<", Flag.BITWISE, list(2)),
+	SHIFT_RIGHT(">>", Flag.BITWISE, list(2)),
+	SHIFT_RIGHT_UNSIGNED(">>>", Flag.BITWISE, list(2)),
+	SUBTRACT("-", Flag.ARITHMETIC | Flag.UNARY, list(1, 2)),
+	XOR_ASSIGNMENT("^=", Flag.ASSIGNMENT, list(2));
+
+
+	public static final Inst check = new JavaOperator.Inst();
+
+	public final String srcSymbol;
+	private final IntArrayList operandCounts;
+	public final boolean isArithmetic;
+	public final boolean isAssignment;
+	public final boolean isBitwise;
+	public final boolean isConcat;
+	public final boolean isConditional;
+	public final boolean isEquality;
+	public final boolean isTypeCheck;
+	public final boolean isUnary;
+
+
+	JavaOperator(String symbol, IntArrayList operandCounts) {
+		this.srcSymbol = symbol;
+		this.operandCounts = operandCounts;
+		this.isArithmetic = false;
+		this.isAssignment = false;
+		this.isBitwise = false;
+		this.isConcat = false;
+		this.isConditional = false;
+		this.isEquality = false;
+		this.isTypeCheck = false;
+		this.isUnary = false;
+	}
+
+
+	JavaOperator(String symbol, int typeFlags, IntArrayList operandCounts) {
+		this.srcSymbol = symbol;
+		this.operandCounts = operandCounts;
+		this.isArithmetic = (typeFlags & Flag.ARITHMETIC) == Flag.ARITHMETIC;
+		this.isAssignment = (typeFlags & Flag.ASSIGNMENT) == Flag.ASSIGNMENT;
+		this.isBitwise = (typeFlags & Flag.BITWISE) == Flag.BITWISE;
+		this.isConcat = (typeFlags & Flag.CONCAT) == Flag.CONCAT;
+		this.isConditional = (typeFlags & Flag.CONDITIONAL) == Flag.CONDITIONAL;
+		this.isEquality = (typeFlags & Flag.EQUALITY) == Flag.EQUALITY;
+		this.isTypeCheck = (typeFlags & Flag.TYPE_CHECK) == Flag.TYPE_CHECK;
+		this.isUnary = (typeFlags & Flag.UNARY) == Flag.UNARY;
+	}
+
+
+	@Override
+	public IntListReadOnly operandCount() {
+		return operandCounts;
+	}
+
+
+	private static final IntArrayList list(int... vals) {
+		return IntArrayList.of(vals);
+	}
+
+
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-4-9
+	 */
+	@Accessors(fluent = true)
+	public static class Inst implements OperatorUtil<JavaOperator> {
+		public final String[] keywords;
+		private final JavaOperator[] values;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> arithmeticOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> assignmentOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> bitwiseOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> concatOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> conditionalOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> equalityOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> typeCheckOperators;
+		@Getter private final CodeFragmentEnumSubSet<JavaOperator> unaryOperators;
+
+
+		{
+			this.values = JavaOperator.values();
+			val enumData = EnumSplitter.split(this.values, (e) -> e.srcSymbol,
+				(e) -> e.isArithmetic,
+				(e) -> e.isAssignment,
+				(e) -> e.isBitwise,
+				(e) -> e.isConcat,
+				(e) -> e.isConditional,
+				(e) -> e.isEquality,
+				(e) -> e.isTypeCheck,
+				(e) -> e.isUnary
+			);
+			this.keywords = enumData.getKey();
+
+			int i = 0;
+			val enumSets = ArrayUtil.map(enumData.getValue(), CodeFragmentEnumSubSet.class, (es) -> new CodeFragmentEnumSubSet<>(CodeFragmentType.OPERATOR, es));
+			arithmeticOperators = enumSets[i++];
+			assignmentOperators = enumSets[i++];
+			bitwiseOperators = enumSets[i++];
+			concatOperators = enumSets[i++];
+			conditionalOperators = enumSets[i++];
+			equalityOperators = enumSets[i++];
+			typeCheckOperators = enumSets[i++];
+			unaryOperators = enumSets[i++];
+		}
+
+	}
+
+
+
+
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-4-9
+	 */
+	static class Flag {
+		static final int ARITHMETIC = 1;
+		@SuppressWarnings("hiding")
+		static final int ASSIGNMENT = 2;
+		static final int BITWISE = 4;
+		static final int CONCAT = 8;
+		static final int CONDITIONAL = 16;
+		@SuppressWarnings("hiding")
+		static final int EQUALITY = 32;
+		static final int TYPE_CHECK = 64;
+		static final int UNARY = 128;
+	}
+
+}

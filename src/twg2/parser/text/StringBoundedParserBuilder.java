@@ -30,7 +30,7 @@ public class StringBoundedParserBuilder {
 
 
 	public CharParserFactory build() {
-		return new CharParserPlainFactoryImpl<CharParser>(name, compound, filters.toArray(new Entry[filters.size()]));
+		return new CharParserMatchableFactory<CharParser>(name, compound, filters.toArray(new Entry[filters.size()]));
 	}
 
 

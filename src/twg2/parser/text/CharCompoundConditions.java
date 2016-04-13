@@ -149,7 +149,7 @@ public class CharCompoundConditions {
 	}
 
 
-	/** Accept input that matches this parse condition
+	/** Accept input that matches any of the parse conditions
 	 * @author TeamworkGuy2
 	 * @since 2015-2-10
 	 */
@@ -169,10 +169,9 @@ public class CharCompoundConditions {
 			}
 			boolean anyFound = false;
 			Bag<CharParser> matchingConds = super.matchingConds;
-			CharParser condI = null;
 			// reverse iterate through the bag so we don't have to adjust the loop variable when we remove elements
 			for(int i = matchingConds.size() - 1; i > -1; i--) {
-				condI = matchingConds.get(i);
+				val condI = matchingConds.get(i);
 				if(!condI.isFailed()) {
 					if(!condI.acceptNext(ch, buf)) {
 						matchingConds.remove(i);

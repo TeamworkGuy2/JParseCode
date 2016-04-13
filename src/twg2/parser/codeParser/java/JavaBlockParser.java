@@ -20,15 +20,15 @@ import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
-import twg2.parser.codeParser.BaseAccessModifierExtractor;
-import twg2.parser.codeParser.BaseBlockParser;
-import twg2.parser.codeParser.BaseCommentBlockExtractor;
-import twg2.parser.codeParser.BaseDataTypeExtractor;
-import twg2.parser.codeParser.BaseFieldExtractor;
-import twg2.parser.codeParser.BaseMethodExtractor;
 import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.extractors.AccessModifierExtractor;
+import twg2.parser.codeParser.extractors.BlockExtractor;
+import twg2.parser.codeParser.extractors.CommentBlockExtractor;
+import twg2.parser.codeParser.extractors.DataTypeExtractor;
+import twg2.parser.codeParser.extractors.FieldExtractor;
+import twg2.parser.codeParser.extractors.MethodExtractor;
 import twg2.parser.codeParser.tools.TokenListIterable;
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
@@ -50,7 +50,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<Simple> createTypeParser() {
 		val lang = CodeLanguageOptions.JAVA;
-		return new BaseDataTypeExtractor(lang, true);
+		return new DataTypeExtractor(lang, true);
 	}
 
 
@@ -63,34 +63,34 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<List<String>> createCommentParser(BlockAst<JavaBlock> block) {
 		val lang = CodeLanguageOptions.JAVA;
-		return new BaseCommentBlockExtractor(lang.displayName(), block);
+		return new CommentBlockExtractor(lang.displayName(), block);
 	}
 
 
 	@Override
 	public AstParser<List<FieldSig>> createFieldParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.JAVA;
-		val typeParser = new BaseDataTypeExtractor(lang, false);
-		return new BaseFieldExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
+		val typeParser = new DataTypeExtractor(lang, false);
+		return new FieldExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
 
 	@Override
 	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.JAVA;
-		val typeParser = new BaseDataTypeExtractor(lang, true);
-		return new BaseMethodExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser);
+		val typeParser = new DataTypeExtractor(lang, true);
+		return new MethodExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser);
 	}
 
 
 	@Override
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeFragment> astTree) {
 		return extractBlockFieldsAndInterfaceMethods(astTree);
 	}
 
 
 	@Override
-	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree, BlockAst<JavaBlock> parentScope) {
+	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeFragment> astTree, BlockAst<JavaBlock> parentScope) {
 		List<BlockAst<JavaBlock>> blocks = new ArrayList<>();
 		// parse package name and push it into the name scope
 		String pkgName = parsePackageDeclaration(astTree);
@@ -105,9 +105,9 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	// TODO this only parses some fields and interface methods
-	public List<Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, ClassAst.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<DocumentFragmentText<CodeFragmentType>> tokenTree) {
+	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<CodeFragment> tokenTree) {
 		// TODO are all Java blocks valid blocks possibly containing fields/methods
-		val blocks = BaseBlockParser.extractBlockFieldsAndInterfaceMethods(this, tokenTree);
+		val blocks = BlockExtractor.extractBlockFieldsAndInterfaceMethods(this, tokenTree);
 		return blocks;
 	}
 
@@ -118,8 +118,8 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<DocumentFragmentText<CodeFragmentType>> blockTree,
-			int depth, SimpleTree<DocumentFragmentText<CodeFragmentType>> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
+	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeFragment> blockTree,
+			int depth, SimpleTree<CodeFragment> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
 		val lang = CodeLanguageOptions.JAVA;
 		val children = blockTree.getChildren();
 
@@ -140,18 +140,18 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 					val prevNode = childIter.hasPrevious() ? childIter.previous() : null;
 
 					// if a block keyword ("class", "interface", etc.) and an identifier were found, then this is probably a valid block declaration
-					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
+					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
 						val blockTypeStr = prevNode.getData().getText();
 						JavaBlock blockType = JavaBlock.tryFromKeyword(JavaKeyword.check.tryToKeyword(blockTypeStr));
-						val accessModifiers = BaseAccessModifierExtractor.readAccessModifierFromIter(lang.getKeywordUtil(), childIter);
+						val accessModifiers = AccessModifierExtractor.readAccessModifierFromIter(lang.getKeywordUtil(), childIter);
 						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
 						AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						val blockSig = BaseDataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), lang.getKeywordUtil());
+						val blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), lang.getKeywordUtil());
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
@@ -172,9 +172,9 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	}
 
 
-	private static String parsePackageDeclaration(SimpleTree<DocumentFragmentText<CodeFragmentType>> astTree) {
+	private static String parsePackageDeclaration(SimpleTree<CodeFragment> astTree) {
 		val lang = CodeLanguageOptions.JAVA;
-		List<SimpleTree<DocumentFragmentText<CodeFragmentType>>> childs = null;
+		List<SimpleTree<CodeFragment>> childs = null;
 		if(astTree.hasChildren() && (childs = astTree.getChildren()).size() > 1) {
 			if(lang.getAstUtil().isKeyword(childs.get(0).getData(), JavaKeyword.PACKAGE) &&
 					AstFragType.isIdentifier(childs.get(1).getData())) {
@@ -190,7 +190,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * Returns the iterator where {@code next()} would return the class name element.
 	 * @return {@code <className, extendImplementNames>}
 	 */
-	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<DocumentFragmentText<CodeFragmentType>>> iter) {
+	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeFragment>> iter) {
 		val lang = CodeLanguageOptions.JAVA;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
@@ -199,10 +199,10 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 		// get the first element and begin checking
 		if(iter.hasPrevious()) { prevCount++; }
-		SimpleTree<DocumentFragmentText<CodeFragmentType>> prevNode = iter.hasPrevious() ? iter.previous() : null;
+		SimpleTree<CodeFragment> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
-		while(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
+		while(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
@@ -212,7 +212,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		if(prevNode != null && lang.getAstUtil().isKeyword(prevNode.getData(), JavaKeyword.EXTENDS, JavaKeyword.IMPLEMENTS)) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().isBlockKeyword(prevNode.getData())) {
+			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 				val extendImplementNames = names;
 				val className = prevNode.getData().getText();
 				nameCompoundRes = Tuples.of(className, extendImplementNames);

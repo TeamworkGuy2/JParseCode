@@ -1,6 +1,6 @@
 ParserToolsTmp
 ==============
-version: 0.9.0
+version: 0.10.0
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
@@ -92,14 +92,16 @@ JSON Result (printed to System.out):
 			"primitive": true
 		},
 		"accessModifiers": ["private"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The modification count.</value>\n"]
 	}, {
 		"name": "ParserExamples.Samples.SimpleCs._name",
 		"type": {
 			"typeName": "string"
 		},
 		"accessModifiers": ["private"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The name.</value>\n"]
 	}, {
 		"name": "ParserExamples.Samples.SimpleCs.Names",
 		"type": {
@@ -109,7 +111,8 @@ JSON Result (printed to System.out):
 			}]
 		},
 		"accessModifiers": ["public"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The names.</value>\n"]
 	}, {
 		"name": "ParserExamples.Samples.SimpleCs.Count",
 		"type": {
@@ -117,7 +120,8 @@ JSON Result (printed to System.out):
 			"primitive": true
 		},
 		"accessModifiers": ["public"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The number of names.</value>\n"]
 	}, {
 		"name": "ParserExamples.Samples.SimpleCs.accesses",
 		"type": {
@@ -125,14 +129,16 @@ JSON Result (printed to System.out):
 			"arrayDimensions": 1
 		},
 		"accessModifiers": ["public"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The access timestamps.</value>\n"]
 	}, {
 		"name": "ParserExamples.Samples.SimpleCs.name",
 		"type": {
 			"typeName": "string"
 		},
 		"accessModifiers": ["public"],
-		"annotations": []
+		"annotations": [],
+		"comments": [" <value>The access timestamps.</value>\n"]
 	}],
 	"methods": [{
 		"name": "ParserExamples.Samples.SimpleCs.AddName",
@@ -165,7 +171,8 @@ JSON Result (printed to System.out):
 					"typeName": "String"
 				}]
 			}]
-		}
+		},
+		"comments": [" <summary>Add name</summary>\n", " <param name=\"name\">the name</param>\n", " <returns>the names</returns>\n"]
 	}]
 }
 ```

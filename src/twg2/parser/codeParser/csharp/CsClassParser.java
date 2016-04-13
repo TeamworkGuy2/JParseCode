@@ -5,13 +5,13 @@ import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CommentStyle;
-import twg2.parser.codeParser.NumberParser;
 import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.codeParser.parsers.CodeBlockParser;
 import twg2.parser.codeParser.parsers.CodeStringParser;
 import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.codeParser.parsers.IdentifierParser;
+import twg2.parser.codeParser.parsers.NumberParser;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
@@ -64,6 +64,7 @@ public class CsClassParser {
 		CharParserFactory operatorParser = new StringParserBuilder("C# operator")
 			.addCharLiteralMarker("+", '+')
 			.addCharLiteralMarker("-", '-')
+			//.addCharLiteralMarker("*", '*') // causes issue parsing comments..?
 			.addCharLiteralMarker("=", '=')
 			.addCharLiteralMarker("?", '?')
 			.addCharLiteralMarker(":", ':')
@@ -74,10 +75,9 @@ public class CsClassParser {
 
 	// TODO couldn't get this working with identifier parser which needs to parse ', ' in strings like 'Map<String, String>'
 	public static CharParserFactory createSeparatorParser() {
-		CharParserFactory annotationParser = new StringBoundedParserBuilder("C# separator")
+		CharParserFactory annotationParser = new StringParserBuilder("C# separator")
 			//.addCharLiteralMarker(',')
 			.addCharLiteralMarker(";", ';')
-			.isCompound(false)
 			.build();
 		return annotationParser;
 	}
