@@ -48,7 +48,7 @@ public class JavaClassParseTest {
 		"    @IntAnnotation(-1)]\n" +
 		"    @BoolAnnotation(true)]\n" +
 		"    @IdentifierAnnotation(Integer.TYPE)]\n" +
-		"    @StringAnnotation(\"\")]\n" +
+		"    @StringAnnotation(Name = \"\")]\n" +
 		"    @MultiArgAnnotation(\"abc\", false , 1.23)\n" +
 		"    @MultiNamedArgAnnotation(num =1.23, flag=false ,value = \"abc\")\n" +
 		"    private int mod;\n" +
@@ -145,8 +145,8 @@ public class JavaClassParseTest {
 		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 2, "BoolAnnotation", new String[] { "value" }, "true");
 		// annotations: IdentifierAnnotation(Integer.TYPE)
 		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
-		// annotations: StringAnnotation("")
-		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 4, "StringAnnotation", new String[] { "value" }, "");
+		// annotations: StringAnnotation(Name = "")
+		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 4, "StringAnnotation", new String[] { "Name" }, "");
 		// annotations: MultiArgAnnotation("abc", false , 1.23)
 		ParseAnnotationTest.assertAnnotation(f.getAnnotations(), 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
 		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")

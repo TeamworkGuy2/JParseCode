@@ -22,7 +22,6 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
-import twg2.parser.test.JavaClassParseTest;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -78,11 +77,6 @@ public class MainParser {
 		boolean multithread = false;
 		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
-
-		new JavaClassParseTest().simpleJavaParseTest();
-		if(3.5/1.1 > 1.2) {
-			return;
-		}
 
 		if(args.length > 0) {
 			// TODO for VisualVM pause

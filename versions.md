@@ -1,10 +1,20 @@
 --------
 ####0.10.0
-date: 2016-4-12
+date: 2016-4-13
 
 commit: ?
 
+* Fixed minor bug in annotation named parameter parsing when annotation only had one parameter
+
+
+--------
+####0.10.0
+date: 2016-4-12
+
+commit: 3e8a324ccada6af273339e6f29ae569795e3abcd
+
 * Added better annotation parsing, including support for negative numbers as arguments
+* Fixed ParserWorkflow to generate and group all results by destination file before writing (previously a writer was opened in overwrite mode for each destination group, thereby overwriting data written to the same file by a previous destination group during the same program execution)
 * Added CodeFragment which extends 'DocumentFragmentText<CodeFragmentType>' so don't have to keep typing that every time, updated most of the code to use CodeFragment
 * Added OperatorUtil and Operator (with C# and Java implementation enums) similar to the existing Keyword enums
 * Refactored how we use EnumSubSet and enum sub-categorization

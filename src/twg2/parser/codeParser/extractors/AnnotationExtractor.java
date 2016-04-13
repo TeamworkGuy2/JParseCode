@@ -31,6 +31,7 @@ public class AnnotationExtractor {
 		if(annotNameType != CodeFragmentType.IDENTIFIER) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotName + "'"); }
 
 		val params = new HashMap<String, String>();
+		boolean firstParamUnnamed = false;
 
 		// parse an annotation '(arguments, ...)'
 		if(size > 0) {
@@ -52,6 +53,9 @@ public class AnnotationExtractor {
 				}
 				else {
 					paramName = "arg" + (params.size() + 1);
+					if(params.size() == 0) {
+						firstParamUnnamed = true;
+					}
 				}
 
 				// parse the annotation argument value
@@ -93,7 +97,7 @@ public class AnnotationExtractor {
 		else {
 		}
 
-		if(params.size() == 1) {
+		if(params.size() == 1 && firstParamUnnamed) {
 			params.put("value", params.get("arg1"));
 			params.remove("arg1");
 		}
