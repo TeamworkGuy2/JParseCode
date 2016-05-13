@@ -35,7 +35,6 @@ public class TextAreaGui {
 	private int TEXTAREA_WIDTH = 1100;
 	private int TEXTAREA_HEIGHT = 800;
 	private JFrame mainFrame;
-	private JPanel mainPanel; // Panel reference to hold components
 	private BasicMenuBar menuBar; // The class which builds and returns the window's menu bar
 	private JTextPane textArea;
 	private Document doc;
@@ -57,9 +56,12 @@ public class TextAreaGui {
 		// Create and set the menu bar as well as the main content pane
 		// Create the menu bar program
 		this.menuBar = new BasicMenuBar();
+	}
 
+
+	public void buildAndDisplay() {
 		SwingUtilities.invokeLater(() -> {
-			// Build the menu bard and set it as the frame's menu bar
+			// Build the menu bar and set it as the frame's menu bar
 			mainFrame.setJMenuBar( menuBar.getMenuBar() );
 			// Builds the entire main panel, including buttons, labels, and scroll panes, as well as assigning listeners
 			mainFrame.add( buildPanel() );
@@ -67,7 +69,6 @@ public class TextAreaGui {
 			mainFrame.pack(); // If size is not explicitly set using setSize or setBounds
 			mainFrame.setVisible(true); // Make the window visible
 		});
-
 	}
 
 
@@ -230,7 +231,7 @@ public class TextAreaGui {
 
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				JMenuItem source = (JMenuItem)(e.getSource());
+				//JMenuItem source = (JMenuItem)(e.getSource());
 
 				System.out.println("item state change");
 
@@ -247,6 +248,7 @@ public class TextAreaGui {
 
 	public static void main(String[] args) {
 		TextAreaGui window = new TextAreaGui();
+		window.buildAndDisplay();
 	}
 
 }

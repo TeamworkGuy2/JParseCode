@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/**
+/** Static methods for splitting/extracting subsets of values from enums
  * @author TeamworkGuy2
  * @since 2016-4-9
  */

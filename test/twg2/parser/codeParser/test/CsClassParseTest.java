@@ -1,4 +1,4 @@
-package twg2.parser.test;
+package twg2.parser.codeParser.test;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,6 +27,7 @@ import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.test.ParseAnnotationTest;
 
 /**
  * @author TeamworkGuy2
@@ -61,6 +62,12 @@ public class CsClassParseTest {
 		"\n" +
 		"    /// <value>The number of names.</value>\n" +
 		"    public int Count { set; }\n" +
+		"\n" +
+		"    /// <value>The number of names.</value>\n" +
+		"    public float C2 { get; private set; }\n" +
+		"\n" +
+		"    /// <value>The number of names.</value>\n" +
+		"    public decimal C3 { private get; private set; }\n" +
 		"\n" +
 		"    /// <value>The access timestamps.</value>\n" +
 		"    public DateTime[] accesses { set { this.mod++; this.accesses = value; } }\n" +
@@ -131,7 +138,7 @@ public class CsClassParseTest {
 	public void simpleCsParseTest() {
 		Assert.assertEquals(1, parsedBlocks.size());
 		val clas = parsedBlocks.get(0).getParsedClass();
-		Assert.assertEquals(6, clas.getFields().size());
+		Assert.assertEquals(8, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
@@ -170,6 +177,14 @@ public class CsClassParseTest {
 		Assert.assertEquals("int", f.getFieldType().getTypeName());
 
 		f = clas.getFields().get(4);
+		Assert.assertEquals(fullClassName + ".C2", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("float", f.getFieldType().getTypeName());
+
+		f = clas.getFields().get(5);
+		Assert.assertEquals(fullClassName + ".C3", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("decimal", f.getFieldType().getTypeName());
+
+		f = clas.getFields().get(6);
 		Assert.assertEquals(fullClassName + ".accesses", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());

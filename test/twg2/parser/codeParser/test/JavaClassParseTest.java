@@ -1,4 +1,4 @@
-package twg2.parser.test;
+package twg2.parser.codeParser.test;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,6 +27,7 @@ import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.test.ParseAnnotationTest;
 
 /**
  * @author TeamworkGuy2

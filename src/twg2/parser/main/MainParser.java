@@ -19,6 +19,7 @@ import twg2.io.files.FileReadUtil;
 import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
+import twg2.parser.codeParser.test.CsClassParseTest;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
@@ -74,6 +75,12 @@ public class MainParser {
 
 
 	public static void main(String[] args) throws IOException, FileFormatException {
+		new CsClassParseTest().simpleCsParseTest();
+
+		if(3.1/1.1 > 1.4) {
+			return;
+		}
+
 		boolean multithread = false;
 		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();

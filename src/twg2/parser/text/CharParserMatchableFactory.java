@@ -20,6 +20,7 @@ import twg2.parser.textParser.TextParser;
  * @since 2016-2-21
  */
 public class CharParserMatchableFactory<P extends CharParser> implements CharParserFactory {
+	@SuppressWarnings("unused")
 	private String name;
 	private List<P> conditions;
 	private List<BiPredicates.CharObject<TextParser>> firstCharConds;
@@ -27,6 +28,7 @@ public class CharParserMatchableFactory<P extends CharParser> implements CharPar
 	private @Getter boolean compound;
 
 
+	@SuppressWarnings("unchecked")
 	public CharParserMatchableFactory(String name, boolean compound, Iterable<CharParserMatchable> parserConditions) {
 		this(name, compound, ListUtil.map(parserConditions, (c) -> Tuples.of(c.getFirstCharMatcher(), c)).toArray(new Entry[0]));
 	}

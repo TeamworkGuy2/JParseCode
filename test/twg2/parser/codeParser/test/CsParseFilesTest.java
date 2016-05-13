@@ -1,4 +1,4 @@
-package twg2.parser.test;
+package twg2.parser.codeParser.test;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +33,7 @@ import checks.CheckCollections;
  * @author TeamworkGuy2
  * @since 2016-1-8
  */
-public class CsParserExamples {
+public class CsParseFilesTest {
 	private ClassAst.ResolvedImpl<CsBlock> trackSearchServiceDef;
 	private ClassAst.ResolvedImpl<CsBlock> albumInfoDef;
 	private ClassAst.ResolvedImpl<CsBlock> trackInfoDef;
@@ -44,7 +44,7 @@ public class CsParserExamples {
 	private List<ClassAst.ResolvedImpl<CsBlock>> resClasses;
 
 
-	public CsParserExamples() throws IOException, FileFormatException {
+	public CsParseFilesTest() throws IOException, FileFormatException {
 		Path trackSearchServiceFile = Paths.get("rsc/csharp/ParserExamples/Services/ITrackSearchService.cs");
 		Path albumInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/AlbumInfo.cs");
 		Path trackInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs");

@@ -90,6 +90,13 @@ public class DocumentParser<T> {
 	}
 
 
+	/** Search the src list for elements which exist inside parent and add those that are to dstToAddTo
+	 * @param src the list of possible children
+	 * @param parent the parent
+	 * @param isInside a function which checks if the parent contains a specific child
+	 * @param dstToAddTo the destination to add matching children to
+	 * @return the dstToAddTo list
+	 */
 	public static <D extends DocumentFragment<S, T>, S, T> List<SimpleTreeImpl<D>> getChildrenInRange(List<SimpleTreeImpl<D>> src,
 			D parent, IsParentChild<D> isInside, List<SimpleTreeImpl<D>> dstToAddTo) {
 		for(int i = 0, size = src.size(); i < size; i++) {
@@ -102,6 +109,11 @@ public class DocumentParser<T> {
 	}
 
 
+	/** Remove a list of child nodes from a tree.
+	 * Throws an error if any of the children do not exist in the tree
+	 * @param tree the tree to remove child nodes from
+	 * @param children the children to remove
+	 */
 	public static <D extends DocumentFragment<S, T>, S, T> void removeChildren(SimpleTreeImpl<D> tree, List<SimpleTreeImpl<D>> children) {
 		for(int i = 0, size = children.size(); i < size; i++) {
 			SimpleTree<D> child = children.get(i);

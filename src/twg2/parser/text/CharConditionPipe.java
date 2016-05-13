@@ -204,6 +204,7 @@ public class CharConditionPipe {
 		private BiPredicates.CharObject<TextParser> firstCharFilter;
 
 
+		@SuppressWarnings("unchecked")
 		public BasePipeMatchable(String name, CharParserMatchable firstFilter, T filter) {
 			super(name, (T)firstFilter);
 			val condSet = super.conditionSets.get(0);
@@ -213,6 +214,7 @@ public class CharConditionPipe {
 		}
 
 
+		@SuppressWarnings("unchecked")
 		@SafeVarargs
 		public BasePipeMatchable(String name, CharParserMatchable firstFilter, T... filters) {
 			super(name, (T)firstFilter);
@@ -223,6 +225,7 @@ public class CharConditionPipe {
 		}
 
 
+		@SuppressWarnings("unchecked")
 		public BasePipeMatchable(String name, CharParserMatchable firstFilter, Collection<T> filters) {
 			super(name, (T)firstFilter);
 			val condSet = super.conditionSets.get(0);
@@ -543,7 +546,9 @@ public class CharConditionPipe {
 						char nextCh = buf.nextChar();
 						boolean nextRes = super.curCondition.acceptNext(nextCh, buf);
 						buf.unread(1);
-						super.curCondition = (S)super.curCondition.copyOrReuse();
+						@SuppressWarnings("unchecked")
+						val condCopy = (S)super.curCondition.copyOrReuse();
+						super.curCondition = condCopy;
 
 						if(nextRes) {
 							super.anyComplete = false;
@@ -606,7 +611,9 @@ public class CharConditionPipe {
 		@Override
 		public S nextCondition() {
 			List<S> curCondSet = super.conditionSets.get(super.curSetIndex);
-			curCondSet.set(super.curCondIndex, (S)super.curCondition.copyOrReuse());
+			@SuppressWarnings("unchecked")
+			val condCopy = (S)super.curCondition.copyOrReuse();
+			curCondSet.set(super.curCondIndex, condCopy);
 
 			super.curCondIndex++;
 
@@ -734,7 +741,9 @@ public class CharConditionPipe {
 							// if this was a look ahead char
 							if(initRes) {
 								// since this was the first char the condition accepted, just copy and reuse, instead of setting the look ahead flag and char
-								super.curCondition = (S)super.curCondition.copyOrReuse();
+								@SuppressWarnings("unchecked")
+								val condCopy = (S)super.curCondition.copyOrReuse();
+								super.curCondition = condCopy;
 							}
 							// if the next optional parser accepts the character, then lock into parsing the optional parser, else the loop checks parser until none remain
 							if(nextRes2) {
@@ -769,7 +778,9 @@ public class CharConditionPipe {
 
 		public S nextCondition() {
 			List<S> curCondSet = super.conditionSets.get(super.curSetIndex);
-			curCondSet.set(super.curCondIndex, (S)super.curCondition.copyOrReuse());
+			@SuppressWarnings("unchecked")
+			val condCopy = (S)super.curCondition.copyOrReuse();
+			curCondSet.set(super.curCondIndex, condCopy);
 
 			super.curCondIndex++;
 
@@ -849,7 +860,9 @@ public class CharConditionPipe {
 		@Override
 		public S nextCondition() {
 			List<S> curCondSet = super.conditionSets.get(super.curSetIndex);
-			curCondSet.set(super.curCondIndex, (S)super.curCondition.copyOrReuse());
+			@SuppressWarnings("unchecked")
+			val condCopy = (S)super.curCondition.copyOrReuse();
+			curCondSet.set(super.curCondIndex, condCopy);
 
 			super.curCondIndex++;
 

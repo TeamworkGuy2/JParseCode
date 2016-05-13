@@ -29,6 +29,7 @@ public class StringBoundedParserBuilder {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	public CharParserFactory build() {
 		return new CharParserMatchableFactory<CharParser>(name, compound, filters.toArray(new Entry[filters.size()]));
 	}

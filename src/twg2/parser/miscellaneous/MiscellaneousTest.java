@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import lombok.val;
-import twg2.parser.test.CsClassParseTest;
+import twg2.parser.codeParser.test.CsClassParseTest;
 
 /**
  * @author TeamworkGuy2

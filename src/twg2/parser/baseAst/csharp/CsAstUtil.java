@@ -125,22 +125,35 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 	}
 
 
+	/** Supports property blocks in the format:
+	 * <pre><code>{
+	 *   [ [access-modifier] get ( ; | {...} ) ]
+	 *   [ [access-modifier] set ( ; | {...} ) ]
+	 *}</code></pre>
+	 */
 	@Override
 	public boolean isFieldBlock(SimpleTree<CodeFragment> block) {
 		if(block == null) { return true; }
 		val childs = block.getChildren();
-		// properties must have at-least one indexer
+		// properties must have at-least one indexer (i.e. 'get' or 'set')
 		if(childs.size() == 0) { return false; }
 
+		val keywords = this.getLanguage().getKeywordUtil();
+
 		boolean prevWasGetOrSet = false;
-		for(val child : childs) {
+		for(int i = 0, size = childs.size(); i < size; i++) {
+			val child = childs.get(i);
+			val nextChild = i < size - 1 ? childs.get(i + 1) : null;
 			val frag = child.getData();
 			val fragType = frag.getFragmentType();
 			if(fragType == CodeFragmentType.COMMENT) {
 				continue;
 			}
-			val isGetOrSet = fragType == CodeFragmentType.IDENTIFIER && ("get".equals(frag.getText()) || "set".equals(frag.getText()));
-			if(isGetOrSet || (prevWasGetOrSet && (fragType == CodeFragmentType.BLOCK || fragType == CodeFragmentType.SEPARATOR))) {
+			val isGetOrSet = isGetOrSet(frag);
+			val isAccessMod = keywords.fieldModifiers().is(frag);
+			if(isGetOrSet ||
+					(prevWasGetOrSet && (fragType == CodeFragmentType.BLOCK || fragType == CodeFragmentType.SEPARATOR)) ||
+					(isAccessMod && nextChild != null && isGetOrSet(nextChild.getData()))) {
 				// allow
 			}
 			else {
@@ -149,6 +162,11 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 			prevWasGetOrSet = isGetOrSet;
 		}
 		return true;
+	}
+
+
+	private static boolean isGetOrSet(CodeFragment frag) {
+		return frag.getFragmentType() == CodeFragmentType.IDENTIFIER && ("get".equals(frag.getText()) || "set".equals(frag.getText()));
 	}
 
 }

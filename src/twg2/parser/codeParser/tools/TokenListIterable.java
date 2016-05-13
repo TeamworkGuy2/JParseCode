@@ -9,16 +9,22 @@ import twg2.parser.documentParser.CodeFragment;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-/**
+/** Create an iterator for AST nodes, which skips {@link CodeFragmentType} COMMENT and STRING nodes.
  * @author TeamworkGuy2
  * @since 2016-1-1
  */
 public class TokenListIterable implements Iterable<SimpleTree<CodeFragment>> {
 
+	/** A {@link SimpleTree}{@code <}{@link CodeFragment}{@code >} {@link Supplier}.  When given an {@link Iterable}, this creates
+	 * a supplier which returns them in order, returns null once all the values have been iterated over
+	 * @author TeamworkGuy2
+	 * @since 2016-1-1
+	 */
 	static class TokenSupplier implements Supplier<SimpleTree<CodeFragment>> {
 		Iterator<SimpleTree<CodeFragment>> childIter;
 		Predicate<? super CodeFragment> cond;
 		int i;
+
 
 		public TokenSupplier(Iterable<? extends SimpleTree<? extends CodeFragment>> childs) {
 			this(childs, null);
