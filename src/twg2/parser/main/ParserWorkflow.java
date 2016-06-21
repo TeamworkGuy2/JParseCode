@@ -379,9 +379,9 @@ public class ParserWorkflow {
 		}
 
 		Map<String, String> argNames = new HashMap<>();
-		argNames.put("sources", "sources - a semicolon separated list of strings in the format 'path_string[=depth_int[,[file_extension_string], ..], ..]'.  Example: '/project/myApp/Models=3,[java,json]'");
-		argNames.put("destinations", "destinations - a semicolon separated list of strings in the format 'path_string[=[namespace_string], ..]'.  Example: '/project/tmp_files/models.json=[MyApp.Models]'");
-		argNames.put("log", "log - a log file path in the format 'path_string'.  Example: '/project/tmp_files/parser-log.log'");
+		argNames.put("sources", "sources - a semicolon separated list of strings in the format 'path=depth,[fileExt,fileExt,...];path=depth,[fileExt,fileExt,...];...'.  Example: '/project/myApp/Models=3,[java,json]'");
+		argNames.put("destinations", "destinations - a semicolon separated list of strings in the format 'path=[namespace,namespace,...], ...'.  Example: '/project/tmp_files/models.json=[MyApp.Models]'");
+		argNames.put("log", "log - a log file path in the format 'path'.  Example: '/project/tmp_files/parser-log.log'");
 
 		List<SourceInfo> srcs = new ArrayList<>();
 		List<DestinationInfo> dsts = new ArrayList<>();

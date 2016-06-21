@@ -4,7 +4,14 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.1](N/A) - 2016-05-13
+###[0.10.2](N/A) - 2016-06-21
+####Added
+* plugin-js to help generate CLI strings from TypeScript/Javascript projects, with Node.js in mind
+* Readme section about the CLI
+
+
+--------
+###[0.10.1](https://github.com/TeamworkGuy2/JParserTools/commit/5cdf7fabab17d8d9d8037c83c29047979a6438e7) - 2016-05-13
 ####Changed
 * Merged DocumentFragmentRef with DocumentFragmentText
 * Added some documentation

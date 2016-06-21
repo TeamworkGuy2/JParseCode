@@ -1,5 +1,5 @@
 {
-	"version" : "0.10.1",
+	"version" : "0.10.2",
 	"name" : "jparser-tools",
 	"description" : "An in-progress suite of parsing tools for C#, Java, and TypeScript source code",
 	"homepage" : "https://github.com/TeamworkGuy2/JFileIo",
