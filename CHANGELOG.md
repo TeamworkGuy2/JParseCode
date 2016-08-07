@@ -4,7 +4,16 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.2](N/A) - 2016-06-21
+###[0.10.3](N/A) - 2016-08-07
+####Changed
+* Updated jcollection-util to latest 0.5.x version
+* Updated jfile-io to latest 0.6.x version(SourceInfo renamed to DirectorySearchInfo)
+* Updated jtext-util to latest 0.10.x version (some classes moved to new twg2.text.stringSearch package)
+* Added jcollection-interfaces dependency
+
+
+--------
+###[0.10.2](https://github.com/TeamworkGuy2/JParserTools/commit/719509161f795fbafc56c8beefd51562103b6cb7) - 2016-06-21
 ####Added
 * plugin-js to help generate CLI strings from TypeScript/Javascript projects, with Node.js in mind
 * Readme section about the CLI

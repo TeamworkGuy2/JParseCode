@@ -1,12 +1,12 @@
 ParserToolsTmp
 ==============
-version: 0.10.2
+version: 0.10.3
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
 ####Goals:
 * A competent source code parser that can turn C#, Java, or JavaScript/TypeScript code into a simple AST like structure ('competent' meaning this project aims to support common use cases, not every syntatic feature of the supported languages). 
-* A 'code first' parser aimed at manipulating the resulting AST and writing it back as source code or JSON.  With the goal of allowing simple language constructs like interfaces and data models to be transpiled to different languages. 
+* A code first parser aimed at manipulating the resulting AST and writing it back as source code or JSON.  With the goal of allowing simple language constructs like interfaces and data models to be transpiled to different languages. 
 
 ####Not Goals: 
 * NOT to create another compiler for C#, Java, or JS/TS. This project's parser expects valid code as input, the few error messages that are present are NOT design to highlight syntax errors in the input. 
@@ -199,8 +199,8 @@ The following formats are valid:
 'path=depth'
 'path'
 
-Example: '/project/myApp/Models=3,[java,json]'
-Note: the brackets around '[fileExt]' are literla.
+Example: ```/project/myApp/Models=3,[java,json]```
+Note: the brackets around '[fileExt]' are literal.
 
 
 ###Destinations
@@ -208,14 +208,14 @@ A semicolon separated list of output file names associated with lists of namespa
 The following format is valid:
 'path=[namespace,namespace,...]'
 
-Example: '/project/output/models.json=[MyApp.Models]'
+Example: ```/project/output/models.json=[MyApp.Models]```
 
 
 ####Log
 An optional log file name to write parser information to, in the format:
 'path'
 
-Example: '/project/output/parser-log.log'
+Example: ```/project/output/parser-log.log```
 
 
 --------

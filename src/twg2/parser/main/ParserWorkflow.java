@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.dataUtil.dataUtils.TimeUnitUtil;
+import twg2.io.fileLoading.DirectorySearchInfo;
 import twg2.io.fileLoading.SourceFiles;
-import twg2.io.fileLoading.SourceInfo;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.write.JsonWrite;
@@ -48,12 +48,12 @@ import twg2.text.stringUtils.StringTrim;
 public class ParserWorkflow {
 	static String newline = System.lineSeparator();
 
-	List<SourceInfo> sources;
+	List<DirectorySearchInfo> sources;
 	List<DestinationInfo> destinations;
 	Path logFile;
 
 
-	public ParserWorkflow(List<SourceInfo> sources, List<DestinationInfo> destinations, Path log) {
+	public ParserWorkflow(List<DirectorySearchInfo> sources, List<DestinationInfo> destinations, Path log) {
 		this.sources = sources;
 		this.destinations = destinations;
 		this.logFile = log;
@@ -176,7 +176,7 @@ public class ParserWorkflow {
 		}
 
 
-		public static ParsedResult parse(List<Entry<SourceInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
+		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
 			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>();
 
 			for(val filesWithSrc : files) {
@@ -383,7 +383,7 @@ public class ParserWorkflow {
 		argNames.put("destinations", "destinations - a semicolon separated list of strings in the format 'path=[namespace,namespace,...], ...'.  Example: '/project/tmp_files/models.json=[MyApp.Models]'");
 		argNames.put("log", "log - a log file path in the format 'path'.  Example: '/project/tmp_files/parser-log.log'");
 
-		List<SourceInfo> srcs = new ArrayList<>();
+		List<DirectorySearchInfo> srcs = new ArrayList<>();
 		List<DestinationInfo> dsts = new ArrayList<>();
 		Path log = null;
 
@@ -406,7 +406,7 @@ public class ParserWorkflow {
 
 				if("sources".equals(name)) {
 					for(val valueStr : values) {
-						val value = SourceInfo.parseFromArgs(valueStr, "sources");
+						val value = DirectorySearchInfo.parseFromArgs(valueStr, "sources");
 						srcs.add(value);
 					}
 				}
