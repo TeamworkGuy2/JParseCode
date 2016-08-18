@@ -1,6 +1,6 @@
 package twg2.parser.baseAst.java;
 
-import twg2.dataUtil.dataUtils.EnumUtil;
+import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -63,7 +63,7 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 				case INTERFACE: // interface { class }
 					return AccessModifierEnum.PUBLIC;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, JavaBlock.class);
+					throw EnumError.unknownValue(parentBlock, JavaBlock.class);
 				}
 			case INTERFACE:
 				switch(parentBlock) {
@@ -73,7 +73,7 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 				case INTERFACE: // interface { interface }
 					return AccessModifierEnum.PUBLIC;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, JavaBlock.class);
+					throw EnumError.unknownValue(parentBlock, JavaBlock.class);
 				}
 			case ENUM:
 				switch(parentBlock) {
@@ -83,10 +83,10 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 				case INTERFACE: // interface { enum }
 					return AccessModifierEnum.PUBLIC;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, JavaBlock.class);
+					throw EnumError.unknownValue(parentBlock, JavaBlock.class);
 				}
 			default:
-				throw EnumUtil.unknownValue(currentBlock, JavaBlock.class);
+				throw EnumError.unknownValue(currentBlock, JavaBlock.class);
 		}
 	}
 

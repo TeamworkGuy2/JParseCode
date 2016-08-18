@@ -1,6 +1,6 @@
 package twg2.parser.codeParser.java;
 
-import twg2.dataUtil.dataUtils.EnumUtil;
+import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.baseAst.CompoundBlock;
 
 /**
@@ -63,7 +63,7 @@ public enum JavaBlock implements CompoundBlock {
 		case ENUM:
 			return JavaBlock.ENUM;
 		default:
-			throw EnumUtil.unknownValue(keyword, JavaKeyword.class);
+			throw EnumError.unknownValue(keyword, JavaKeyword.class);
 		}
 	}
 

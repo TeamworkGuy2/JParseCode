@@ -4,10 +4,16 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.3](N/A) - 2016-08-07
+###[0.10.4](N/A) - 2016-08-18
+####Changed
+* Updated jdata-util to latest 0.3.x version (EnumUtil renamed ErrorUtil, TimeUnitUtil package name changed)
+
+
+--------
+###[0.10.3](https://github.com/TeamworkGuy2/JParserTools/commit/5e2e75da19451f6e99427405b6b04f844fb260de) - 2016-08-07
 ####Changed
 * Updated jcollection-util to latest 0.5.x version
-* Updated jfile-io to latest 0.6.x version(SourceInfo renamed to DirectorySearchInfo)
+* Updated jfile-io to latest 0.6.x version (SourceInfo renamed to DirectorySearchInfo)
 * Updated jtext-util to latest 0.10.x version (some classes moved to new twg2.text.stringSearch package)
 * Added jcollection-interfaces dependency
 

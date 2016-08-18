@@ -21,7 +21,7 @@ import java.util.logging.Level;
 
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
-import twg2.dataUtil.dataUtils.TimeUnitUtil;
+import twg2.dataUtil.dateTime.TimeUnitUtil;
 import twg2.io.fileLoading.DirectorySearchInfo;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileFormatException;

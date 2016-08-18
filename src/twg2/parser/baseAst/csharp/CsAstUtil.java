@@ -1,7 +1,7 @@
 package twg2.parser.baseAst.csharp;
 
 import lombok.val;
-import twg2.dataUtil.dataUtils.EnumUtil;
+import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AccessModifierParser;
 import twg2.parser.baseAst.AstTypeChecker;
@@ -65,7 +65,7 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 				case NAMESPACE: // namespace { class }
 					return AccessModifierEnum.NAMESPACE_LOCAL;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, CsBlock.class);
+					throw EnumError.unknownValue(parentBlock, CsBlock.class);
 				}
 			case INTERFACE:
 				switch(parentBlock) {
@@ -76,12 +76,12 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 				case NAMESPACE: // namespace { interface }
 					return AccessModifierEnum.NAMESPACE_LOCAL;
 				default:
-					throw EnumUtil.unknownValue(parentBlock, CsBlock.class);
+					throw EnumError.unknownValue(parentBlock, CsBlock.class);
 				}
 			case NAMESPACE: // NAMESPACE default true
 				return AccessModifierEnum.PUBLIC;
 			default:
-				throw EnumUtil.unknownValue(currentBlock, CsBlock.class);
+				throw EnumError.unknownValue(currentBlock, CsBlock.class);
 		}
 	}
 

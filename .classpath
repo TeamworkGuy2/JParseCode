@@ -9,26 +9,26 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Lombok"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TemplateUtil"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TestChecks"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/jar/data_transfer.jar"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/bin/data_transfer.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-annotations-2.5.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-core-2.5.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-databind-2.5.4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jarray-util/jar/jarray_util.jar" sourcepath="/JArrayUtil"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-interfaces/jar/jcollection_interfaces.jar" sourcepath="/JCollectionInterfaces"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-util/jar/jcollection_util.jar" sourcepath="/JCollectionUtil"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdata-util/jar/jdata_util.jar" sourcepath="/JDataUtil"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfunc/jar/jfunc.jar" sourcepath="/JFunc"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jinterfaces/jar/jinterfaces.jar" sourcepath="/JInterfaces"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jparser-data-type-like/jar/jparser_data_type_like.jar" sourcepath="/JParserDataTypeLike"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jprimitive-collections/jar/jprimitive_collections.jar" sourcepath="/JPrimitiveCollections"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jrange/jar/jrange.jar" sourcepath="/JRange"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jsimple-types/jar/jsimple_types.jar" sourcepath="/JSimpleTypes/src"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/json-io/jar/json_io.jar" sourcepath="/JsonIo"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jstreamish/jar/jstreamish.jar" sourcepath="/JStreamish"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-parser/jar/jtext_parser.jar" sourcepath="/JTextParser"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-util/jar/jtext_util.jar" sourcepath="C:/Users/TeamworkGuy2/Documents/Java/Projects/JTextParser/src"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/jar/jtree_walker.jar" sourcepath="/JTreeWalker"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/jar/jfile_io.jar" sourcepath="/JFileIo"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtwg2-logging/jar/jtwg2_logging.jar" sourcepath="/JTwg2Logging"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jarray-util/bin/jarray_util.jar" sourcepath="/JArrayUtil"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-interfaces/bin/jcollection_interfaces.jar" sourcepath="/JCollectionInterfaces"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-util/bin/jcollection_util.jar" sourcepath="/JCollectionUtil"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdata-util/bin/jdata_util.jar" sourcepath="/JDataUtil"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfunc/bin/jfunc.jar" sourcepath="/JFunc"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jinterfaces/bin/jinterfaces.jar" sourcepath="/JInterfaces"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jparser-data-type-like/bin/jparser_data_type_like.jar" sourcepath="/JParserDataTypeLike"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jprimitive-collections/bin/jprimitive_collections.jar" sourcepath="/JPrimitiveCollections"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jrange/bin/jrange.jar" sourcepath="/JRange"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jsimple-types/bin/jsimple_types.jar" sourcepath="/JSimpleTypes/src"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/json-io/bin/json_io.jar" sourcepath="/JsonIo"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jstreamish/bin/jstreamish.jar" sourcepath="/JStreamish"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-parser/bin/jtext_parser.jar" sourcepath="/JTextParser"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtext-util/bin/jtext_util.jar" sourcepath="C:/Users/TeamworkGuy2/Documents/Java/Projects/JTextParser/src"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/bin/jtree_walker.jar" sourcepath="/JTreeWalker"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/bin/jfile_io.jar" sourcepath="/JFileIo"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtwg2-logging/bin/jtwg2_logging.jar" sourcepath="/JTwg2Logging"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,6 +1,6 @@
 package twg2.parser.codeParser.csharp;
 
-import twg2.dataUtil.dataUtils.EnumUtil;
+import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.baseAst.CompoundBlock;
 
 /**
@@ -69,7 +69,7 @@ public enum CsBlock implements CompoundBlock {
 		case NAMESPACE:
 			return CsBlock.NAMESPACE;
 		default:
-			throw EnumUtil.unknownValue(keyword, CsKeyword.class);
+			throw EnumError.unknownValue(keyword, CsKeyword.class);
 		}
 	}
 
