@@ -7,11 +7,11 @@ import java.util.Arrays;
 
 import org.stringtemplate.v4.ST;
 
-import twg2.collections.tuple.Tuples;
 import twg2.parser.templates.ParseBlockInfo;
 import twg2.template.codeTemplate.render.StringTemplatesUtil;
 import twg2.template.codeTemplate.render.TemplateFilesIo;
 import twg2.template.codeTemplate.render.TemplateImports;
+import twg2.tuple.Tuples;
 
 /**
  * @author TeamworkGuy2

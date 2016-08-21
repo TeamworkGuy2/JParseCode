@@ -30,5 +30,7 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/bin/jtree_walker.jar" sourcepath="/JTreeWalker"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/bin/jfile_io.jar" sourcepath="/JFileIo"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtwg2-logging/bin/jtwg2_logging.jar" sourcepath="/JTwg2Logging"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-builders/bin/jcollection_builders.jar" sourcepath="/JCollectionBuilders"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtuples/bin/jtuples.jar" sourcepath="/JTuples"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

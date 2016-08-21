@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
-import twg2.collections.tuple.Tuples;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.text.CharConditionPipe;
@@ -13,6 +12,7 @@ import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.CharParserMatchableFactory;
 import twg2.parser.text.StringParserBuilder;
 import twg2.ranges.CharSearchSet;
+import twg2.tuple.Tuples;
 
 /**
  * @author TeamworkGuy2

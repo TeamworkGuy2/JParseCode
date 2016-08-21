@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import twg2.collections.dataStructures.PairList;
-import twg2.collections.tuple.Tuples;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
+import twg2.tuple.Tuples;
 
 /** Build a token tree from text characters using multiple parser factories.<br>
  * Given multiple char parser factories, this maintains a list of in progress parsers and accepts characters if they are accepted by any in-progress parsers or

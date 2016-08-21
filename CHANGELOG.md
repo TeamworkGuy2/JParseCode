@@ -4,9 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.4](N/A) - 2016-08-18
+###[0.10.5](N/A) - 2016-08-21
+####Changed
+* Added JCollectionBuilders and JTuples dependencies
+* Updated jcollection-util to latest 0.7.x version (removed twg2.collections.builder and twg2.collections.tuple)
+
+
+--------
+###[0.10.4](https://github.com/TeamworkGuy2/JParserTools/commit/5a3686f828a91eac9896755fb8f6ee8d888b3ca7) - 2016-08-18
 ####Changed
 * Updated jdata-util to latest 0.3.x version (EnumUtil renamed ErrorUtil, TimeUnitUtil package name changed)
+* Fixed compiled jar path and name
 
 
 --------

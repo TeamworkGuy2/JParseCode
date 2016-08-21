@@ -7,11 +7,11 @@ import java.util.Map.Entry;
 import lombok.Getter;
 import lombok.val;
 import twg2.collections.builder.ListUtil;
-import twg2.collections.tuple.Tuples;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.textParser.TextParser;
+import twg2.tuple.Tuples;
 
 /** A collection of {@link CharParser}s.
  * Accepts {@link CharParserMatchable} or custom behavior similar to {@link twg2.parser.condition.text.CharParserMatchable#getFirstCharMatcher()}

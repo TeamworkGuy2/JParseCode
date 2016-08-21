@@ -10,12 +10,12 @@ import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
-import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
+import twg2.tuple.Tuples;
 
 /** Base static methods for helping {@link AstExtractor} implementations
  * @author TeamworkGuy2

@@ -14,7 +14,6 @@ import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.ast.interm.type.TypeSig.Simple;
-import twg2.collections.tuple.Tuples;
 import twg2.parser.baseAst.AccessModifierEnum;
 import twg2.parser.baseAst.AstParser;
 import twg2.parser.baseAst.tools.AstFragType;
@@ -33,6 +32,7 @@ import twg2.parser.language.CodeLanguageOptions;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
+import twg2.tuple.Tuples;
 
 /**
  * @author TeamworkGuy2

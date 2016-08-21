@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 import twg2.collections.builder.ListUtil;
-import twg2.collections.tuple.Tuples;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
 import twg2.io.json.Json;
@@ -26,6 +25,7 @@ import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
+import twg2.tuple.Tuples;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

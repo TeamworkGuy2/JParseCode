@@ -1,13 +1,13 @@
 package twg2.parser.codeParser.parsers;
 
 import lombok.val;
-import twg2.collections.tuple.Tuples;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.primitive.NumericParser;
 import twg2.parser.text.CharParserMatchableFactory;
 import twg2.parser.textParser.TextParser;
 import twg2.ranges.CharSearchSet;
+import twg2.tuple.Tuples;
 
 /**
  * @author TeamworkGuy2
