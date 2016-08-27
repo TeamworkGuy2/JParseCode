@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.5](N/A) - 2016-08-21
+###[0.10.6](N/A) - 2016-08-27
+####Changed
+* Fixed version numbers and jackson-* dependency names in package-lib.json
+
+
+--------
+###[0.10.5](https://github.com/TeamworkGuy2/JParserTools/commit/d2efb99774df457392525dbdf4341c438fb20160) - 2016-08-21
 ####Changed
 * Added JCollectionBuilders and JTuples dependencies
 * Updated jcollection-util to latest 0.7.x version (removed twg2.collections.builder and twg2.collections.tuple)
