@@ -4,7 +4,16 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.6](N/A) - 2016-08-27
+###[0.10.7](N/A) - 2016-08-28
+####Added
+* Added jdate-times dependency (since dependent date/time code was moved from jdata-util and jparser-data-type-like to jdate-times)
+
+####Changed
+* Updated dependencies to latest version
+
+
+--------
+###[0.10.6](https://github.com/TeamworkGuy2/JParserTools/commit/d1099ba9ef35ff0109c2c923044efe2219bd061d) - 2016-08-27
 ####Changed
 * Fixed version numbers and jackson-* dependency names in package-lib.json
 

@@ -1,5 +1,5 @@
 {
-	"version" : "0.10.6",
+	"version" : "0.10.7",
 	"name" : "jparser-tools",
 	"description" : "An in-progress suite of parsing tools for C#, Java, and TypeScript source code",
 	"homepage" : "https://github.com/TeamworkGuy2/JFileIo",
@@ -13,6 +13,7 @@
 		"jarray-util": "*",
 		"jcollection-util": "*",
 		"jdata-util": "*",
+		"jdate-times": "*",
 		"jfile-io": "*",
 		"jfunc": "*",
 		"jinterfaces": "*",
