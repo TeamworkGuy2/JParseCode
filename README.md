@@ -1,6 +1,6 @@
-ParserToolsTmp
+JParseCode
 ==============
-version: 0.10.7
+version: 0.10.8
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
@@ -182,7 +182,7 @@ JSON Result (printed to System.out):
 Command Line Interface (CLI):
 A command line call looks like:
 ```
-path/to/java -jar path/to/jparser-tools.jar 
+path/to/java -jar path/to/jparse-code.jar 
  -sources './src/java/Server/Services=1,[cs];./src/java/Server/Models=3,[cs]'
  -destinations './output/Services.json=[App.Services];./output/Models.json=[App.Entities]'
  -log './output/parser.log'
@@ -220,4 +220,4 @@ Example: ```/project/output/parser-log.log```
 
 --------
 Plugins:
-Currently there is one plugin, a dual purpose TypeScript/Javascript plugin for create the CLI argument strings used by jparser-tools.jar
+Currently there is one plugin, a dual purpose TypeScript/Javascript plugin for create the CLI argument strings used by jparse-code.jar

@@ -1,10 +1,10 @@
 {
-	"version" : "0.10.7",
-	"name" : "jparser-tools",
+	"version" : "0.10.8",
+	"name" : "jparse-code",
 	"description" : "An in-progress suite of parsing tools for C#, Java, and TypeScript source code",
-	"homepage" : "https://github.com/TeamworkGuy2/JFileIo",
+	"homepage" : "https://github.com/TeamworkGuy2/JParseCode",
 	"license" : "MIT",
-	"main" : "./bin/jparser_tools.jar",
+	"main" : "./bin/jparse_code.jar",
 	"dependencies" : {
 		"data-transfer": "*",
 		"jackson-annotations": "~2.5.0",
@@ -17,7 +17,7 @@
 		"jfile-io": "*",
 		"jfunc": "*",
 		"jinterfaces": "*",
-		"jparser-data-type-like": "*",
+		"jparse-primitive": "*",
 		"jprimitive-collections": "*",
 		"jrange": "*",
 		"jsimple-types": "*",
