@@ -4,7 +4,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.11.0](N/A) - 2016-09-05
+###[0.11.0](https://github.com/TeamworkGuy2/JParseCode/commit/76f3cf2eba9327659f6e454d8bfe3208695cdab5) - 2016-09-05
 #### Added
 * __basic C# and Java enum parsing__
   * Added twg2.ast.interm.field FieldDef and FieldDefResolved to represent enum members (TODO could use some clarification/refactoring)
