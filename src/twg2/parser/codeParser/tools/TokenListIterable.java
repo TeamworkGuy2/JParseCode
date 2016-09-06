@@ -4,8 +4,8 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.treeLike.simpleTree.SimpleTree;
 

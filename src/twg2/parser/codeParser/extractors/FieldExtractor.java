@@ -8,23 +8,24 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.AstTypeChecker;
-import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.Consume;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
+import twg2.parser.fragment.AstTypeChecker;
+import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.stateMachine.AstMemberInClassParserReusable;
+import twg2.parser.stateMachine.AstParser;
+import twg2.parser.stateMachine.Consume;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public class FieldExtractor implements AstParser<List<FieldSig>> {
+public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtractor.State, List<FieldSig>> {
 
 	static enum State {
 		INIT,
@@ -38,36 +39,25 @@ public class FieldExtractor implements AstParser<List<FieldSig>> {
 
 
 	KeywordUtil<? extends AccessModifier> keywordUtil;
-	BlockAst<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
-	AstParser<TypeSig.Simple> typeParser;
+	AstParser<TypeSig.TypeSigSimple> typeParser;
 	List<AccessModifier> accessModifiers = new ArrayList<>();
 	List<FieldSig> fields = new ArrayList<>();
-	TypeSig.Simple fieldTypeSig;
+	TypeSig.TypeSigSimple fieldTypeSig;
 	String fieldName;
 	AstTypeChecker<?> typeChecker;
-	State state = State.INIT;
-	String langName;
-	String name;
 
 
-	public FieldExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser, AstTypeChecker<?> typeChecker) {
-		this.langName = langName;
-		this.name = langName + " field";
-		this.parentBlock = parentBlock;
+	public FieldExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock,
+			AstParser<TypeSig.TypeSigSimple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser, AstTypeChecker<?> typeChecker) {
+		super(langName, "field", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
 		this.commentParser = commentParser;
 		this.typeChecker = typeChecker;
-	}
-
-
-	@Override
-	public String name() {
-		return name;
+		this.state = State.INIT;
 	}
 
 
@@ -129,7 +119,7 @@ public class FieldExtractor implements AstParser<List<FieldSig>> {
 
 
 	private Consume findingAccessModifiers(SimpleTree<CodeFragment> tokenNode) {
-		AccessModifier accessMod = AccessModifierExtractor.readAccessModifier(keywordUtil, tokenNode);
+		AccessModifier accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
 			return Consume.ACCEPTED;
@@ -193,24 +183,6 @@ public class FieldExtractor implements AstParser<List<FieldSig>> {
 	@Override
 	public List<FieldSig> getParserResult() {
 		return fields;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 

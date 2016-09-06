@@ -6,14 +6,14 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.type.TypeSig;
 import twg2.collections.builder.ListBuilder;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.primitive.NumericParser;
+import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.text.stringUtils.StringCheck;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;
@@ -23,7 +23,8 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-12-12
  */
-public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
+// TODO contains various hard coded values, but as long as this is one of the centralized places containing these values, it should be fine
+public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.State, TypeSig.TypeSigSimple> {
 
 	static enum State {
 		INIT,
@@ -34,27 +35,20 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 
 	private final CodeLanguage lang;
-	private TypeSig.Simple type;
+	private TypeSig.TypeSigSimple type;
 	private String typeName;
-	private State state = State.INIT;
 	private boolean allowVoid;
 	private boolean prevNodeWasBlockId;
-	private String name;
 
 
 	/**
 	 * @param allowVoid indicate whether 'void'/'Void' is a valid data type when parsing (true for method return types, but invalid for field/variable types)
 	 */
 	public DataTypeExtractor(CodeLanguage lang, boolean allowVoid) {
+		super(lang + " data type", State.COMPLETE, State.FAILED);
 		this.lang = lang;
 		this.allowVoid = allowVoid;
-		this.name = lang + " data type";
-	}
-
-
-	@Override
-	public String name() {
-		return name;
+		this.state = State.INIT;
 	}
 
 
@@ -94,26 +88,8 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 
 	@Override
-	public TypeSig.Simple getParserResult() {
+	public TypeSig.TypeSigSimple getParserResult() {
 		return type;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 
@@ -139,15 +115,36 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 	}
 
 
-	/** Check if a tree node is the start of a data type
+	/** Check if a string is possibly a simple data type (just a type name, no generics)
 	 */
-	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordType, SimpleTree<CodeFragment> node, boolean allowVoid) {
-		val nodeData = node.getData();
-		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordType.isKeyword(nodeData.getText()) || keywordType.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, String typeName, boolean allowVoid) {
+		return !StringCheck.isNullOrWhitespace(typeName) && (!keywordUtil.isKeyword(typeName) || keywordUtil.isDataTypeKeyword(typeName)) || (allowVoid ? "void".equalsIgnoreCase(typeName) : false);
 	}
 
 
-	/** Check if one or two nodes are a number with an optiona -/+ sign
+	/** Check if a tree node is possibly a data type (just a type name, no generics)
+	 */
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeFragment> node, boolean allowVoid) {
+		val nodeData = node.getData();
+		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordUtil.isKeyword(nodeData.getText()) || keywordUtil.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
+	}
+
+
+	/** Check if a tree node is a boolean literal
+	 */
+	public static boolean isBooleanLiteral(CodeFragment node) {
+		return node.getFragmentType() == CodeFragmentType.KEYWORD && ("true".equals(node.getText()) || "false".equals(node.getText()));
+	}
+
+
+	/** Check if a tree node is a null literal
+	 */
+	public static boolean isNullLiteral(CodeFragment node) {
+		return node.getFragmentType() == CodeFragmentType.KEYWORD && "null".equals(node.getText());
+	}
+
+
+	/** Check if one or two nodes are a number with an optional -/+ sign
 	 * @param node1
 	 * @param node2Optional
 	 * @return the number of nodes used, 0 if neither node was a number, 1 if the first node was a number, 2 if the first node was a sign and the second node was a number
@@ -164,7 +161,7 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 
 
 	// TODO create a proper, full parser for generic types
-	public static TypeSig.Simple extractGenericTypes(String typeSig, KeywordUtil<? extends AccessModifier> keywordUtil) {
+	public static TypeSig.TypeSigSimple extractGenericTypes(String typeSig, KeywordUtil<? extends AccessModifier> keywordUtil) {
 		String genericMark = "#";
 
 		if(typeSig.contains(genericMark)) {
@@ -192,13 +189,13 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 		val paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
 		val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
 		val isOptional = rootNameAndMarker.getKey().endsWith("?");
-		TypeSig.SimpleBaseImpl root = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
-		TypeSig.Simple sig;
+		val root = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
+		TypeSig.TypeSigSimple sig;
 
 		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
 		if(rootMarker > -1) {
 			val sigChilds = expandGenericParamSet(keywordUtil, root, rootMarker, genericParamSets);
-			sig = new TypeSig.SimpleGenericImpl(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));
+			sig = new TypeSig.TypeSigSimpleGeneric(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));
 		}
 		else {
 			sig = root;
@@ -208,11 +205,11 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 	}
 
 
-	public static List<TypeSig.Simple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, TypeSig.SimpleBaseImpl parent, int parentParamMarker, List<String> remainingParamSets) {
+	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, TypeSig.TypeSigSimpleBase parent, int parentParamMarker, List<String> remainingParamSets) {
 		String paramSetStr = remainingParamSets.get(parentParamMarker);
 		remainingParamSets.remove(parentParamMarker);
-		List<TypeSig.Simple> paramSigs = new ArrayList<>();
-		List<String> params = ListBuilder.mutable(paramSetStr.split(", "));
+		val paramSigs = new ArrayList<TypeSig.TypeSigSimple>();
+		val params = ListBuilder.mutable(paramSetStr.split(", "));
 
 		for(String param : params) {
 			// Split the generic parameter name and possible marker indicating further nested generic type
@@ -222,14 +219,14 @@ public class DataTypeExtractor implements AstParser<TypeSig.Simple> {
 			val paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');
 			val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
 			val isOptional = paramNameAndMarker.getKey().endsWith("?");
-			TypeSig.SimpleBaseImpl paramSigInit = new TypeSig.SimpleBaseImpl(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
-			TypeSig.Simple paramSig;
+			val paramSigInit = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
+			TypeSig.TypeSigSimple paramSig;
 
 			// if this generic parameter has a marker, parse it's sub parameters and add them to a new compound generic type signature
 			int paramMarker = !StringCheck.isNullOrEmpty(paramNameAndMarker.getValue()) ? Integer.parseInt(paramNameAndMarker.getValue()) : -1;
 			if(paramMarker > -1) {
 				val childParams = expandGenericParamSet(keywordUtil, paramSigInit, paramMarker, remainingParamSets);
-				paramSig = new TypeSig.SimpleGenericImpl(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable(), keywordUtil.isPrimitive(paramSigInit.getTypeName()));
+				paramSig = new TypeSig.TypeSigSimpleGeneric(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable(), keywordUtil.isPrimitive(paramSigInit.getTypeName()));
 			}
 			// else just use the generic parameter's basic signature (no nested generic types)
 			else {

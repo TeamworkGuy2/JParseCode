@@ -35,4 +35,10 @@ public class CodeFileSrc<T_LANG> {
 		this.language = language;
 	}
 
+
+	@Override
+	public String toString() {
+		return srcName + " (" + language + ", " + lines.size() + " lines)";
+	}
+
 }

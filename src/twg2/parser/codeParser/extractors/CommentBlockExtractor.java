@@ -5,18 +5,18 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.block.BlockAst;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.codeParser.CodeFragmentType;
-import twg2.parser.codeParser.Consume;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.stateMachine.AstParserReusableBase;
+import twg2.parser.stateMachine.Consume;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-3-20
  */
-public class CommentBlockExtractor implements AstParser<List<String>> {
+public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExtractor.State, List<String>> {
 
 	static enum State {
 		INIT,
@@ -26,24 +26,17 @@ public class CommentBlockExtractor implements AstParser<List<String>> {
 	}
 
 
-	BlockAst<? extends CompoundBlock> parentBlock;
+	BlockAst<? extends BlockType> parentBlock;
 	List<String> comments = new ArrayList<>();
 	boolean multiLine;
-	State state = State.INIT;
 	String langName;
-	String name;
 
 
-	public CommentBlockExtractor(String langName, BlockAst<? extends CompoundBlock> parentBlock) {
+	public CommentBlockExtractor(String langName, BlockAst<? extends BlockType> parentBlock) {
+		super(langName + " field", State.COMPLETE, State.FAILED);
 		this.langName = langName;
-		this.name = langName + " field";
 		this.parentBlock = parentBlock;
-	}
-
-
-	@Override
-	public String name() {
-		return name;
+		this.state = State.INIT;
 	}
 
 
@@ -54,11 +47,7 @@ public class CommentBlockExtractor implements AstParser<List<String>> {
 		}
 		Consume res = null;
 
-		if(state == State.INIT) {
-			res = findComment(tokenNode);
-			if(res.isAccept()) { return true; }
-		}
-		else if(state == State.FINDING_COMMENTS) {
+		if(state == State.INIT || state == State.FINDING_COMMENTS) {
 			res = findComment(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
@@ -105,6 +94,7 @@ public class CommentBlockExtractor implements AstParser<List<String>> {
 			}
 		}
 
+		// skip trailing asterisk(s) and slash
 		int end = len;
 		if(this.multiLine) {
 			if(text.charAt(end - 1) == '/' && end > 1 && text.charAt(end - 2) == '*') { end -= 2; }
@@ -118,24 +108,6 @@ public class CommentBlockExtractor implements AstParser<List<String>> {
 	@Override
 	public List<String> getParserResult() {
 		return comments;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 

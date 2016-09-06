@@ -1,6 +1,6 @@
 package twg2.parser.documentParser;
 
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.textFragment.TextFragmentRef;
 
 /**

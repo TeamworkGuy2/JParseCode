@@ -6,11 +6,11 @@ import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntListReadOnly;
-import twg2.parser.baseAst.Operator;
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.Operator;
 import twg2.parser.codeParser.OperatorUtil;
 import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
+import twg2.parser.fragment.CodeFragmentType;
 
 /** Java operators enum (i.e. '+', '==', '&&')
  * @author TeamworkGuy2
@@ -97,6 +97,12 @@ public enum JavaOperator implements Operator {
 		this.isEquality = (typeFlags & Flag.EQUALITY) == Flag.EQUALITY;
 		this.isTypeCheck = (typeFlags & Flag.TYPE_CHECK) == Flag.TYPE_CHECK;
 		this.isUnary = (typeFlags & Flag.UNARY) == Flag.UNARY;
+	}
+
+
+	@Override
+	public String toSrc() {
+		return srcSymbol;
 	}
 
 

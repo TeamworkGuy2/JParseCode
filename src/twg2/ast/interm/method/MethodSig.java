@@ -9,8 +9,8 @@ import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.write.JsonWrite;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
@@ -98,10 +98,10 @@ public interface MethodSig {
 
 
 	@Immutable
-	public static class SimpleImpl extends Impl<ParameterSig, TypeSig.Simple> {
+	public static class SimpleImpl extends Impl<ParameterSig, TypeSig.TypeSigSimple> {
 
 		public SimpleImpl(String name, List<String> fullName, List<? extends ParameterSig> paramSigs,
-				TypeSig.Simple returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
+				TypeSig.TypeSigSimple returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
 			super(name, fullName, paramSigs, returnType, accessModifiers, annotations, comments);
 		}
 
@@ -111,10 +111,10 @@ public interface MethodSig {
 
 
 	@Immutable
-	public static class ResolvedImpl extends Impl<ParameterSigResolved, TypeSig.Resolved> {
+	public static class ResolvedImpl extends Impl<ParameterSigResolved, TypeSig.TypeSigResolved> {
 
 		public ResolvedImpl(String name, List<String> fullName, List<? extends ParameterSigResolved> paramSigs,
-				TypeSig.Resolved returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
+				TypeSig.TypeSigResolved returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
 			super(name, fullName, paramSigs, returnType, accessModifiers, annotations, comments);
 		}
 

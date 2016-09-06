@@ -3,7 +3,7 @@ package twg2.ast.interm.block;
 import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.classes.ClassSig;
-import twg2.parser.baseAst.CompoundBlock;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
@@ -12,7 +12,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-12-5
  */
 @Immutable
-public class BlockAst<T_BLOCK extends CompoundBlock> {
+public class BlockAst<T_BLOCK extends BlockType> {
 	private final @Getter ClassSig.SimpleImpl declaration;
 	private final @Getter SimpleTree<CodeFragment> blockTree;
 	private final @Getter T_BLOCK blockType;

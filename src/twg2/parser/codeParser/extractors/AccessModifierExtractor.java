@@ -3,7 +3,8 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import twg2.parser.baseAst.AccessModifier;
+import lombok.val;
+import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.documentParser.CodeFragment;
 import twg2.streams.EnhancedListBuilderIterator;
@@ -15,9 +16,9 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class AccessModifierExtractor {
 
-	public static AccessModifier readAccessModifier(KeywordUtil<? extends AccessModifier> keyword, SimpleTree<CodeFragment> node) {
+	public static AccessModifier parseAccessModifier(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeFragment> node) {
 		if(node == null) { return null; }
-		return keyword.classModifiers().parse(node.getData());
+		return keywordUtil.classModifiers().parse(node.getData());
 	}
 
 
@@ -25,12 +26,12 @@ public class AccessModifierExtractor {
 	 * Returns the iterator where {@code next()} would return the first access modifier element.
 	 * @return access modifiers read backward from the iterator's current {@code previous()} value
 	 */
-	public static List<String> readAccessModifierFromIter(KeywordUtil<? extends AccessModifier> keyword, EnhancedListBuilderIterator<SimpleTree<CodeFragment>> iter) {
+	public static List<String> readAccessModifiers(KeywordUtil<? extends AccessModifier> keywordUtil, EnhancedListBuilderIterator<SimpleTree<CodeFragment>> iter) {
 		int prevCount = 0;
-		List<String> accessModifiers = new ArrayList<>();
+		val accessModifiers = new ArrayList<String>();
 		SimpleTree<CodeFragment> child = iter.hasPrevious() ? iter.previous() : null;
 
-		while(child != null && keyword.classModifiers().is(child.getData())) {
+		while(child != null && keywordUtil.classModifiers().is(child.getData())) {
 			accessModifiers.add(0, child.getData().getText());
 			child = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }

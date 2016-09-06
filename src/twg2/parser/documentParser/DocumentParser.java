@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import twg2.collections.dataStructures.PairList;
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.text.CharMultiConditionParser;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextConsumer;

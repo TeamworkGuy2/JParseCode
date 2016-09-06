@@ -1,6 +1,5 @@
 package twg2.parser.codeParser;
 
-import twg2.parser.baseAst.Operator;
 import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 
 /**

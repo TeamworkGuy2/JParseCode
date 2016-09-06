@@ -10,11 +10,11 @@ import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.project.ProjectClassSet;
 
 /**
@@ -25,10 +25,10 @@ public class ClassSigResolver {
 
 	/** Resolves the {@link twg2.ast.interm.classes.ClassSig.SimpleImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends CompoundBlock> namespaceClass,
-			ProjectClassSet.Simple<T_ID, ? extends CompoundBlock> projFiles, CompoundBlock defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
+			ProjectClassSet.Simple<T_ID, ? extends BlockType> projFiles, BlockType defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 		List<List<String>> resolvedCompilationUnitNames = new ArrayList<>();
-		List<CompoundBlock> resolvedCompilationUnitBlockTypes = new ArrayList<>();
+		List<BlockType> resolvedCompilationUnitBlockTypes = new ArrayList<>();
 		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();
 
 		if(classExtendImplementNames != null) {
@@ -46,8 +46,8 @@ public class ClassSigResolver {
 		}
 
 		// check the extends/implements name list, ensure that the first
-		TypeSig.Resolved extendClassType = null;
-		List<TypeSig.Resolved> implementInterfaceTypes = Collections.emptyList();
+		TypeSig.TypeSigResolved extendClassType = null;
+		List<TypeSig.TypeSigResolved> implementInterfaceTypes = Collections.emptyList();
 		if(resolvedCompilationUnitNames.size() > 0) {
 			val firstCompilationUnitName = resolvedCompilationUnitNames.get(0);
 			val firstCompilationUnitBlockType = resolvedCompilationUnitBlockTypes.get(0);
@@ -76,11 +76,11 @@ public class ClassSigResolver {
 		}
 
 		// resolve generic signature
-		List<TypeSig.Resolved> resolvedClassParams = Collections.emptyList();
+		List<TypeSig.TypeSigResolved> resolvedClassParams = Collections.emptyList();
 		if(classSig.isGeneric()) {
 			resolvedClassParams = new ArrayList<>();
 			for(val simpleParam : classSig.getParams()) {
-				TypeSig.Resolved resolvedClassParam = TypeSigResolver.resolveFrom(simpleParam, namespaceClass, projFiles, missingNamespacesDst);
+				val resolvedClassParam = TypeSigResolver.resolveFrom(simpleParam, namespaceClass, projFiles, missingNamespacesDst);
 				resolvedClassParams.add(resolvedClassParam);
 			}
 		}

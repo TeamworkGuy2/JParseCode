@@ -5,15 +5,15 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.extractors.AnnotationExtractor;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-public class JavaAnnotationExtractor implements AstParser<List<AnnotationSig>> {
+public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotationExtractor.State, List<AnnotationSig>> {
 
 	static enum State {
 		INIT,
@@ -27,13 +27,10 @@ public class JavaAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 	List<AnnotationSig> annotations = new ArrayList<>();
 	String foundName;
 	CodeFragmentType foundNameType;
-	State state = State.INIT;
-	String name = "Java annotation";
 
 
-	@Override
-	public String name() {
-		return name;
+	public JavaAnnotationExtractor() {
+		super("Java annotation", State.COMPLETE, State.FAILED);
 	}
 
 
@@ -41,8 +38,7 @@ public class JavaAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
 		val lang = CodeLanguageOptions.JAVA;
 
-		if((state == State.COMPLETE || state == State.FAILED || state == State.FOUND_NAME) &&
-				(AstFragType.isType(tokenNode.getData(), CodeFragmentType.SEPARATOR) && "@".equals(tokenNode.getData().getText()))) {
+		if((state == State.COMPLETE || state == State.FAILED || state == State.FOUND_NAME) && AstFragType.isSeparator(tokenNode.getData(), "@")) {
 			if(state == State.FOUND_NAME) {
 				val annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
 				annotations.add(annot);
@@ -78,24 +74,6 @@ public class JavaAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 	@Override
 	public List<AnnotationSig> getParserResult() {
 		return annotations;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 

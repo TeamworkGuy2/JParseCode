@@ -4,8 +4,8 @@ import static twg2.parser.test.ParserTestUtils.parseTestSameParsed;
 
 import org.junit.Test;
 
-import twg2.parser.codeParser.parsers.IdentifierParser;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.tokenizers.IdentifierTokenizer;
 
 /**
  * @author TeamworkGuy2
@@ -16,7 +16,7 @@ public class IdentifierParserTest {
 	@Test
 	public void compoundIdentifierParse() {
 		String name = "CompoundIdentifierParse";
-		CharParser cond = IdentifierParser.createCompoundIdentifierParser();
+		CharParser cond = IdentifierTokenizer.createCompoundIdentifierTokenizer();
 
 		parseTestSameParsed(false, false, name, cond, "");
 		parseTestSameParsed(false, false, name, cond, "thing.");

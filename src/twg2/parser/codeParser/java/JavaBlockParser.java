@@ -10,25 +10,23 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.ast.interm.type.TypeSig.Simple;
-import twg2.parser.baseAst.AccessModifierEnum;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.baseAst.tools.NameUtil;
 import twg2.parser.codeParser.AstExtractor;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.extractors.AccessModifierExtractor;
 import twg2.parser.codeParser.extractors.BlockExtractor;
 import twg2.parser.codeParser.extractors.CommentBlockExtractor;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.codeParser.extractors.FieldExtractor;
 import twg2.parser.codeParser.extractors.MethodExtractor;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.stateMachine.AstParser;
 import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -48,9 +46,15 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	@Override
-	public AstParser<Simple> createTypeParser() {
+	public AstParser<TypeSig.TypeSigSimple> createTypeParser() {
 		val lang = CodeLanguageOptions.JAVA;
 		return new DataTypeExtractor(lang, true);
+	}
+
+
+	@Override
+	public AstParser<List<FieldDef>> createEnumParser(BlockAst<JavaBlock> block, AstParser<List<String>> commentParser) {
+		return new JavaEnumMemberExtractor(JavaKeyword.check, block, commentParser);
 	}
 
 
@@ -143,16 +147,16 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
 						val blockTypeStr = prevNode.getData().getText();
-						JavaBlock blockType = JavaBlock.tryFromKeyword(JavaKeyword.check.tryToKeyword(blockTypeStr));
-						val accessModifiers = AccessModifierExtractor.readAccessModifierFromIter(lang.getKeywordUtil(), childIter);
+						val blockType = lang.getBlockUtil().tryParseKeyword(lang.getKeywordUtil().tryToKeyword(blockTypeStr));
+						val accessModifiers = AccessModifierExtractor.readAccessModifiers(lang.getKeywordUtil(), childIter);
 						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
-						AccessModifierEnum access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
+						val access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
 						val blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), lang.getKeywordUtil());
-						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.Simple>emptyList();
+						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
 						blocks.add(new BlockAst<>(new ClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
@@ -194,7 +198,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		val lang = CodeLanguageOptions.JAVA;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
-		List<String> names = new ArrayList<>();
+		val names = new ArrayList<String>();
 		Entry<String, List<String>> nameCompoundRes = null;
 
 		// get the first element and begin checking
@@ -202,7 +206,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		SimpleTree<CodeFragment> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
-		while(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
@@ -212,7 +216,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		if(prevNode != null && lang.getAstUtil().isKeyword(prevNode.getData(), JavaKeyword.EXTENDS, JavaKeyword.IMPLEMENTS)) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && prevNode.getData().getFragmentType() == CodeFragmentType.IDENTIFIER && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
 				val extendImplementNames = names;
 				val className = prevNode.getData().getText();
 				nameCompoundRes = Tuples.of(className, extendImplementNames);

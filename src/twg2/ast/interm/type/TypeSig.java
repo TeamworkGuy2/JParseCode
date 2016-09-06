@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.io.write.JsonWrite;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringJoin;
@@ -24,7 +24,7 @@ public interface TypeSig {
 	 * @author TeamworkGuy2
 	 * @since 2016-1-4
 	 */
-	public static interface Simple extends JsonWritableSig {
+	public static interface TypeSigSimple extends JsonWritableSig {
 
 		public String getTypeName();
 
@@ -38,7 +38,7 @@ public interface TypeSig {
 
 		public int getArrayDimensions();
 
-		public List<TypeSig.Simple> getParams();
+		public List<TypeSigSimple> getParams();
 
 		@Override
 		public String toString();
@@ -53,14 +53,14 @@ public interface TypeSig {
 	 * @since 2016-1-3
 	 */
 	@Immutable
-	public static class SimpleBaseImpl implements TypeSig.Simple {
+	public static class TypeSigSimpleBase implements TypeSigSimple {
 		private final @Getter String typeName;
 		private final @Getter boolean nullable;
 		private final @Getter int arrayDimensions;
 		private final @Getter boolean primitive;
 
 
-		public SimpleBaseImpl(String typeName, int arrayDimensions, boolean nullable, boolean primitive) {
+		public TypeSigSimpleBase(String typeName, int arrayDimensions, boolean nullable, boolean primitive) {
 			this.typeName = typeName;
 			this.nullable = nullable;
 			this.arrayDimensions = arrayDimensions;
@@ -81,7 +81,7 @@ public interface TypeSig {
 
 
 		@Override
-		public List<TypeSig.Simple> getParams() {
+		public List<TypeSigSimple> getParams() {
 			return Collections.emptyList();
 		}
 
@@ -125,17 +125,17 @@ public interface TypeSig {
 	 * @since 2016-1-3
 	 */
 	@Immutable
-	public static class SimpleGenericImpl implements TypeSig.Simple {
+	public static class TypeSigSimpleGeneric implements TypeSigSimple {
 		private final @Getter String typeName;
-		private final @Getter List<TypeSig.Simple> params;
+		private final @Getter List<TypeSigSimple> params;
 		private final @Getter boolean nullable;
 		private final @Getter int arrayDimensions;
 		private final @Getter boolean primitive;
 
 
-		public SimpleGenericImpl(String typeName, List<? extends TypeSig.Simple> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
+		public TypeSigSimpleGeneric(String typeName, List<? extends TypeSigSimple> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
-			val genericParamsCast = (List<TypeSig.Simple>)genericParams;
+			val genericParamsCast = (List<TypeSigSimple>)genericParams;
 
 			this.typeName = typeName;
 			this.params = genericParamsCast;
@@ -199,7 +199,7 @@ public interface TypeSig {
 	 * @author TeamworkGuy2
 	 * @since 2016-1-4
 	 */
-	public static interface Resolved extends JsonWritableSig {
+	public static interface TypeSigResolved extends JsonWritableSig {
 
 		public String getSimpleName();
 
@@ -215,7 +215,7 @@ public interface TypeSig {
 
 		public int getArrayDimensions();
 
-		public List<TypeSig.Resolved> getParams();
+		public List<TypeSigResolved> getParams();
 
 		@Override
 		public String toString();
@@ -230,7 +230,7 @@ public interface TypeSig {
 	 * @since 2016-1-3
 	 */
 	@Immutable
-	public static class ResolvedBaseImpl implements TypeSig.Resolved {
+	public static class TypeSigResolvedBase implements TypeSigResolved {
 		private final @Getter String simpleName;
 		private final @Getter List<String> fullName;
 		private final @Getter boolean nullable;
@@ -238,7 +238,7 @@ public interface TypeSig {
 		private final @Getter boolean primitive;
 
 
-		public ResolvedBaseImpl(List<String> fullyQualifyingName, int arrayDimensions, boolean nullable, boolean primitive) {
+		public TypeSigResolvedBase(List<String> fullyQualifyingName, int arrayDimensions, boolean nullable, boolean primitive) {
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
 			this.fullName = fullyQualifyingName;
 			this.nullable = nullable;
@@ -260,7 +260,7 @@ public interface TypeSig {
 
 
 		@Override
-		public List<Resolved> getParams() {
+		public List<TypeSigResolved> getParams() {
 			return Collections.emptyList();
 		}
 
@@ -304,18 +304,18 @@ public interface TypeSig {
 	 * @since 2016-1-3
 	 */
 	@Immutable
-	public static class ResolvedGenericImpl implements TypeSig.Resolved {
+	public static class TypeSigResolvedGeneric implements TypeSigResolved {
 		private final @Getter String simpleName;
 		private final @Getter List<String> fullName;
-		private final @Getter List<TypeSig.Resolved> params;
+		private final @Getter List<TypeSigResolved> params;
 		private final @Getter boolean nullable;
 		private final @Getter int arrayDimensions;
 		private final @Getter boolean primitive;
 
 
-		public ResolvedGenericImpl(List<String> fullyQualifyingName, List<? extends TypeSig.Resolved> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
+		public TypeSigResolvedGeneric(List<String> fullyQualifyingName, List<? extends TypeSigResolved> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
-			val genericParamsCast = (List<TypeSig.Resolved>)genericParams;
+			val genericParamsCast = (List<TypeSigResolved>)genericParams;
 
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
 			this.fullName = fullyQualifyingName;

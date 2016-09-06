@@ -1,30 +1,35 @@
 package twg2.parser.codeParser.java;
 
 import twg2.dataUtil.dataUtils.EnumError;
-import twg2.parser.baseAst.CompoundBlock;
+import twg2.parser.codeParser.BlockType;
+import twg2.parser.codeParser.BlockUtil;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public enum JavaBlock implements CompoundBlock {
-	CLASS(true, false),
-	ENUM(true, false),
-	INTERFACE(false, true);
+public enum JavaBlock implements BlockType {
+	CLASS(true),
+	ENUM(true),
+	INTERFACE(false);
 
 
 	final boolean isClass;
-	final boolean isInterface;
 
-	private JavaBlock(boolean isClass, boolean isInterface) {
+	private JavaBlock(boolean isClass) {
 		this.isClass = isClass;
-		this.isInterface = isInterface;
+	}
+
+
+	@Override
+	public boolean isEnum() {
+		return this == ENUM;
 	}
 
 
 	@Override
 	public boolean isInterface() {
-		return isInterface;
+		return this == INTERFACE;
 	}
 
 
@@ -35,36 +40,48 @@ public enum JavaBlock implements CompoundBlock {
 
 	@Override
 	public final boolean canContainFields() {
-		return this == CLASS || this == INTERFACE;
+		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
 
 	@Override
 	public final boolean canContainMethods() {
-		return this == CLASS || this == INTERFACE;
+		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
 
-	public static final JavaBlock fromKeyword(JavaKeyword keyword) {
-		JavaBlock blockType = tryFromKeyword(keyword);
-		if(blockType == null) {
-			throw new IllegalArgumentException("Java keyword '" + keyword + "' is not a valid compound block type");
-		}
-		return blockType;
-	}
 
 
-	public static final JavaBlock tryFromKeyword(JavaKeyword keyword) {
-		switch(keyword) {
-		case CLASS:
-			return JavaBlock.CLASS;
-		case INTERFACE:
-			return JavaBlock.INTERFACE;
-		case ENUM:
-			return JavaBlock.ENUM;
-		default:
-			throw EnumError.unknownValue(keyword, JavaKeyword.class);
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-09-03
+	 */
+	public static class JavaBlockUtil implements BlockUtil<JavaBlock, JavaKeyword> {
+
+		@Override
+		public final JavaBlock parseKeyword(JavaKeyword keyword) {
+			JavaBlock blockType = tryParseKeyword(keyword);
+			if(blockType == null) {
+				throw new IllegalArgumentException("Java keyword '" + keyword + "' is not a valid compound block type");
+			}
+			return blockType;
 		}
+
+
+		@Override
+		public final JavaBlock tryParseKeyword(JavaKeyword keyword) {
+			switch(keyword) {
+			case CLASS:
+				return JavaBlock.CLASS;
+			case INTERFACE:
+				return JavaBlock.INTERFACE;
+			case ENUM:
+				return JavaBlock.ENUM;
+			default:
+				throw EnumError.unknownValue(keyword, JavaKeyword.class);
+			}
+		}
+
 	}
 
 }

@@ -1,6 +1,5 @@
 package twg2.parser.codeParser;
 
-import twg2.parser.baseAst.AccessModifier;
 import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 
 /**
@@ -9,10 +8,25 @@ import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
  */
 public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
 
+	/** Given a possible keyword string, return the keyword or throw an error
+	 * @param str the string to convert to a keyword
+	 * @return the keyword matching the input string
+	 */
+	public T_KEYWORD toKeyword(String str);
+
+	/** Given a possible keyword string, return the keyword or null
+	 * @param str the string to convert to a keyword
+	 * @return the keyword matching the input string
+	 */
+	public T_KEYWORD tryToKeyword(String str);
+
+	/** Check if a string is a keyword */
 	public boolean isKeyword(String str);
 
+	/** Check if a string is a keyword primitive data type */
 	public boolean isPrimitive(String str);
 
+	/** Check if a string is a keyword data type */
 	public boolean isType(String str);
 
 	/**

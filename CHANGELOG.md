@@ -4,8 +4,36 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.10.8](N/A) - 2016-09-02
-#### Changed 
+###[0.11.0](N/A) - 2016-09-05
+#### Added
+* __basic C# and Java enum parsing__
+  * Added twg2.ast.interm.field FieldDef and FieldDefResolved to represent enum members (TODO could use some clarification/refactoring)
+  * Added CsEnumMemberExtractor and JavaEnumMemberExtractor
+* Moved duplicate code from class that implemented AstParser into new AstParserReusableBase and AstMemberInClassParserReusable abstract classes (I know the names are a little awkward, suggestions are welcome)
+ * Added C# and Java unit tests for enum parsing
+ * Moved duplicate source code parsing logic for tests into new CodeFileAndAst class
+
+#### Changed
+* moved and renamed several packages and class names
+  * twg2.parser.baseAst and sub-packages split and moved to twg2.parser.codeParser and sub-packages
+    * twg2.parser.baseAst.tools -> twg2.parser.fragment
+    * twg2.parser.baseAst.CompoundBlock -> twg2.parser.codeParser.BlockType
+  * CsClassParser -> CsClassTokenizer
+  * JavaClassParser -> JavaClassTokenizer
+  * twg2.parser.codeParser.parsers -> twg2.parser.tokenizers and *Parser class name prefix changed to *Tokenizer
+* AccessModifierExtractor renamed readAccessModifier() -> parseAccessModifier() and readAccessModifierFromIter() -> readAccessModifiers()
+* CsBlock and JavaBlock renamed fromKeyword() -> parseKeyword() and tryFromKeyword() -> tryParseKeyword()
+* TypeSig renamed nested classes:
+  * Simple -> TypeSigSimple
+  * SimpleBaseImpl -> TypeSigSimpleBase
+  * SimpleGenericImpl -> TypeSigSimpleGeneric
+  * ResolvedBaseImpl -> TypeSigResolvedBase
+  * ResolvedGenericImpl -> TypeSigResolvedGeneric
+
+
+--------
+###[0.10.8](https://github.com/TeamworkGuy2/JParseCode/commit/a89e38e23341bb999ec136fc61212c8271ad4332) - 2016-09-02
+#### Changed
 * Updated dependency, switched jparser-data-type-like (now deprecated/removed) to jparse-primitive which is a separate project containing just the primitive parsing code from jparser-data-type-like
 * Renamed project from JParserTools -> JParseCode
 * Moved plugin-js/ -> plugin/node-js/

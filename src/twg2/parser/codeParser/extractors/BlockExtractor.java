@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.val;
-import twg2.ast.interm.annotation.AnnotationSig;
-import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.stateMachine.AstParser;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.tuple.Tuples;
 
@@ -24,52 +23,66 @@ import twg2.tuple.Tuples;
 public class BlockExtractor {
 
 	/** Parses a simple AST tree using an {@link AstExtractor}
-	 * @param extractor provides parsers and extract method to consume the astTree
+	 * @param extractor provides parsers and extract methods to consume the astTree
 	 * @param astTree the tree of basic {@link CodeFragment} tokens
-	 * @return a list of entries with simple AST tree blocks as keys and {@link ClassAst} as values
+	 * @return a list of entries with simple AST tree blocks as keys and classes ({@link ClassAst} instances) as values containing the annotations, comments, fields, and methods found inside the AST tree
 	 */
 	// TODO this only parses some fields and interface methods
-	public static <_T_BLOCK extends CompoundBlock> List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
+	public static <_T_BLOCK extends BlockType> List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
 			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeFragment> astTree) {
 
 		val nameScope = new ArrayList<String>();
 
-		List<BlockAst<_T_BLOCK>> blockDeclarations = extractor.extractBlocks(nameScope, astTree, null);
+		val blocks = extractor.extractBlocks(nameScope, astTree, null);
 
-		List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> resBlocks = new ArrayList<>();
+		val resBlocks = new ArrayList<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>>();
 
-		AstParser<List<List<String>>> usingStatementExtractor = extractor.createImportStatementParser();
+		val usingStatementExtractor = extractor.createImportStatementParser();
 
 		runParsers(astTree, usingStatementExtractor);
 
-		List<List<String>> usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
+		val usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
 
-		for(val block : blockDeclarations) {
+		for(val block : blocks) {
+			val blockTree = block.getBlockTree();
+			val blockType = block.getBlockType();
+
 			usingStatementExtractor.recycle();
-			runParsers(block.getBlockTree(), usingStatementExtractor);
+			runParsers(blockTree, usingStatementExtractor);
 
-			List<List<String>> tmpUsingStatements = usingStatementExtractor.getParserResult();
+			val tmpUsingStatements = usingStatementExtractor.getParserResult();
 			usingStatements.addAll(tmpUsingStatements);
 
+			val annotationExtractor = extractor.createAnnotationParser(block);
+			val commentExtractor = extractor.createCommentParser(block);
+			val fieldExtractor = extractor.createFieldParser(block, annotationExtractor, commentExtractor);
+			val methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
+			AstParser<List<FieldDef>> enumMemberExtractor = null;
+
+			if(blockType.isEnum()) {
+				enumMemberExtractor = extractor.createEnumParser(block, commentExtractor);
+				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor, enumMemberExtractor);
+			}
+			else {
+				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor);
+			}
+
 			List<FieldSig> fields = null;
+			List<FieldDef> enumMembers = null;
 			List<MethodSig.SimpleImpl> intfMethods = null;
 
-			AstParser<List<AnnotationSig>> annotationExtractor = extractor.createAnnotationParser(block);
-			AstParser<List<String>> commentExtractor = extractor.createCommentParser(block);
-			AstParser<List<FieldSig>> fieldExtractor = extractor.createFieldParser(block, annotationExtractor, commentExtractor);
-			AstParser<List<MethodSig.SimpleImpl>> methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
-
-			runParsers(block.getBlockTree(), annotationExtractor, commentExtractor, fieldExtractor, methodExtractor);
-
-			if(block.getBlockType().canContainFields()) {
+			if(blockType.isEnum()) {
+				enumMembers = enumMemberExtractor.getParserResult();
+			}
+			if(blockType.canContainFields()) {
 				fields = fieldExtractor.getParserResult();
 			}
-			if(block.getBlockType().canContainMethods()) {
+			if(blockType.canContainMethods()) {
 				intfMethods = methodExtractor.getParserResult();
 			}
 
-			if(block.getBlockType().canContainFields() && block.getBlockType().canContainMethods()) {
-				resBlocks.add(Tuples.of(block.getBlockTree(), new ClassAst.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, block.getBlockType())));
+			if(blockType.canContainFields() && blockType.canContainMethods()) {
+				resBlocks.add(Tuples.of(blockTree, new ClassAst.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, enumMembers, blockType)));
 			}
 		}
 
@@ -85,7 +98,7 @@ public class BlockExtractor {
 		for(int i = 0, size = children.size(); i < size; i++) {
 			val child = children.get(i);
 
-			// loop over each parser and allow it to consume the token
+			// loop over each parser and allow it to consume the block
 			for(int ii = 0; ii < parserCount; ii++) {
 				val parser = parsers[ii];
 				parser.acceptNext(child);

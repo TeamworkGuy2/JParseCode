@@ -1,0 +1,80 @@
+package twg2.parser.test.utils;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.val;
+import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.BlockType;
+import twg2.parser.codeParser.CodeFileParsed;
+import twg2.parser.codeParser.CodeFileSrc;
+import twg2.parser.language.CodeLanguage;
+import twg2.parser.main.ParseCodeFile;
+import twg2.parser.output.WriteSettings;
+import twg2.text.stringUtils.StringJoin;
+
+/**
+ * @author TeamworkGuy2
+ * @since 2016-09-05
+ */
+public class CodeFileAndAst<T_BLOCK extends BlockType> {
+	public final CodeLanguage lang;
+	public final String fileName;
+	public final String fullClassName;
+	public final String srcCode;
+	public final CodeFileSrc<CodeLanguage> ast;
+	public final List<CodeFileParsed.Simple<String, T_BLOCK>> parsedBlocks;
+
+
+	private CodeFileAndAst(CodeLanguage lang, String fileName, String fullClassName, String srcCode,
+			CodeFileSrc<CodeLanguage> ast, List<CodeFileParsed.Simple<String, T_BLOCK>> parsedBlocks) {
+		super();
+		this.fileName = fileName;
+		this.lang = lang;
+		this.fullClassName = fullClassName;
+		this.srcCode = srcCode;
+		this.ast = ast;
+		this.parsedBlocks = parsedBlocks;
+	}
+
+
+
+
+
+	public static <_T_BLOCK extends BlockType> CodeFileAndAst<_T_BLOCK> parse(CodeLanguage lang, String fileName, String fullClassName, boolean print, Iterable<String> srcCodeLines) {
+		val srcCode = StringJoin.join(srcCodeLines, "\n");
+		val ast = ParseCodeFile.parseCode(fileName, lang, srcCode);
+		val parsedBlocks = new ArrayList<CodeFileParsed.Simple<String, _T_BLOCK>>();
+
+		if(print) {
+			System.out.println(srcCode);
+		}
+
+		@SuppressWarnings("unchecked")
+		val blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.getDoc());
+		for(val block : blockDeclarations) {
+			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+			val fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
+			parsedBlocks.add(fileParsed);
+
+			try {
+				val ws = new WriteSettings(true, true, true, true);
+				val sb = new StringBuilder();
+				fileParsed.getParsedClass().toJson(sb, ws);
+
+				if(print) {
+					System.out.println(sb.toString());
+				}
+			} catch(IOException ioe) {
+				throw new UncheckedIOException(ioe);
+			}
+		}
+
+		val inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, ast, parsedBlocks);
+
+		return inst;
+	}
+
+}

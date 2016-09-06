@@ -5,14 +5,14 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.tools.AstFragType;
 import twg2.parser.codeParser.extractors.AnnotationExtractor;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
+public class CsAnnotationExtractor extends AstParserReusableBase<CsAnnotationExtractor.State, List<AnnotationSig>> {
 
 	static enum State {
 		INIT,
@@ -22,13 +22,10 @@ public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 
 
 	List<AnnotationSig> annotations = new ArrayList<>();
-	State state = State.INIT;
-	String name = "C# annotation";
 
 
-	@Override
-	public String name() {
-		return name;
+	public CsAnnotationExtractor() {
+		super("C# annotation", State.COMPLETE, State.FAILED);
 	}
 
 
@@ -38,8 +35,9 @@ public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 
 		if(state != State.FAILED) {
 			val childs = tokenNode.getChildren();
-			if(AstFragType.isBlock(tokenNode.getData(), "[") && childs != null && childs.size() > 0 && AstFragType.isIdentifier(childs.get(0).getData())) {
-				val annot = AnnotationExtractor.parseAnnotationBlock(lang, childs.get(0).getData().getFragmentType(), childs.get(0).getData().getText(), (childs.size() > 1 ? childs.get(1) : null));
+			CodeFragment annotTypeFrag = null;
+			if(AstFragType.isBlock(tokenNode.getData(), "[") && childs != null && childs.size() > 0 && AstFragType.isIdentifier(annotTypeFrag = childs.get(0).getData())) {
+				val annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getFragmentType(), annotTypeFrag.getText(), (childs.size() > 1 ? childs.get(1) : null));
 				annotations.add(annot);
 				state = State.COMPLETE;
 				return true;
@@ -54,24 +52,6 @@ public class CsAnnotationExtractor implements AstParser<List<AnnotationSig>> {
 	@Override
 	public List<AnnotationSig> getParserResult() {
 		return annotations;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 

@@ -30,11 +30,11 @@ import twg2.io.write.JsonWrite;
 import twg2.logging.Logging;
 import twg2.logging.LoggingImpl;
 import twg2.logging.LoggingPrefixFormat;
-import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
@@ -136,21 +136,21 @@ public class ParserWorkflow {
 
 	public static class ParsedResult {
 		/** The set of all parsed files */
-		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> compilationUnits; 
+		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType> compilationUnits;
 
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public ParsedResult(ProjectClassSet.Simple<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock> compilationUnits) {
-			this.compilationUnits = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>)(ProjectClassSet)compilationUnits;
+		public ParsedResult(ProjectClassSet.Simple<? extends CodeFileSrc<? extends CodeLanguage>, ? extends BlockType> compilationUnits) {
+			this.compilationUnits = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType>)(ProjectClassSet)compilationUnits;
 		}
 
 
 		public void log(Logging log, Level level, boolean includeHeader) {
 			if(Logging.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.SimpleImpl<CompoundBlock>>>();
+				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.SimpleImpl<BlockType>>>();
 				for(val file : files) {
-					List<ClassAst.SimpleImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
+					List<ClassAst.SimpleImpl<BlockType>> fileSet = fileSets.get(file.getId());
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
 						fileSets.put(file.getId(), fileSet);
@@ -177,7 +177,7 @@ public class ParserWorkflow {
 
 
 		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
-			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>();
+			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType>();
 
 			for(val filesWithSrc : files) {
 				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader);
@@ -193,23 +193,23 @@ public class ParserWorkflow {
 
 	public static class ResolvedResult {
 		/** The set of all resolved files (resolution converts simple type names to fully qualifying names for method parameters, fields, extended/implemented classes, etc.) */
-		ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock> compilationUnits;
+		ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, BlockType> compilationUnits;
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public ResolvedResult(ProjectClassSet.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock> compilationUnits,
+		public ResolvedResult(ProjectClassSet.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends BlockType> compilationUnits,
 				HashSet<List<String>> missingNamespaces) {
-			this.compilationUnits = (ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>)(ProjectClassSet)compilationUnits;
+			this.compilationUnits = (ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, BlockType>)(ProjectClassSet)compilationUnits;
 		}
 
 
 		public void log(Logging log, Level level, boolean includeHeader) {
 			if(Logging.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.ResolvedImpl<CompoundBlock>>>();
+				val fileSets = new HashMap<CodeFileSrc<CodeLanguage>, List<ClassAst.ResolvedImpl<BlockType>>>();
 				for(val file : files) {
-					List<ClassAst.ResolvedImpl<CompoundBlock>> fileSet = fileSets.get(file.getId());
+					List<ClassAst.ResolvedImpl<BlockType>> fileSet = fileSets.get(file.getId());
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
 						fileSets.put(file.getId(), fileSet);
@@ -242,7 +242,7 @@ public class ParserWorkflow {
 		}
 
 
-		public static ResolvedResult resolve(ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> simpleFileSet, HashSet<List<String>> missingNamespaces) throws IOException {
+		public static ResolvedResult resolve(ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType> simpleFileSet, HashSet<List<String>> missingNamespaces) throws IOException {
 			// TODO shouldn't be using CsBlock, should use language block type
 			val resFileSet = ProjectClassSet.resolveClasses(simpleFileSet, CsBlock.CLASS, missingNamespaces);
 
@@ -256,12 +256,12 @@ public class ParserWorkflow {
 
 	public static class FilterResult {
 		/** List of names associated with parser results */
-		Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> filterSets;
+		Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>>> filterSets;
 
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public FilterResult(Map<? extends DestinationInfo, ? extends List<? extends CodeFileParsed.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends CompoundBlock>>> filterSets) {
-			this.filterSets = (Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>>)(Map)filterSets;
+		public FilterResult(Map<? extends DestinationInfo, ? extends List<? extends CodeFileParsed.Resolved<? extends CodeFileSrc<? extends CodeLanguage>, ? extends BlockType>>> filterSets) {
+			this.filterSets = (Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>>>)(Map)filterSets;
 		}
 
 
@@ -286,10 +286,10 @@ public class ParserWorkflow {
 		}
 
 
-		public static FilterResult filter(ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock> resFileSet, List<DestinationInfo> destinations) throws IOException {
-			Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> resSets = new HashMap<>();
+		public static FilterResult filter(ProjectClassSet.Resolved<CodeFileSrc<CodeLanguage>, BlockType> resFileSet, List<DestinationInfo> destinations) throws IOException {
+			Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>>> resSets = new HashMap<>();
 			for(val dstInfo : destinations) {
-				List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>> matchingNamespaces = new ArrayList<>();
+				List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>> matchingNamespaces = new ArrayList<>();
 				for(val namespace : dstInfo.namespaces) {
 					val fileSet = resFileSet.getCompilationUnitsStartWith(StringSplit.split(namespace, '.'));
 					matchingNamespaces.addAll(fileSet);
@@ -307,7 +307,7 @@ public class ParserWorkflow {
 
 	public static class WriteResult {
 
-		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, CompoundBlock>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
+		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
 			val writeSettings = new WriteSettings(true, false, false, true);
 			// associates file paths with how many times each has been written to (so we can append on subsequent writes)
 			val definitionsByOutputFile = new HashMap<String, List<char[]>>();

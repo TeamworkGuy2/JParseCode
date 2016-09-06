@@ -8,21 +8,22 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.CompoundBlock;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.baseAst.tools.NameUtil;
-import twg2.parser.codeParser.Consume;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
+import twg2.parser.stateMachine.AstMemberInClassParserReusable;
+import twg2.parser.stateMachine.AstParser;
+import twg2.parser.stateMachine.Consume;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class MethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
+public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtractor.State, List<MethodSig.SimpleImpl>> {
 
 	static enum State {
 		INIT,
@@ -36,23 +37,13 @@ public class MethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
 
 
 	KeywordUtil<? extends AccessModifier> keywordUtil;
-	BlockAst<? extends CompoundBlock> parentBlock;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
-	AstParser<TypeSig.Simple> typeParser;
+	AstParser<TypeSig.TypeSigSimple> typeParser;
 	List<AccessModifier> accessModifiers = new ArrayList<>();
 	String methodName;
-	TypeSig.Simple returnTypeSig;
+	TypeSig.TypeSigSimple returnTypeSig;
 	List<MethodSig.SimpleImpl> methods = new ArrayList<>();
-	State state = State.INIT;
-	String langName;
-	String name;
-
-
-	@Override
-	public String name() {
-		return name;
-	}
 
 
 	/**
@@ -60,16 +51,15 @@ public class MethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
 	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
 	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
 	 */
-	public MethodExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends CompoundBlock> parentBlock,
-			AstParser<TypeSig.Simple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
-		this.langName = langName;
-		this.name = langName + " method signature";
-		this.parentBlock = parentBlock;
+	public MethodExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock,
+			AstParser<TypeSig.TypeSigSimple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
+		super(langName, "method signature", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
 		this.methods = new ArrayList<>();
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
 		this.commentParser = commentParser;
+		this.state = State.INIT;
 	}
 
 
@@ -131,7 +121,7 @@ public class MethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
 
 
 	private Consume findingAccessModifiers(SimpleTree<CodeFragment> tokenNode) {
-		AccessModifier accessMod = AccessModifierExtractor.readAccessModifier(keywordUtil, tokenNode);
+		val accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
 			return Consume.ACCEPTED;
@@ -196,24 +186,6 @@ public class MethodExtractor implements AstParser<List<MethodSig.SimpleImpl>> {
 	@Override
 	public List<MethodSig.SimpleImpl> getParserResult() {
 		return methods;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 

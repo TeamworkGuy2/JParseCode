@@ -4,9 +4,9 @@ import static twg2.parser.test.ParserTestUtils.parseTestSameParsed;
 
 import org.junit.Test;
 
-import twg2.parser.codeParser.parsers.GenericTypeParser;
-import twg2.parser.codeParser.parsers.IdentifierParser;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.tokenizers.GenericTypeTokenizer;
+import twg2.parser.tokenizers.IdentifierTokenizer;
 
 /**
  * @author TeamworkGuy2
@@ -17,7 +17,7 @@ public class TypeParserTest {
 	@Test
 	public void identifierWithGenericTypeParse() {
 		String name = "IdentifierWithGenericTypeParse";
-		CharParser cond = GenericTypeParser.createGenericTypeParser(3, IdentifierParser::createCompoundIdentifierParser);
+		CharParser cond = GenericTypeTokenizer.createGenericTypeTokenizer(3, IdentifierTokenizer::createCompoundIdentifierTokenizer);
 
 		parseTestSameParsed(false, false, name, cond, "thing<");
 		parseTestSameParsed(false, true, name, cond, "thing<,>");
@@ -36,7 +36,7 @@ public class TypeParserTest {
 	@Test
 	public void identifierWithArrayDimensions() {
 		String name = "IdentifierWithArrayDimensions";
-		CharParser cond = GenericTypeParser.createGenericTypeParser(3, IdentifierParser::createCompoundIdentifierParser);
+		CharParser cond = GenericTypeTokenizer.createGenericTypeTokenizer(3, IdentifierTokenizer::createCompoundIdentifierTokenizer);
 
 		parseTestSameParsed(false, false, name, cond, "thing<abc>[");
 		parseTestSameParsed(false, true, name, cond, "thing<abc>[a");

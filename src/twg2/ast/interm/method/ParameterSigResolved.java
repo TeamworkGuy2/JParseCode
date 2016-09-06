@@ -19,7 +19,7 @@ import twg2.text.stringEscape.StringEscapeJson;
 @AllArgsConstructor
 public class ParameterSigResolved implements JsonWritableSig {
 	private @Getter String name;
-	private @Getter TypeSig.Resolved type;
+	private @Getter TypeSig.TypeSigResolved type;
 	private @Getter boolean optional;
 	private @Getter String defaultValue;
 

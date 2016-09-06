@@ -3,8 +3,8 @@ package twg2.parser.codeParser.tools;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragmentType;
 
 /**
  * @author TeamworkGuy2

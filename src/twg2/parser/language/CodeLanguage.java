@@ -3,10 +3,10 @@ package twg2.parser.language;
 import java.util.List;
 import java.util.function.Function;
 
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.AstUtil;
-import twg2.parser.baseAst.CompoundBlock;
+import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.AstUtil;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.OperatorUtil;
@@ -30,6 +30,6 @@ public interface CodeLanguage {
 
 	public Function<ParseInput, ? extends CodeFileSrc<? extends CodeLanguage>> getParser();
 
-	public AstExtractor<? extends CompoundBlock> getExtractor();
+	public AstExtractor<? extends BlockType> getExtractor();
 
 }

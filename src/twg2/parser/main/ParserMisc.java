@@ -13,8 +13,8 @@ import twg2.dataUtil.dataUtils.ParallelWork;
 import twg2.dataUtil.dataUtils.ParallelWork.WorkBlockPolicy;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
-import twg2.parser.baseAst.CompoundBlock;
 import twg2.parser.codeParser.AstExtractor;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.CodeFileParsed;
 import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.documentParser.DocumentParser;
@@ -49,7 +49,7 @@ public class ParserMisc {
 
 		try {
 			@SuppressWarnings("unchecked")
-			val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+			val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 			if(printBlockSignatures) {
 				System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
@@ -77,13 +77,13 @@ public class ParserMisc {
 	}
 
 
-	public static <T_BLOCK extends CompoundBlock> void parseFileSet(List<Path> files, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
+	public static <T_BLOCK extends BlockType> void parseFileSet(List<Path> files, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
 		@SuppressWarnings("unchecked")
-		ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock> dstFileSetCast = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>)dstFileSet;
+		val dstFileSetCast = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType>)dstFileSet;
 
 		if(executor != null) {
-			List<CodeFileParsed.Simple<CodeFileSrc<CodeLanguage>, CompoundBlock>> dst = Collections.synchronizedList(new ArrayList<>());
-			HashSet<Path> processedFiles = new HashSet<>();
+			val dst = Collections.synchronizedList(new ArrayList<CodeFileParsed.Simple<CodeFileSrc<CodeLanguage>, BlockType>>());
+			val processedFiles = new HashSet<Path>();
 
 			// TODO should add a consumeBlocks or similar function, since we don't have a result to return
 			ParallelWork.transformBlocks(WorkBlockPolicy.newFixedBlockSize(40, executor), files, (f) -> {
@@ -97,7 +97,7 @@ public class ParserMisc {
 					CodeFileSrc<CodeLanguage> parsedFile = ParseCodeFile.parseFile(f.toFile(), fileReader);
 
 					@SuppressWarnings("unchecked")
-					val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+					val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 					for(val block : blockDeclarations) {
 						val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
@@ -122,7 +122,7 @@ public class ParserMisc {
 
 				try {
 					@SuppressWarnings("unchecked")
-					val blockDeclarations = ((AstExtractor<CompoundBlock>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+					val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 					for(val block : blockDeclarations) {
 						val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());

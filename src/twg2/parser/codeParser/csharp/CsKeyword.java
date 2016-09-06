@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
+import twg2.parser.fragment.CodeFragmentType;
 
 public enum CsKeyword implements AccessModifier {
 	// NOTE: these must be in alphabetical order for Inst array binary searches to work
@@ -34,7 +34,7 @@ public enum CsKeyword implements AccessModifier {
 	DO("do"),
 	DOUBLE("double", Flag.IS_TYPE),
 	ELSE("else"),
-	ENUM("enum"),
+	ENUM("enum", Flag.BLOCK_MOD),
 	EVENT("event"),
 	EXPLICIT("explicit"),
 	EXTERN("extern", Flag.METHOD_MOD),
@@ -188,6 +188,7 @@ public enum CsKeyword implements AccessModifier {
 		}
 
 
+		@Override
 		public CsKeyword toKeyword(String str) {
 			CsKeyword resType = tryToKeyword(str);
 			if(resType == null) {
@@ -197,6 +198,7 @@ public enum CsKeyword implements AccessModifier {
 		}
 
 
+		@Override
 		public CsKeyword tryToKeyword(String str) {
 			int idx = Arrays.binarySearch(keywords, str);
 			return idx > -1 ? values[idx] : null;

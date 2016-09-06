@@ -9,8 +9,8 @@ import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.write.JsonWrite;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
@@ -22,12 +22,13 @@ import twg2.text.stringEscape.StringEscapeJson;
 @Immutable
 @AllArgsConstructor
 public class FieldSig implements JsonWritableSig {
-	private final @Getter String name;
-	private final @Getter List<String> fullName;
-	private final @Getter TypeSig.Simple fieldType;
-	private final @Getter List<AccessModifier> accessModifiers;
-	private final @Getter List<AnnotationSig> annotations;
-	private final @Getter List<String> comments;
+	// package-private
+	final @Getter String name;
+	final @Getter List<String> fullName;
+	final @Getter TypeSig.TypeSigSimple fieldType;
+	final @Getter List<AccessModifier> accessModifiers;
+	final @Getter List<AnnotationSig> annotations;
+	final @Getter List<String> comments;
 
 
 	@Override

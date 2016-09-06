@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.val;
 import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.documentParser.DocumentParser;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextTransformer;

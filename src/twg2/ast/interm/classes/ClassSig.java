@@ -8,8 +8,8 @@ import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.write.JsonWrite;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 
@@ -35,7 +35,7 @@ public interface ClassSig extends JsonWritableSig {
 	public static class SimpleImpl implements ClassSig {
 		private final @Getter List<String> fullName;
 		/** This type's generic type parameters, if any */
-		private final @Getter List<TypeSig.Simple> params;
+		private final @Getter List<TypeSig.TypeSigSimple> params;
 		/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 		private final @Getter AccessModifier accessModifier;
 		private final @Getter String declarationType;
@@ -101,12 +101,12 @@ public interface ClassSig extends JsonWritableSig {
 	public static class ResolvedImpl implements ClassSig {
 		private final @Getter List<String> fullName;
 		/** This type's generic type parameters, if any */
-		private final @Getter List<TypeSig.Resolved> params;
+		private final @Getter List<TypeSig.TypeSigResolved> params;
 		private final @Getter AccessModifier accessModifier;
 		/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 		private final @Getter String declarationType;
-		private final @Getter TypeSig.Resolved extendClass;
-		private final @Getter List<TypeSig.Resolved> implementInterfaces;
+		private final @Getter TypeSig.TypeSigResolved extendClass;
+		private final @Getter List<TypeSig.TypeSigResolved> implementInterfaces;
 
 
 		@Override

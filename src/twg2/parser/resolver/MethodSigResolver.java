@@ -9,9 +9,8 @@ import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSigResolved;
-import twg2.ast.interm.type.TypeSig;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.baseAst.CompoundBlock;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.project.ProjectClassSet;
@@ -25,7 +24,7 @@ public class MethodSigResolver {
 	/** Resolves simple name fields from {@link twg2.ast.interm.method.MethodSig.SimpleImpl} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
 	public static <T_METHOD extends MethodSig.SimpleImpl> MethodSig.ResolvedImpl resolveFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_METHOD intermMethod,
-			ClassAst.SimpleImpl<? extends CompoundBlock> namespaceClass, ProjectClassSet.Simple<?, ? extends CompoundBlock> projFiles, Collection<List<String>> missingNamespacesDst) {
+			ClassAst.SimpleImpl<? extends BlockType> namespaceClass, ProjectClassSet.Simple<?, ? extends BlockType> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<ParameterSigResolved> resolvedParamSigs = new ArrayList<>();
@@ -33,14 +32,14 @@ public class MethodSigResolver {
 		// resolve each parameter's type
 		val paramSigs = intermMethod.getParamSigs();
 		for(val paramSig : paramSigs) {
-			TypeSig.Simple genericParamType = DataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName(), keywordUtil);
-			TypeSig.Resolved resolvedParamType = TypeSigResolver.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
+			val genericParamType = DataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName(), keywordUtil);
+			val resolvedParamType = TypeSigResolver.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
 
 			val newParamSig = new ParameterSigResolved(paramSig.getName(), resolvedParamType, paramSig.isOptional(), paramSig.getDefaultValue());
 			resolvedParamSigs.add(newParamSig);
 		}
 
-		TypeSig.Resolved resolvedReturnType = TypeSigResolver.resolveFrom(intermMethod.getReturnType(), namespaceClass, projFiles, missingNamespacesDst);
+		val resolvedReturnType = TypeSigResolver.resolveFrom(intermMethod.getReturnType(), namespaceClass, projFiles, missingNamespacesDst);
 
 		return new MethodSig.ResolvedImpl(intermMethod.getName(), intermMethod.getFullName(), resolvedParamSigs, resolvedReturnType, intermMethod.getAccessModifiers(), intermMethod.getAnnotations(), intermMethod.getComments());
 	}

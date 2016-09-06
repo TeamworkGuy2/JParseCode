@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
-import twg2.parser.baseAst.AccessModifier;
-import twg2.parser.codeParser.CodeFragmentType;
+import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
+import twg2.parser.fragment.CodeFragmentType;
 
 /**
  * @author TeamworkGuy2
@@ -33,7 +33,7 @@ public enum JavaKeyword implements AccessModifier {
 	DO("do"),
 	DOUBLE("double", Flag.IS_TYPE),
 	ELSE("else"),
-	ENUM("enum"),
+	ENUM("enum", Flag.BLOCK_MOD),
 	EXTENDS("extends"),
 	FINAL("final", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	FINALLY("finally"),
@@ -157,6 +157,7 @@ public enum JavaKeyword implements AccessModifier {
 		}
 
 
+		@Override
 		public JavaKeyword toKeyword(String str) {
 			JavaKeyword resType = tryToKeyword(str);
 			if(resType == null) {
@@ -166,6 +167,7 @@ public enum JavaKeyword implements AccessModifier {
 		}
 
 
+		@Override
 		public JavaKeyword tryToKeyword(String str) {
 			int idx = Arrays.binarySearch(keywords, str);
 			return idx > -1 ? values[idx] : null;

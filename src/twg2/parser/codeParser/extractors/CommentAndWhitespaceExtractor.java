@@ -8,16 +8,16 @@ import java.util.List;
 import lombok.val;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.CodeFragmentType;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.codeParser.codeStats.ParsedFileStats;
-import twg2.parser.codeParser.parsers.CodeStringParser;
-import twg2.parser.codeParser.parsers.CommentParser;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
+import twg2.parser.tokenizers.CodeStringTokenizer;
+import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.text.stringUtils.StringCheck;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
@@ -38,8 +38,8 @@ public class CommentAndWhitespaceExtractor {
 
 
 	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
-		CharParserFactory stringParser = CodeStringParser.createStringParserForJavascript();
-		CharParserFactory commentParser = CommentParser.createCommentParser(style);
+		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
+		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
 		ParserBuilder parser = new ParserBuilder()
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)

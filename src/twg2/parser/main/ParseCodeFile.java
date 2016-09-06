@@ -40,11 +40,8 @@ public class ParseCodeFile {
 
 
 	public static CodeFileSrc<CodeLanguage> parseFile(File file, FileReadUtil fileReader) throws IOException {
-		String srcStr;
-		// TODO for multi-threaded parsing
-		synchronized (ParseCodeFile.class) {
-			srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
-		}
+		String srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
+
 		String fileName = file.getName();
 		String fileExt = StringSplit.lastMatch(fileName, ".");
 		val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);

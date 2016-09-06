@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.val;
-import twg2.parser.baseAst.AstParser;
-import twg2.parser.baseAst.tools.AstFragType;
-import twg2.parser.baseAst.tools.NameUtil;
+import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.AstFragType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class CsUsingStatementExtractor implements AstParser<List<List<String>>> {
+public class CsUsingStatementExtractor extends AstParserReusableBase<CsUsingStatementExtractor.State, List<List<String>>> {
 
 	static enum State {
 		INIT,
@@ -28,13 +28,10 @@ public class CsUsingStatementExtractor implements AstParser<List<List<String>>> 
 	private static final CodeLanguageOptions.CSharp lang = CodeLanguageOptions.C_SHARP;
 
 	List<List<String>> usingStatements = new ArrayList<>();
-	State state = State.INIT;
-	String name = "C# import statement";
 
 
-	@Override
-	public String name() {
-		return name;
+	public CsUsingStatementExtractor() {
+		super("C# import statement", State.COMPLETE, State.FAILED);
 	}
 
 
@@ -63,24 +60,6 @@ public class CsUsingStatementExtractor implements AstParser<List<List<String>>> 
 	@Override
 	public List<List<String>> getParserResult() {
 		return usingStatements;
-	}
-
-
-	@Override
-	public boolean isComplete() {
-		return state == State.COMPLETE;
-	}
-
-
-	@Override
-	public boolean isFailed() {
-		return state == State.FAILED;
-	}
-
-
-	@Override
-	public boolean canRecycle() {
-		return true;
 	}
 
 
