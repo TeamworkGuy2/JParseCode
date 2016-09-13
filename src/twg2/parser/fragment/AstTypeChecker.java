@@ -1,6 +1,5 @@
 package twg2.parser.fragment;
 
-import twg2.parser.documentParser.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

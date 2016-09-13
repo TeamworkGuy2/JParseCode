@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.parser.stateMachine.Consume;
@@ -96,6 +96,8 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 
 		// skip trailing asterisk(s) and slash
 		int end = len;
+		if(end > 1 & text.charAt(end - 2) == '\r') { end -= 2; }
+		else if(text.charAt(end - 1) == '\r') { end -= 1; }
 		if(this.multiLine) {
 			if(text.charAt(end - 1) == '/' && end > 1 && text.charAt(end - 2) == '*') { end -= 2; }
 			while(end > 0 && text.charAt(end - 1) == '*') { end--; }

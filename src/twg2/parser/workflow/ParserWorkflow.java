@@ -1,4 +1,4 @@
-package twg2.parser.main;
+package twg2.parser.workflow;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -31,11 +31,11 @@ import twg2.logging.Logging;
 import twg2.logging.LoggingImpl;
 import twg2.logging.LoggingPrefixFormat;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.CodeFileParsed;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
+import twg2.parser.codeParser.tools.performance.PerformanceTrackers;
 import twg2.parser.language.CodeLanguage;
+import twg2.parser.main.ParserMisc;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
 import twg2.text.stringUtils.StringSplit;
@@ -60,7 +60,7 @@ public class ParserWorkflow {
 	}
 
 
-	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
+	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
@@ -72,7 +72,7 @@ public class ParserWorkflow {
 		// TODO debugging
 		long start = System.nanoTime();
 
-		val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader);
+		val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
 
 		// TODO debugging
 		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
@@ -176,11 +176,12 @@ public class ParserWorkflow {
 		}
 
 
-		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor, FileReadUtil fileReader) throws IOException, FileFormatException {
+		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor,
+				FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 			val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType>();
 
 			for(val filesWithSrc : files) {
-				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader);
+				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader, perfTracking);
 			}
 
 			return new ParsedResult(fileSet);

@@ -4,12 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import lombok.AllArgsConstructor;
 import twg2.collections.dataStructures.PairList;
+import twg2.parser.codeParser.tools.performance.TokenizeStepDetails;
+import twg2.parser.codeParser.tools.performance.TokenizeStepDetails.ParserAction;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textParser.TextParser;
-import twg2.tuple.Tuples;
 
 /** Build a token tree from text characters using multiple parser factories.<br>
  * Given multiple char parser factories, this maintains a list of in progress parsers and accepts characters if they are accepted by any in-progress parsers or
@@ -20,34 +22,55 @@ import twg2.tuple.Tuples;
  * @since 2015-5-29
  */
 public class CharMultiConditionParser {
-	private PairList<CharParserFactory, TextConsumer> conditions = new PairList<>();
-	private PairList<CharParserFactory, Entry<CharParser, TextConsumer>> curMatchers = new PairList<>();
 
 
-	public CharMultiConditionParser() {
-		this.reset();
+	/**
+	 * @author TeamworkGuy2
+	 * @since 2016-09-08
+	 */
+	@AllArgsConstructor
+	static class MatcherState {
+		int startOff;
+		CharParser parser;
+		TextConsumer consumer;
+	}
+
+
+
+
+	private PairList<CharParserFactory, TextConsumer> conditions;
+	private PairList<CharParserFactory, MatcherState> curMatchers;
+	private TokenizeStepDetails parserDetails;
+
+
+	/**
+	 * @param parserDetails optional performance tracker, can be null
+	 */
+	public CharMultiConditionParser(TokenizeStepDetails parserDetails) {
+		this.conditions = new PairList<>();
+		this.curMatchers = new PairList<>();
+		this.parserDetails = parserDetails;
 	}
 
 
 	@SafeVarargs
-	public CharMultiConditionParser(Entry<CharParserFactory, TextConsumer>... conditions) {
-		for(Entry<CharParserFactory, TextConsumer> cond : conditions) {
-			this.conditions.add(cond);
-		}
-		this.reset();
+	public CharMultiConditionParser(TokenizeStepDetails parserDetails, Entry<CharParserFactory, TextConsumer>... conditions) {
+		this.conditions = new PairList<>(conditions);
+		this.curMatchers = new PairList<>();
+		this.parserDetails = parserDetails;
 	}
 
 
-	public CharMultiConditionParser(Collection<? extends Entry<CharParserFactory, TextConsumer>> conditions) {
-		for(Entry<CharParserFactory, TextConsumer> cond : conditions) {
-			this.conditions.add(cond);
-		}
-		this.reset();
+	public CharMultiConditionParser(TokenizeStepDetails parserDetails, Collection<? extends Entry<CharParserFactory, TextConsumer>> conditions) {
+		this.conditions = new PairList<>(conditions);
+		this.curMatchers = new PairList<>();
+		this.parserDetails = parserDetails;
 	}
 
 
 	public boolean acceptNext(char ch, TextParser buf) {
 		// add conditions that match
+		int addedCondCount = 0;
 		for(int i = 0, size = conditions.size(); i < size; i++) {
 			CharParserFactory cond = conditions.getKey(i);
 
@@ -55,20 +78,28 @@ public class CharMultiConditionParser {
 			if(cond.isMatch(ch, buf)) {
 				if(cond.isCompound() || !curMatchers.containsKey(cond)) {
 					CharParser parserCond = cond.createParser();
-					curMatchers.add(cond, Tuples.of(parserCond, conditions.getValue(i)));
+					curMatchers.add(cond, new MatcherState(buf.getPosition(), parserCond, conditions.getValue(i)));
+					addedCondCount++;
 				}
 			}
 		}
 
+		if(parserDetails != null) {
+			parserDetails.log(ParserAction.PARSER_CONDITIONS_ADDED, addedCondCount);
+		}
+
+		int acceptedFragCount = 0;
+		int acceptedCount = 0;
 		// for each matching parser, check if it accepts the next token, if so, keep it,
 		// else remove it from the current set of matching parsers
 		// IMPORTANT: we loop backward so that more recently started parser can consume input first (this ensures that things like matching quote or parentheses are matched in order)
 		for(int i = curMatchers.size() - 1; i > -1; i--) {
 			CharParserFactory preCond = curMatchers.getKey(i);
-			Entry<CharParser, TextConsumer> condEntry = curMatchers.getValue(i);
-			CharParser cond = condEntry.getKey();
+			MatcherState condEntry = curMatchers.getValue(i);
+			CharParser cond = condEntry.parser;
 
 			cond.acceptNext(ch, buf);
+			acceptedCount++;
 
 			boolean complete = cond.isComplete();
 			boolean failed = cond.isFailed();
@@ -95,16 +126,17 @@ public class CharMultiConditionParser {
 						}
 
 						int off = frag.getOffsetStart();
-						condEntry.getValue().accept(text, off, frag.getOffsetEnd() - off, frag.getLineStart(), frag.getColumnStart(), frag.getLineEnd(), frag.getColumnEnd()); // +1 because the current character was the last match
+						condEntry.consumer.accept(text, off, frag.getOffsetEnd() - off, frag.getLineStart(), frag.getColumnStart(), frag.getLineEnd(), frag.getColumnEnd()); // +1 because the current character was the last match
+						acceptedFragCount++;
 
-						// TODO if all remaining matchers on the curMatches stack are compound, allow them to accept this char (which already completed a token),
+						// TODO if all remaining matchers on the curMatchers stack are compound, allow them to accept this char (which already completed a token),
 						// but throw an error if any of these matchers use the char to complete or fail),
 						// this fixes an issue where the first char in a compound block (e.g. '-' in "(-1)") is a token and since its parser completes in one char, the compound parser's
 						// closing ")" parser never gets called and never sets the start position of its 'coords'
 						if(frag.getOffsetEnd() - frag.getOffsetStart() == 1) {
 							for(int k = i - 1; k > -1; k--) {
-								Entry<CharParser, TextConsumer> condEntryTmp = curMatchers.getValue(k);
-								CharParser condTmp = condEntryTmp.getKey();
+								MatcherState condEntryTmp = curMatchers.getValue(k);
+								CharParser condTmp = condEntryTmp.parser;
 
 								condTmp.acceptNext(ch, buf);
 
@@ -126,12 +158,13 @@ public class CharMultiConditionParser {
 				curMatchers.removeIndex(i);
 			}
 		}
+
+		if(parserDetails != null) {
+			parserDetails.log(ParserAction.CHAR_CHECKS, acceptedCount);
+			parserDetails.log(ParserAction.TEXT_FRAGMENTS_CONSUMED, acceptedFragCount);
+		}
+
 		return false;
-	}
-
-
-	private void reset() {
-		this.curMatchers.clear();
 	}
 
 

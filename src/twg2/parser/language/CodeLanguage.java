@@ -7,10 +7,11 @@ import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.Operator;
 import twg2.parser.codeParser.OperatorUtil;
-import twg2.parser.codeParser.ParseInput;
+import twg2.parser.workflow.CodeFileSrc;
+import twg2.parser.workflow.ParseInput;
 
 /**
  * @author TeamworkGuy2
@@ -18,16 +19,19 @@ import twg2.parser.codeParser.ParseInput;
  */
 public interface CodeLanguage {
 
-	public AstUtil getAstUtil();
+	public AstUtil<? extends BlockType, ?> getAstUtil();
 
 	public KeywordUtil<? extends AccessModifier> getKeywordUtil();
 
-	public OperatorUtil getOperatorUtil();
+	public OperatorUtil<? extends Operator> getOperatorUtil();
 
 	public String displayName();
 
 	public List<String> getFileExtensions();
 
+	/**
+	 * @return a function which takes parser input parameters and an optional parser performance tracker (can be null, in which case no stats are recorded) and returns a {@link CodeFileSrc}
+	 */
 	public Function<ParseInput, ? extends CodeFileSrc<? extends CodeLanguage>> getParser();
 
 	public AstExtractor<? extends BlockType> getExtractor();

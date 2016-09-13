@@ -5,8 +5,8 @@ import java.util.List;
 
 import lombok.val;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.documentParser.CodeFragment;
 import twg2.parser.fragment.AstFragType;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;

@@ -4,7 +4,7 @@ import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

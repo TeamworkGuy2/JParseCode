@@ -1,11 +1,11 @@
 package twg2.parser.text;
 
-import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.condition.ParserFactory;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.textParser.TextParser;
+import twg2.parser.tokenizers.CodeTokenizer;
 
-/** A CharParserFactory, commonly used by a {@link ParserBuilder} and {@link CharMultiConditionParser}.<br>
+/** A CharParserFactory, commonly used by a {@link CodeTokenizer} and {@link CharMultiConditionParser}.<br>
  * This interface provides an {@link #isMatch(char, TextParser)} method to check if a single character matches
  * the beginning of this CharParserFactory and a factory method to create a {@link CharParser}
  * designed so implementers can create recyclable, precondition filters, managed by a factory,

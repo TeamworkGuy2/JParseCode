@@ -28,7 +28,7 @@ public class DocumentParserTest {
 				"line 3 // end of line comment\n" +
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n";
-		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, src, srcNameBase + "1");
+		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
 
 		// TODO debugging
 		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
@@ -45,7 +45,7 @@ public class DocumentParserTest {
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n" +
 				"'last \\'line\\' string' ending";
-		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, src, srcNameBase + "1");
+		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
 
 		// TODO debugging
 		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
@@ -55,9 +55,9 @@ public class DocumentParserTest {
 	public ParsedFileStats parseFileWhitespaceComments(EnumSet<CommentStyle> style) throws IOException {
 		Path file = Paths.get("src/twg2/parser/documentParser/blocks/ParseBlocks.java");
 		String src = StringJoin.join(Files.readAllLines(file), "\n");
-		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, src, file.toFile().getName());
+		val parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, file.toFile().getName(), src.toCharArray(), 0, src.length());
 
-		return CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src.length(), parserRes.getLines(), parserRes.getDoc());
+		return CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src.toCharArray(), 0, src.length(), parserRes.getLineStartOffsets(), parserRes.getDoc());
 	}
 
 

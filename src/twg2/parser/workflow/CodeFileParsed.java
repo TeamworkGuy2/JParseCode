@@ -1,10 +1,11 @@
-package twg2.parser.codeParser;
+package twg2.parser.workflow;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.codeParser.BlockType;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.output.JsonWritableSig;
 import twg2.treeLike.simpleTree.SimpleTree;
 

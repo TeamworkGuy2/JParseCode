@@ -13,12 +13,15 @@ import lombok.val;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
-import twg2.parser.codeParser.CodeFileSrc;
-import twg2.parser.codeParser.ParseInput;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
+import twg2.parser.codeParser.tools.performance.ParseTimes;
+import twg2.parser.codeParser.tools.performance.PerformanceTrackers;
+import twg2.parser.codeParser.tools.performance.TokenizeStepDetails;
+import twg2.parser.codeParser.tools.performance.ParseTimes.TrackerAction;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
-import twg2.text.stringUtils.StringReplace;
+import twg2.parser.workflow.CodeFileSrc;
+import twg2.parser.workflow.ParseInput;
 import twg2.text.stringUtils.StringSplit;
 
 /**
@@ -27,11 +30,12 @@ import twg2.text.stringUtils.StringSplit;
  */
 public class ParseCodeFile {
 
-	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files, FileReadUtil fileReader) throws IOException {
-		List<CodeFileSrc<CodeLanguage>> parsedFiles = new ArrayList<>();
+	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
+		val parsedFiles = new ArrayList<CodeFileSrc<CodeLanguage>>(files.size());
 
 		for(Path path : files) {
-			val parsedFile = parseFile(path.toFile(), fileReader);
+			val file = path.toFile();
+			val parsedFile = parseFile(file, fileReader, perfTracking);
 			parsedFiles.add(parsedFile);
 		}
 
@@ -39,14 +43,26 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> parseFile(File file, FileReadUtil fileReader) throws IOException {
-		String srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
+	public static CodeFileSrc<CodeLanguage> parseFile(File file, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
+		val fileStr = file.toString();
+		val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
+		val stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
+		long start = 0;
+		if(perfTracker != null) { start = System.nanoTime(); }
+
+		char[] src = fileReader.readChars(new FileReader(file));
+
+		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
+
+		if(perfTracker != null) {
+			perfTracker.log(TrackerAction.LOAD, System.nanoTime() - start);
+		}
 
 		String fileName = file.getName();
 		String fileExt = StringSplit.lastMatch(fileName, ".");
 		val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
 		if(lang != null) {
-			val parsedFileInfo = parseCode(file.toString(), lang, srcStr);
+			val parsedFileInfo = parseCode(fileStr, lang, src, 0, src.length, perfTracker, stepsTracker);
 			return parsedFileInfo;
 		}
 		else {
@@ -55,8 +71,8 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, String srcStr) {
-		val parseParams = new ParseInput(srcStr, null, fileName);
+	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepDetails stepsTracker) {
+		val parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
 		try {
 			@SuppressWarnings("unchecked")
 			CodeFileSrc<CodeLanguage> parsedFileInfo = (CodeFileSrc<CodeLanguage>)lang.getParser().apply(parseParams);
@@ -91,10 +107,11 @@ public class ParseCodeFile {
 
 	public static void parseAndPrintCSharpFileInfo() throws IOException, FileFormatException {
 		val fileReader = FileReadUtil.threadLocalInst();
+		PerformanceTrackers perfTracking = null;
 		Path file = Paths.get("./rsc/ITrackSearchService.cs");
 		//Path file = Paths.get("./rsc/TrackInfo.cs");
 		val files = Arrays.asList(file);
-		val parsedFiles = parseFiles(files, fileReader);
+		val parsedFiles = parseFiles(files, fileReader, perfTracking);
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
 			val parsedFile = parsedFiles.get(i);

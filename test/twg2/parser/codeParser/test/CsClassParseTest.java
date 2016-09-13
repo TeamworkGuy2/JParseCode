@@ -15,7 +15,6 @@ import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AccessModifierEnum;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -23,7 +22,7 @@ import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.CodeFileAndAst;
-
+import twg2.parser.workflow.CodeFileSrc;
 import static twg2.parser.test.utils.ParseAnnotationAssert.*;
 
 /**
@@ -88,7 +87,7 @@ public class CsClassParseTest {
 
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst()).get(0);
+	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
 
 
 	public CsClassParseTest() throws IOException {

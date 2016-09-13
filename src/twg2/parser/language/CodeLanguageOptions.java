@@ -13,24 +13,26 @@ import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.BlockUtil;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.Operator;
 import twg2.parser.codeParser.OperatorUtil;
-import twg2.parser.codeParser.ParseInput;
+import twg2.parser.codeParser.csharp.CsAstUtil;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlock.CsBlockUtil;
-import twg2.parser.codeParser.csharp.CsAstUtil;
 import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.csharp.CsFileTokenizer;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.csharp.CsOperator;
+import twg2.parser.codeParser.java.JavaAstUtil;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaBlock.JavaBlockUtil;
-import twg2.parser.codeParser.java.JavaAstUtil;
 import twg2.parser.codeParser.java.JavaBlockParser;
 import twg2.parser.codeParser.java.JavaFileTokenizer;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.codeParser.java.JavaOperator;
+import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.workflow.CodeFileSrc;
+import twg2.parser.workflow.ParseInput;
 
 /**
  * @author TeamworkGuy2
@@ -51,8 +53,9 @@ public enum CodeLanguageOptions {
 			T_BLOCK extends BlockType,
 			T_KEYWORD extends AccessModifier,
 			T_LANG extends CodeLanguage,
+			T_OP extends Operator,
 			T_AST_UTIL extends AstUtil<T_BLOCK, T_KEYWORD>,
-			T_OP_UTIL extends OperatorUtil,
+			T_OP_UTIL extends OperatorUtil<T_OP>,
 			T_AST_EXTRACTOR extends AstExtractor<T_BLOCK>
 			> implements CodeLanguage {
 		final String displayName;
@@ -88,7 +91,7 @@ public enum CodeLanguageOptions {
 	}
 
 
-	public static class CSharp extends CodeLanguageImpl<CsBlock, CsKeyword, CSharp, CsAstUtil, CsOperator.Inst, AstExtractor<CsBlock>> {
+	public static class CSharp extends CodeLanguageImpl<CsBlock, CsKeyword, CSharp, CsOperator, CsAstUtil, CsOperator.Inst, AstExtractor<CsBlock>> {
 
 		CSharp(String displayName, CsBlockUtil blockUtil, CsAstUtil astUtil, KeywordUtil<CsKeyword> keywordUtil, CsOperator.Inst operatorUtil,
 				Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, List<String> fileExtensions) {
@@ -98,7 +101,7 @@ public enum CodeLanguageOptions {
 	}
 
 
-	public static class Java extends CodeLanguageImpl<JavaBlock, JavaKeyword, Java, JavaAstUtil, JavaOperator.Inst, AstExtractor<JavaBlock>> {
+	public static class Java extends CodeLanguageImpl<JavaBlock, JavaKeyword, Java, JavaOperator, JavaAstUtil, JavaOperator.Inst, AstExtractor<JavaBlock>> {
 
 		Java(String displayName, JavaBlockUtil blockUtil, JavaAstUtil astUtil, KeywordUtil<JavaKeyword> keywordUtil, JavaOperator.Inst operatorUtil,
 				Function<ParseInput, CodeFileSrc<Java>> parser, AstExtractor<JavaBlock> extractor, List<String> fileExtensions) {
@@ -108,9 +111,13 @@ public enum CodeLanguageOptions {
 	}
 
 
-	public static final Java JAVA = new Java("Java", new JavaBlockUtil(), new JavaAstUtil(), JavaKeyword.check, JavaOperator.check, JavaFileTokenizer::parse, new JavaBlockParser(), Arrays.asList("java"));
-	public static final CodeLanguageImpl<BlockType, AccessModifier, CodeLanguage, AstUtil<BlockType, AccessModifier>, OperatorUtil, AstExtractor<BlockType>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, null, null, Arrays.asList("js", "ts"));
-	public static final CSharp C_SHARP = new CSharp("C#", new CsBlockUtil(), new CsAstUtil(), CsKeyword.check, CsOperator.check, CsFileTokenizer::parse, new CsBlockParser(), Arrays.asList("cs"));
+	public static final CSharp C_SHARP = new CSharp("C#", new CsBlockUtil(), new CsAstUtil(), CsKeyword.check, CsOperator.check,
+			CodeTokenizerBuilder.createTokenizerWithTimer(() -> CsFileTokenizer.createFileParser().build()), new CsBlockParser(), Arrays.asList("cs"));
+
+	public static final Java JAVA = new Java("Java", new JavaBlockUtil(), new JavaAstUtil(), JavaKeyword.check, JavaOperator.check,
+			CodeTokenizerBuilder.createTokenizerWithTimer(() -> JavaFileTokenizer.createFileParser().build()), new JavaBlockParser(), Arrays.asList("java"));
+
+	public static final CodeLanguageImpl<BlockType, AccessModifier, CodeLanguage, Operator, AstUtil<BlockType, AccessModifier>, OperatorUtil<Operator>, AstExtractor<BlockType>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, null, null, Arrays.asList("js", "ts"));
 
 	private static CopyOnWriteArrayList<CodeLanguage> values;
 
@@ -140,15 +147,19 @@ public enum CodeLanguageOptions {
 	 * @param fileExtensions a list of file extensions associated with this language
 	 * @return a new {@link CodeLanguage} instance
 	 */
-	public static <_T_BLOCK extends BlockType,
+	public static <
+			_T_BLOCK extends BlockType,
 			_T_KEYWORD extends AccessModifier,
 			_T_LANG extends CodeLanguage,
+			_T_OP extends Operator,
 			_T_AST_UTIL extends AstUtil<_T_BLOCK, _T_KEYWORD>,
-			_T_OP_UTIL extends OperatorUtil,
+			_T_OP_UTIL extends OperatorUtil<_T_OP>,
 			_T_AST_EXTRACTOR extends AstExtractor<_T_BLOCK>
 			> CodeLanguage registerCodeLanguage(String displayName, BlockUtil<_T_BLOCK, _T_KEYWORD> block, _T_AST_UTIL astUtil, KeywordUtil<? extends _T_KEYWORD> keywordUtil,
-			_T_OP_UTIL operatorUtil, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, _T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
-		CodeLanguageImpl<_T_BLOCK, _T_KEYWORD, _T_LANG, _T_AST_UTIL, _T_OP_UTIL, _T_AST_EXTRACTOR> inst = new CodeLanguageImpl<>(displayName, block, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
+					_T_OP_UTIL operatorUtil, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, _T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
+
+		CodeLanguageImpl<_T_BLOCK, _T_KEYWORD, _T_LANG, _T_OP, _T_AST_UTIL, _T_OP_UTIL, _T_AST_EXTRACTOR> inst =
+				new CodeLanguageImpl<>(displayName, block, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		_registerNewLanguage(inst);
 		return inst;
 	}

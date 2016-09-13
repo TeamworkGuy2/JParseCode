@@ -10,7 +10,8 @@ import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.text.CharConditions;
-import twg2.parser.textParser.TextParserImpl;
+import twg2.parser.textParser.TextIteratorParser;
+import twg2.parser.textParser.TextParser;
 
 /**
  * @author TeamworkGuy2
@@ -35,7 +36,7 @@ public class CharConditionsTest {
 
 		int i = 0;
 		for(String testStr : testStrs) {
-			TextParserImpl pos = TextParserImpl.of(testStr);
+			TextParser pos = TextIteratorParser.of(testStr);
 			Assert.assertTrue(i + "", cond.acceptNext(testStr.charAt(0), pos) == expect[i]);
 			Assert.assertTrue(cond.isComplete() == expect[i]);
 			Assert.assertTrue(cond.acceptNext((char)0, pos) == false);

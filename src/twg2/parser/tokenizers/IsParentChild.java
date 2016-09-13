@@ -1,4 +1,4 @@
-package twg2.parser.documentParser;
+package twg2.parser.tokenizers;
 
 import java.util.function.BiPredicate;
 

@@ -21,12 +21,12 @@ import twg2.ast.interm.classes.ClassAst;
 import twg2.collections.builder.ListUtil;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.main.ParserMisc;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.workflow.CodeFileSrc;
 import checks.CheckCollections;
 
 /**
@@ -54,7 +54,7 @@ public class CsParseFilesTest {
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		ParserMisc.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader);
+		ParserMisc.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader, null);
 		val resFileSet = ProjectClassSet.resolveClasses(projFiles, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));

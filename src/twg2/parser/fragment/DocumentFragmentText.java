@@ -1,4 +1,4 @@
-package twg2.parser.documentParser;
+package twg2.parser.fragment;
 
 import twg2.parser.textFragment.TextFragmentRef;
 

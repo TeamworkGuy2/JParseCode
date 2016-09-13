@@ -11,7 +11,7 @@ import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.stateMachine.AstParser;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.tuple.Tuples;

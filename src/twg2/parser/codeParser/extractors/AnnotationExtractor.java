@@ -5,7 +5,7 @@ import java.util.HashMap;
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.language.CodeLanguage;
 import twg2.text.stringUtils.StringTrim;

@@ -8,11 +8,11 @@ import java.util.List;
 import lombok.val;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.CodeFileParsed;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.output.WriteSettings;
+import twg2.parser.workflow.CodeFileParsed;
+import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -23,18 +23,22 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 	public final CodeLanguage lang;
 	public final String fileName;
 	public final String fullClassName;
-	public final String srcCode;
+	public final char[] srcCode;
+	public final int srcOff;
+	public final int srcLen;
 	public final CodeFileSrc<CodeLanguage> ast;
 	public final List<CodeFileParsed.Simple<String, T_BLOCK>> parsedBlocks;
 
 
-	private CodeFileAndAst(CodeLanguage lang, String fileName, String fullClassName, String srcCode,
+	private CodeFileAndAst(CodeLanguage lang, String fileName, String fullClassName, char[] srcCode, int srcOff, int srcLen,
 			CodeFileSrc<CodeLanguage> ast, List<CodeFileParsed.Simple<String, T_BLOCK>> parsedBlocks) {
 		super();
 		this.fileName = fileName;
 		this.lang = lang;
 		this.fullClassName = fullClassName;
 		this.srcCode = srcCode;
+		this.srcOff = srcOff;
+		this.srcLen = srcLen;
 		this.ast = ast;
 		this.parsedBlocks = parsedBlocks;
 	}
@@ -44,8 +48,8 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 
 
 	public static <_T_BLOCK extends BlockType> CodeFileAndAst<_T_BLOCK> parse(CodeLanguage lang, String fileName, String fullClassName, boolean print, Iterable<String> srcCodeLines) {
-		val srcCode = StringJoin.join(srcCodeLines, "\n");
-		val ast = ParseCodeFile.parseCode(fileName, lang, srcCode);
+		val srcCode = StringJoin.join(srcCodeLines, "\n").toCharArray();
+		val ast = ParseCodeFile.parseCode(fileName, lang, srcCode, 0, srcCode.length, null, null);
 		val parsedBlocks = new ArrayList<CodeFileParsed.Simple<String, _T_BLOCK>>();
 
 		if(print) {
@@ -72,7 +76,7 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 			}
 		}
 
-		val inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, ast, parsedBlocks);
+		val inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, 0, srcCode.length, ast, parsedBlocks);
 
 		return inst;
 	}

@@ -1,9 +1,8 @@
-package twg2.parser.codeParser;
-
-import java.util.List;
+package twg2.parser.workflow;
 
 import lombok.Getter;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.collections.primitiveCollections.IntListSorted;
+import twg2.parser.fragment.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /** All the information resulting from building a source string into an AST.
@@ -15,30 +14,33 @@ import twg2.treeLike.simpleTree.SimpleTree;
 public class CodeFileSrc<T_LANG> {
 	@Getter SimpleTree<CodeFragment> doc;
 	@Getter String srcName;
-	@Getter String src;
-	@Getter List<char[]> lines;
+	@Getter char[] src;
+	@Getter int srcOff;
+	@Getter int srcLen;
+	@Getter IntListSorted lineStartOffsets;
 	@Getter T_LANG language;
 
 
 	/**
 	 * @param doc
 	 * @param src
-	 * @param lines
 	 * @param language optional
 	 */
 	@SuppressWarnings("unchecked")
-	public CodeFileSrc(SimpleTree<? extends CodeFragment> doc, String srcName, String src, List<char[]> lines, T_LANG language) {
+	public CodeFileSrc(SimpleTree<? extends CodeFragment> doc, String srcName, char[] src, int srcOff, int srcLen, IntListSorted lineStartOffsets, T_LANG language) {
 		this.doc = (SimpleTree<CodeFragment>) doc;
 		this.srcName = srcName;
 		this.src = src;
-		this.lines = lines;
+		this.srcOff = srcOff;
+		this.srcLen = srcLen;
+		this.lineStartOffsets = lineStartOffsets;
 		this.language = language;
 	}
 
 
 	@Override
 	public String toString() {
-		return srcName + " (" + language + ", " + lines.size() + " lines)";
+		return srcName + " (" + language + ", " + lineStartOffsets.size() + " lines)";
 	}
 
 }

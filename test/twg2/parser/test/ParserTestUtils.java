@@ -5,7 +5,8 @@ import lombok.val;
 import org.junit.Assert;
 
 import twg2.parser.condition.text.CharParser;
-import twg2.parser.textParser.TextParserImpl;
+import twg2.parser.textParser.TextIteratorParser;
+import twg2.parser.textParser.TextParser;
 
 /**
  * @author TeamworkGuy2
@@ -38,7 +39,7 @@ public interface ParserTestUtils {
 
 
 	public static void _parseTest(boolean expectComplete, boolean expectFailed, String name, CharParser cond, String src, String srcExpect) {
-		TextParserImpl buf = TextParserImpl.of(src);
+		TextParser buf = TextIteratorParser.of(src);
 
 		while(buf.hasNext()) {
 			char ch = buf.nextChar();

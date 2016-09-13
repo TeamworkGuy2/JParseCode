@@ -10,7 +10,7 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.stateMachine.AstParser;
 import twg2.treeLike.simpleTree.SimpleTree;
 

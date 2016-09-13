@@ -7,17 +7,18 @@ import java.util.List;
 
 import lombok.val;
 import twg2.collections.primitiveCollections.IntArrayList;
-import twg2.parser.codeParser.CodeFileSrc;
+import twg2.collections.primitiveCollections.IntListSorted;
 import twg2.parser.codeParser.CommentStyle;
-import twg2.parser.codeParser.ParserBuilder;
 import twg2.parser.codeParser.codeStats.ParsedFileStats;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.tokenizers.CodeStringTokenizer;
 import twg2.parser.tokenizers.CommentTokenizer;
+import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringCheck;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
@@ -30,33 +31,37 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class CommentAndWhitespaceExtractor {
 
-	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, String src) throws IOException {
+	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, char[] src, int srcOff, int srcLen) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
-		return buildCommentsAndWhitespaceTree(commentStyle, src, srcName);
+		return buildCommentsAndWhitespaceTree(commentStyle, srcName, src, srcOff, srcLen);
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String src, String srcName) throws IOException {
+	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String srcName, char[] src, int srcOff, int srcLen) throws IOException {
 		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
-		ParserBuilder parser = new ParserBuilder()
+		val parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
 			.addConstParser(commentParser, CodeFragmentType.COMMENT)
-			.addConstParser(stringParser, CodeFragmentType.STRING);
-		return parser.buildAndParse(src, null, srcName, true);
+			.addConstParser(stringParser, CodeFragmentType.STRING)
+			.build();
+		return parser.tokenizeDocument(src, srcOff, srcLen, srcName, null);
 	}
 
 
-	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, int srcCharCount, List<char[]> lines, SimpleTree<CodeFragment> tree) {
+	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, char[] src, int srcOff, int srcLen, IntListSorted lineStartOffsets, SimpleTree<CodeFragment> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
 		val tokensPerLine = documentTreeToTokensPerLine(tree);
 
 		// find lines containing only comments (with optional whitespace)
 		IntArrayList commentLines = new IntArrayList();
 		IntArrayList whitespaceLines = new IntArrayList();
-		for(int i = 0, size = lines.size(); i < size; i++) {
-			char[] line = lines.get(i);
+		for(int i = 0, size = lineStartOffsets.size(); i < size; i++) {
+			int startIndex = lineStartOffsets.get(i);
+			int endIndexExclusive = i + 1 < size ? lineStartOffsets.get(i + 1) : srcLen;
+			char[] line = new char[endIndexExclusive - startIndex];
+			System.arraycopy(src, startIndex, line, 0, endIndexExclusive);
 
 			if(tokensPerLine.size() <= i) {
 				tokensPerLine.add(new ArrayList<>());
@@ -89,11 +94,11 @@ public class CommentAndWhitespaceExtractor {
 			System.out.println("line " + i + " tokens: " + lineTokens);
 		}
 
-		System.out.println("line count: " + lines.size());
+		System.out.println("line count: " + lineStartOffsets.size());
 		System.out.println("line counts: whitespace=" + whitespaceLines.size() + ", comment=" + commentLines.size() + ", total=" + (whitespaceLines.size() + commentLines.size()));
 		System.out.println("line numbers:\nwhitespace: " + whitespaceLines + "\ncomments: " + commentLines);
 
-		val stats = new ParsedFileStats(srcId, srcCharCount, whitespaceLines, commentLines, lines.size());
+		val stats = new ParsedFileStats(srcId, srcLen, whitespaceLines, commentLines, lineStartOffsets.size());
 		return stats;
 	}
 

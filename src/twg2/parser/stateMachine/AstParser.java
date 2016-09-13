@@ -1,10 +1,12 @@
 package twg2.parser.stateMachine;
 
 import twg2.parser.condition.TokenParser;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-/**
+/** Base interface for AST transformers/parsers.
+ * Implementations accept {@link SimpleTree}{@code <}{@link CodeFragment}{@code >} AST nodes.
+ * Implementations by design are supposed to accept these AST nodes until a failure or completion state is reached and then return a result based on AST nodes feed to them
  * @author TeamworkGuy2
  * @since 2015-12-12
  * @param <T_RESULT> the type of result object that parsed data is store in

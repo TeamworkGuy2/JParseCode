@@ -23,7 +23,6 @@ import twg2.io.json.Json;
 import twg2.parser.codeParser.extractors.CommentAndWhitespaceExtractor;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
-import twg2.text.stringUtils.StringReplace;
 import twg2.text.stringUtils.StringSplit;
 import twg2.tuple.Tuples;
 
@@ -139,16 +138,18 @@ public class ParseDirectoryCodeFiles {
 		for(Path path : files) {
 			File file = path.toFile();
 			String fullFileName = file.getName();
-			String srcStr = StringReplace.replace(fileReader.readString(new FileReader(file)), "\r\n", "\n");
+			char[] src = fileReader.readChars(new FileReader(file));
+			int srcOff = 0;
+			int srcLen = src.length;
 			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");
 			if("json".equals(fileNameExt.getValue())) {
-				int lineCount = StringSplit.countMatches(srcStr, "\n");
-				val parsedStats = new ParsedFileStats(file.toString(), srcStr.length(), 0, 0, lineCount);
+				int lineCount = StringSplit.countMatches(src, srcOff, srcLen, new char[] { '\n' }, 0, 1);
+				val parsedStats = new ParsedFileStats(file.toString(), srcLen, 0, 0, lineCount);
 				filesStats.add(parsedStats);
 			}
 			else {
-				val parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), srcStr);
-				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), srcStr.length(), parsedFileInfo.getLines(), parsedFileInfo.getDoc());
+				val parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), src, srcOff, srcLen);
+				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.getLineStartOffsets(), parsedFileInfo.getDoc());
 				filesStats.add(parsedStats);
 			}
 		}

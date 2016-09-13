@@ -1,12 +1,11 @@
 {
-	"version" : "0.11.0",
+	"version" : "0.12.0",
 	"name" : "jparse-code",
 	"description" : "An in-progress suite of parsing tools for C#, Java, and TypeScript source code",
 	"homepage" : "https://github.com/TeamworkGuy2/JParseCode",
 	"license" : "MIT",
 	"main" : "./bin/jparse_code.jar",
 	"dependencies" : {
-		"data-transfer": "*",
 		"jackson-annotations": "~2.5.0",
 		"jackson-core": "~2.5.0",
 		"jackson-databind": "~2.5.0",

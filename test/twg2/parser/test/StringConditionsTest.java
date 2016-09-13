@@ -6,7 +6,8 @@ import org.junit.Test;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.text.StringConditions;
-import twg2.parser.textParser.TextParserImpl;
+import twg2.parser.textParser.TextIteratorParser;
+import twg2.parser.textParser.TextParser;
 
 /**
  * @author TeamworkGuy2
@@ -37,7 +38,7 @@ public class StringConditionsTest {
 
 		int i = 0;
 		for(String testStr : testStrs) {
-			TextParserImpl pos = TextParserImpl.of(testStr);
+			TextParser pos = TextIteratorParser.of(testStr);
 			int chI = 0;
 			for(char ch : testStr.toCharArray()) {
 				pos.nextChar();
@@ -76,7 +77,7 @@ public class StringConditionsTest {
 		int i = 0;
 		for(String testStr : testStrs) {
 			for(int ii = 0, size = endMarkers.length; ii < size; ii++) {
-				TextParserImpl pos = TextParserImpl.of(testStr);
+				TextParser pos = TextIteratorParser.of(testStr);
 				while(pos.hasNext()) {
 					char ch = pos.nextChar();
 					cond.acceptNext(ch, pos);

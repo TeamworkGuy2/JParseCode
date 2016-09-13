@@ -60,10 +60,6 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 			@SuppressWarnings("unchecked")
 			val enumsCast = (List<T_ENUM>)enums;
 
-			if(enumsCast != null && enumsCast.size() > 0) {
-				System.out.println();
-			}
-
 			this.signature = signature;
 			this.usingStatements = usingStatements;
 			this.enumMembers = enumsCast;

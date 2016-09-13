@@ -4,7 +4,25 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.11.0](https://github.com/TeamworkGuy2/JParseCode/commit/76f3cf2eba9327659f6e454d8bfe3208695cdab5) - 2016-09-05
+###[0.12.0](N/A) - 2016-09-13
+#### Added
+* PerformanceTrackers, ParseTimes, TokenizeStepDetails in new twg2.parser.codeParser.tools.performance package - used for tracking performance
+
+#### Changed
+* biggest change is switching from jtext-parser's TextIteratorParser (previously: TextParserImpl) to TextCharsParser and files are read as char[] and stored in ParseInput and CodeFileSrc as char[] with offset and length, this will hopefully provide a small performance boost since each file's contents is copied one less time (no more new String(...) copy) and TextCharsParser is designed to take a char[] without any data copying
+* second large change is moving the parsing process toward a clearly defined two step process, the first step is called 'tokenization' and the second is called 'parsing/extracting'
+  * file tokenization logic has been split up.  Cs and Java FileTokenizer classes now return CodeTokenizerBuilder instances and CodeTokenizerBuilder contains all the generic logic for running the tokenization process
+* updated to new latest dependencies, especially jtext-parser
+* moved CodeFragment, DocumentFragment, and DocumentFragmentText from package twg2.parser.documentParser -> twg2.parser.fragment
+* moved CodeFileParsed, CodeFileSource, ParseInput, and ParserWorkflow from package twg2.parser.codeParser -> twg2.parser.workflow
+* moved/renamed twg2.parser.documentParser.DocumentParser -> twg2.parser.tokenizers.CodeTokenizerBuilder
+* moved IsParentChild from package twg2.parser.documentParser -> twg2.parser.tokenizers
+* CommentAndWhitespaceExtractor now drops the last trailing newlines from the comment strings
+* updated a number of unit tests
+
+
+--------
+###[0.11.0](https://github.com/TeamworkGuy2/JParseCode/commit/3029d0d08bda6cc308d3732eb09eb971fd0e6030) - 2016-09-06
 #### Added
 * __basic C# and Java enum parsing__
   * Added twg2.ast.interm.field FieldDef and FieldDefResolved to represent enum members (TODO could use some clarification/refactoring)

@@ -11,7 +11,7 @@ import twg2.io.write.JsonWrite;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.documentParser.CodeFragment;
+import twg2.parser.fragment.CodeFragment;
 import twg2.parser.fragment.CodeFragmentType;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;

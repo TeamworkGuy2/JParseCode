@@ -2,7 +2,7 @@ package twg2.parser.codeParser;
 
 import java.util.List;
 
-import twg2.parser.documentParser.DocumentFragmentText;
+import twg2.parser.fragment.DocumentFragmentText;
 import twg2.treeLike.IndexedSubtreeConsumer;
 import twg2.treeLike.simpleTree.SimpleTree;
 

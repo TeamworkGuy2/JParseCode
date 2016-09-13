@@ -16,12 +16,14 @@ import twg2.ast.interm.classes.ClassAst;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
+import twg2.parser.codeParser.tools.performance.PerformanceTrackers;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.workflow.CodeFileSrc;
+import twg2.parser.workflow.ParserWorkflow;
 import twg2.text.stringUtils.StringJoin;
 
 /**
@@ -29,7 +31,6 @@ import twg2.text.stringUtils.StringJoin;
  * @since 2016-1-4
  */
 public class MainParser {
-
 
 	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException, FileFormatException {
 		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
@@ -42,7 +43,8 @@ public class MainParser {
 		files.addAll(files2);
 
 		ExecutorService executor = null;
-		ParserMisc.parseFileSet(files, fileSet, executor, fileReader);
+		PerformanceTrackers perfTracking = null;
+		ParserMisc.parseFileSet(files, fileSet, executor, fileReader, perfTracking);
 		val resFileSet = ProjectClassSet.resolveClasses(fileSet, CsBlock.CLASS, missingNamespaces);
 
 		val res = resFileSet.getCompilationUnitsStartWith(Arrays.asList("Corningstone", "Entities"));
@@ -75,7 +77,9 @@ public class MainParser {
 
 	public static void main(String[] args) throws IOException, FileFormatException {
 		boolean multithread = false;
+		boolean logPerformance = false;
 		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
+		PerformanceTrackers perfTracking = logPerformance ? new PerformanceTrackers() : null;
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		if(args.length > 0) {
@@ -85,7 +89,7 @@ public class MainParser {
 			//in.nextLine();
 
 			val parserWorkflow = ParserWorkflow.parseArgs(args);
-			parserWorkflow.run(Level.INFO, executor, fileReader);
+			parserWorkflow.run(Level.INFO, executor, fileReader, perfTracking);
 
 			// TODO for VisualVM pause
 			//System.out.print("press enter to end: ");
@@ -97,9 +101,49 @@ public class MainParser {
 			parseAndValidProjectCsClasses(fileReader);
 		}
 
+		/*
+		String perfData = null;
+		System.out.println();
+		perfData = PerformanceTrackers.toString(perfTracking.getTopParseTimes(SortOrder.ASCENDING, -10).iterator());
+		System.out.println(perfData);
+		System.out.println("====\n");
+		perfData = PerformanceTrackers.toString(perfTracking.getTopParseStepDetails(SortOrder.ASCENDING, -10).iterator());
+		System.out.println(perfData);
+		*/
+
+		//val writeSettings = new WriteSettings(true, false, false, true);
+		//perfTracker.toJson(System.out, writeSettings);
+
 		if(executor != null) {
 			executor.shutdown();
 		}
 	}
+
+
+	// JS code to get stats from ParserPerformanceTracker JSON output
+	/*
+	var a = [parserPerformanceTrackerJson...];
+	var map = {};
+	a.forEach((ary) => {
+	  ary.forEach((ent) => {
+	    var b = map[ent.file] || { file: ent.file, units: ent.units, setup: 0, load: 0, tokenize: 0, parse: 0, total: 0, setupAry: [], loadAry: [], tokenizeAry: [], parseAry: [] };
+	    map[ent.file] = b;
+	    b.setup += ent.setup;
+	    b.load += ent.load;
+	    b.tokenize += ent.tokenize;
+	    b.parse += ent.parse;
+	    b.setupAry.push(ent.setup);
+	    b.loadAry.push(ent.load);
+	    b.tokenizeAry.push(ent.tokenize);
+	    b.parseAry.push(ent.parse);
+	    b.total += ent.setup + ent.load + ent.tokenize + ent.parse;
+	  })
+	})
+	var b = Object.keys(map).map((key) => map[key])
+		.sort((a,b) => b.total - a.total)
+		.map((ent) => ({ file: ent.file, total: ent.total / ent.setupAry.length + " " + ent.units }))
+		.slice(0, 10);
+	JSON.stringify(b, null, '  ')
+	 */
 
 }

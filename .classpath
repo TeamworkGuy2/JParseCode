@@ -9,7 +9,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Lombok"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TemplateUtil"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TestChecks"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/data-transfer/bin/data_transfer.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-annotations-2.5.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-core-2.5.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-databind-2.5.4.jar"/>

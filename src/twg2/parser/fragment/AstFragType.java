@@ -5,8 +5,6 @@ import java.util.function.BiPredicate;
 import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.Operator;
-import twg2.parser.documentParser.CodeFragment;
-import twg2.parser.documentParser.DocumentFragment;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**

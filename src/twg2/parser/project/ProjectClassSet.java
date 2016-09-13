@@ -11,14 +11,14 @@ import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.collections.builder.ListUtil;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.CodeFileParsed;
-import twg2.parser.codeParser.CodeFileSrc;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.resolver.ClassSigResolver;
 import twg2.parser.resolver.FieldSigResolver;
 import twg2.parser.resolver.MethodSigResolver;
+import twg2.parser.workflow.CodeFileParsed;
+import twg2.parser.workflow.CodeFileSrc;
 
 /** A group of classes/interfaces representing all of the compilation units in a project.
  * Provides {@link #resolveSimpleName(String, List, Collection)} for resolving simple names to fully qualifying names

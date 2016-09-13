@@ -13,8 +13,8 @@ import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.text.CharParserFactory;
 import twg2.parser.text.StringBoundedParserBuilder;
+import twg2.parser.textParser.TextIteratorParser;
 import twg2.parser.textParser.TextParser;
-import twg2.parser.textParser.TextParserImpl;
 import twg2.parser.textParserUtils.EscapeSequences;
 import twg2.text.stringSearch.StringCompare;
 import twg2.text.stringSearch.StringIndex;
@@ -62,7 +62,7 @@ public class MiscStringTests {
 		String line = "Abbb abab [very awesome] 132\n" +
 				"few 142345 52132";
 
-		TextParser tool = TextParserImpl.of(line);
+		TextParser tool = TextIteratorParser.of(line);
 		StringBuilder dst = new StringBuilder();
 
 		tool.nextIf('A', dst);
@@ -90,11 +90,11 @@ public class MiscStringTests {
 		CharParserFactory parser1 = new StringBoundedParserBuilder("stringBoundedSegmentParserTest").addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE).build();
 
 		Function<String, String> escSeqDecoder = EscapeSequences.unicodeEscapeDecoder();
-		CheckTask.assertTests(strs, expect, (s, i) -> {
+		CheckTask.assertTests(strs, expect, (String s, Integer i) -> {
 			StringBuilder dst = new StringBuilder();
 			//Assert.assertTrue("i=" + i + " first char '" + s.charAt(0) + "' of '" + s + "'", parser1.isMatch(s.charAt(0)));
 			CharParser cond = parser1.createParser();
-			cond.readConditional(TextParserImpl.of(s), dst);
+			cond.readConditional(TextIteratorParser.of(s), dst);
 			return escSeqDecoder.apply(dst.toString());
 		});
 
