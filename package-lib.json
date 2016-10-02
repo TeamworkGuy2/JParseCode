@@ -1,7 +1,7 @@
 {
-	"version" : "0.12.0",
+	"version" : "0.12.1",
 	"name" : "jparse-code",
-	"description" : "An in-progress suite of parsing tools for C#, Java, and TypeScript source code",
+	"description" : "An in-progress suite of parsing/transpilation tools for C#, Java, and TypeScript code.  Generates simple JSON ASTs.",
 	"homepage" : "https://github.com/TeamworkGuy2/JParseCode",
 	"license" : "MIT",
 	"main" : "./bin/jparse_code.jar",
@@ -9,7 +9,8 @@
 		"jackson-annotations": "~2.5.0",
 		"jackson-core": "~2.5.0",
 		"jackson-databind": "~2.5.0",
-		"jarray-util": "*",
+		"jarrays": "*",
+		"jcollection-builders": "*",
 		"jcollection-util": "*",
 		"jdata-util": "*",
 		"jdate-times": "*",
@@ -21,9 +22,11 @@
 		"jrange": "*",
 		"jsimple-types": "*",
 		"json-io": "*",
+		"json-stringify": "*",
 		"jstreamish": "*",
 		"jtext-parser": "*",
 		"jtext-util": "*",
-		"jtree-walker": "*"
+		"jtree-walker": "*",
+		"jtuples": "*"
 	}
 }

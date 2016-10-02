@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
@@ -163,7 +163,7 @@ public interface TypeSig {
 			dst.append("\"typeName\": \"" + typeName + "\", ");
 
 			dst.append("\"genericParameters\": [");
-			JsonWrite.joinStrConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonStringify.joinConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
 			dst.append("]");
 
 			if(arrayDimensions > 0) {
@@ -344,7 +344,7 @@ public interface TypeSig {
 			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullName) + "\", ");
 
 			dst.append("\"genericParameters\": [");
-			JsonWrite.joinStrConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonStringify.joinConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
 			dst.append("]");
 
 			if(arrayDimensions > 0) {

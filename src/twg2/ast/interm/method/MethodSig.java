@@ -8,7 +8,7 @@ import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
@@ -64,15 +64,15 @@ public interface MethodSig {
 			dst.append("\"name\": \"" + (st.fullMethodName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
 
 			dst.append("\"parameters\": [");
-			JsonWrite.joinStrConsume(paramSigs, ", ", dst, (param) -> param.toJson(dst, st));
+			JsonStringify.joinConsume(paramSigs, ", ", dst, (param) -> param.toJson(dst, st));
 			dst.append("], ");
 
 			dst.append("\"accessModifiers\": [");
-			JsonWrite.joinStr(accessModifiers, ", ", dst, (acs) -> '"' + acs.toSrc() + '"');
+			JsonStringify.join(accessModifiers, ", ", dst, (acs) -> '"' + acs.toSrc() + '"');
 			dst.append("], ");
 
 			dst.append("\"annotations\": [");
-			JsonWrite.joinStrConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
+			JsonStringify.joinConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
 			dst.append("], ");
 
 			dst.append("\"returnType\": ");
@@ -80,7 +80,7 @@ public interface MethodSig {
 			dst.append(", ");
 
 			dst.append("\"comments\": [");
-			JsonWrite.joinStrConsume(comments, ", ", dst, (str) -> { dst.append('"'); dst.append(StringEscapeJson.toJsonString(str)); dst.append('"'); });
+			JsonStringify.joinConsume(comments, ", ", dst, (str) -> { dst.append('"'); StringEscapeJson.toJsonString(str, 0, str.length(), dst); dst.append('"'); });
 			dst.append("]");
 
 			dst.append(" }");

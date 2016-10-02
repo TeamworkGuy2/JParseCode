@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.type.TypeSig;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
@@ -67,14 +67,14 @@ public interface ClassSig extends JsonWritableSig {
 			if(params != null && params.size() > 0) {
 				dst.append(", ");
 				dst.append("\"genericParameters\": [");
-				JsonWrite.joinStrConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
+				JsonStringify.joinConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
 				dst.append("]");
 			}
 
 			if(extendImplementSimpleNames.size() > 0) {
 				dst.append(", ");
 				dst.append("\"extendImplementClassNames\": [");
-				JsonWrite.joinStr(extendImplementSimpleNames, ", ", dst, (n) -> '"' + n + '"');
+				JsonStringify.join(extendImplementSimpleNames, ", ", dst, (n) -> '"' + n + '"');
 				dst.append("] ");
 			}
 
@@ -130,7 +130,7 @@ public interface ClassSig extends JsonWritableSig {
 			if(params != null && params.size() > 0) {
 				dst.append(", ");
 				dst.append("\"genericParameters\": [");
-				JsonWrite.joinStrConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
+				JsonStringify.joinConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
 				dst.append("]");
 			}
 
@@ -143,7 +143,7 @@ public interface ClassSig extends JsonWritableSig {
 			if(implementInterfaces.size() > 0) {
 				dst.append(", ");
 				dst.append("\"implementClassNames\": [");
-				JsonWrite.joinStrConsume(implementInterfaces, ", ", dst, (intfType) -> intfType.toJson(dst, st));
+				JsonStringify.joinConsume(implementInterfaces, ", ", dst, (intfType) -> intfType.toJson(dst, st));
 				dst.append("] ");
 			}
 

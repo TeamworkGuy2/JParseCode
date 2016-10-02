@@ -20,7 +20,6 @@ import twg2.text.stringSearch.StringCompare;
 import twg2.text.stringSearch.StringIndex;
 import checks.CheckTask;
 import checks.TestData;
-import checks.TestDataObj;
 
 /**
  * @author TeamworkGuy2
@@ -31,12 +30,12 @@ public class MiscStringTests {
 	@Test
 	public void startsWithTest() {
 		List<TestData<String, String>> startsWithStrs = Arrays.asList(
-				TestDataObj.matchFalse("this a lz3", "thisa"),
-				TestDataObj.matchTrue("this a lz3", "this"),
-				TestDataObj.matchFalse("a", "ab"),
-				TestDataObj.matchTrue("a", "a"),
-				TestDataObj.matchFalse("", "a"),
-				TestDataObj.matchTrue("", "")
+				TestData.matchFalse("this a lz3", "thisa"),
+				TestData.matchTrue("this a lz3", "this"),
+				TestData.matchFalse("a", "ab"),
+				TestData.matchTrue("a", "a"),
+				TestData.matchFalse("", "a"),
+				TestData.matchTrue("", "")
 		);
 
 		for(TestData<String, String> test : startsWithStrs) {

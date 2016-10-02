@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.12.0](N/A) - 2016-09-13
+###[0.12.1](N/A) - 2016-10-02
+#### Changed
+* Updated dependencies, specifically jfile-io to 0.7.0 which no longer contains JsonWrite, so added json-stringify library for new equivalent JsonStringify class and updated related code
+
+
+--------
+###[0.12.0](https://github.com/TeamworkGuy2/JParseCode/commit/0ca793a0dd5f2d41f629e7f133dbd3bf2a2c4adb) - 2016-09-13
 #### Added
 * PerformanceTrackers, ParseTimes, TokenizeStepDetails in new twg2.parser.codeParser.tools.performance package - used for tracking performance
 

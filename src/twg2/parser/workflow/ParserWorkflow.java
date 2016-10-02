@@ -26,7 +26,7 @@ import twg2.io.fileLoading.DirectorySearchInfo;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.logging.Logging;
 import twg2.logging.LoggingImpl;
 import twg2.logging.LoggingPrefixFormat;
@@ -167,7 +167,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStr(fileSet.getValue(), ", ", sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
+					JsonStringify.join(fileSet.getValue(), ", ", false, sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
 					sb.append("]" + newline);
 				}
 
@@ -234,7 +234,7 @@ public class ParserWorkflow {
 				for(val fileSet : fileSets.entrySet()) {
 					sb.append(fileSet.getKey().getSrcName());
 					sb.append(": [");
-					JsonWrite.joinStr(fileSet.getValue(), ", ", sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
+					JsonStringify.join(fileSet.getValue(), ", ", false, sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
 					sb.append("]" + newline);
 				}
 
@@ -279,7 +279,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 					sb.append(entry.getKey());
 					sb.append(newline);
-					JsonWrite.joinStr(entry.getValue(), newline, sb, (f) -> NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName()));
+					JsonStringify.join(entry.getValue(), newline, false, sb, (f) -> NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName()));
 					sb.append(newline);
 				}
 				log.log(level, this.getClass(), sb.toString());

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.val;
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.io.files.FileUtil;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringPad;
@@ -85,11 +85,9 @@ public class TokenizeStepDetails implements JsonWritableSig {
 
 	public static void toJsons(Map<String, TokenizeStepDetails> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
-		JsonWrite.joinStrConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
+		JsonStringify.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
 			val stat = entry.getValue();
-
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
-
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);
 		});
 		if(includeSurroundingBrackets) { dst.append("\n]"); }

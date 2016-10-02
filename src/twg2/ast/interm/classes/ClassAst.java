@@ -13,7 +13,7 @@ import twg2.ast.interm.field.FieldSigResolved;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.ast.interm.method.ParameterSigResolved;
-import twg2.io.write.JsonWrite;
+import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
@@ -80,14 +80,14 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 			dst.append("\t\"blockType\": \"" + blockType + "\",\n");
 
 			dst.append("\t\"using\": [");
-			JsonWrite.joinStr(usingStatements, ", ", dst, (us) -> '"' + NameUtil.joinFqName(us) + '"');
+			JsonStringify.join(usingStatements, ", ", dst, (us) -> '"' + NameUtil.joinFqName(us) + '"');
 			dst.append("],\n");
 
 			if(enumMembers != null && blockType.isEnum()) {
 				dst.append("\t\"enumMembers\": [");
 				if(enumMembers.size() > 0) {
 					dst.append("\n\t\t");
-					JsonWrite.joinStrConsume(enumMembers, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
+					JsonStringify.joinConsume(enumMembers, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
 					dst.append("\n\t");
 				}
 				dst.append("],\n");
@@ -96,7 +96,7 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 			dst.append("\t\"fields\": [");
 			if(fields.size() > 0) {
 				dst.append("\n\t\t");
-				JsonWrite.joinStrConsume(fields, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
+				JsonStringify.joinConsume(fields, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
 				dst.append("\n\t");
 			}
 			dst.append("],\n");
@@ -104,7 +104,7 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 			dst.append("\t\"methods\": [");
 			if(methods.size() > 0) {
 				dst.append("\n\t\t");
-				JsonWrite.joinStrConsume(methods, ",\n\t\t", dst, (m) -> m.toJson(dst, st));
+				JsonStringify.joinConsume(methods, ",\n\t\t", dst, (m) -> m.toJson(dst, st));
 				dst.append("\n\t");
 			}
 			dst.append("]\n");
