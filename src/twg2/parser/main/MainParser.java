@@ -69,7 +69,7 @@ public class MainParser {
 		}
 
 		System.out.println("\n");
-		System.out.println("files (" + resFiles.size() + " of " + files.size() + "): " + StringJoin.Objects.join(resFiles, "\n"));
+		System.out.println("files (" + resFiles.size() + " of " + files.size() + "): " + StringJoin.join(resFiles, "\n"));
 		String[] nonSystemMissingNamespaces = missingNamespaces.stream().filter((ns) -> !"System".equals(ns.get(0))).map((ns) -> NameUtil.joinFqName(ns)).toArray((n) -> new String[n]);
 		System.out.println("missing non-system namespaces: (" + nonSystemMissingNamespaces.length + "): " + Arrays.toString(nonSystemMissingNamespaces));
 	}

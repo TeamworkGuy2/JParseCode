@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.json.stringify.JsonStringify;
@@ -55,27 +56,25 @@ public interface ClassSig extends JsonWritableSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
+			val json = JsonStringify.inst;
+
 			dst.append("{ ");
-			dst.append("\"access\": \"" + accessModifier + "\", ");
-			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\"");
+
+			json.toProp("access", accessModifier.toSrc(), dst);
+			json.comma(dst).toProp("name", (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)), dst);
 
 			if(declarationType != null) {
-				dst.append(", ");
-				dst.append("\"declarationType\": \"" + declarationType + "\"");
+				json.comma(dst).toProp("declarationType", declarationType, dst);
 			}
 
 			if(params != null && params.size() > 0) {
-				dst.append(", ");
-				dst.append("\"genericParameters\": [");
-				JsonStringify.joinConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
-				dst.append("]");
+				json.comma(dst).propName("genericParameters", dst)
+					.toArrayConsume(params, dst, (p) -> p.toJson(dst, st));
 			}
 
 			if(extendImplementSimpleNames.size() > 0) {
-				dst.append(", ");
-				dst.append("\"extendImplementClassNames\": [");
-				JsonStringify.join(extendImplementSimpleNames, ", ", dst, (n) -> '"' + n + '"');
-				dst.append("] ");
+				json.comma(dst).propName("extendImplementClassNames", dst)
+					.toStringArray(extendImplementSimpleNames, dst);
 			}
 
 			dst.append(" }");
@@ -122,29 +121,26 @@ public interface ClassSig extends JsonWritableSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
+			val json = JsonStringify.inst;
+
 			dst.append("{ ");
-			dst.append("\"access\": \"" + accessModifier + "\", ");
-			dst.append("\"name\": \"" + (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
-			dst.append("\"declarationType\": \"" + declarationType + "\"");
+			json.toProp("access", accessModifier.toSrc(), dst).comma(dst)
+				.toProp("name", (st.fullClassName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)), dst).comma(dst)
+				.toProp("declarationType", declarationType, dst);
 
 			if(params != null && params.size() > 0) {
-				dst.append(", ");
-				dst.append("\"genericParameters\": [");
-				JsonStringify.joinConsume(params, ", ", dst, (p) -> p.toJson(dst, st));
-				dst.append("]");
+				json.comma(dst).append("\"genericParameters\": ", dst);
+				json.toArrayConsume(params, dst, (p) -> p.toJson(dst, st));
 			}
 
 			if(extendClass != null) {
-				dst.append(", ");
-				dst.append("\"extendClassName\": ");
+				json.comma(dst).append("\"extendClassName\": ", dst);
 				extendClass.toJson(dst, st);
 			}
 
 			if(implementInterfaces.size() > 0) {
-				dst.append(", ");
-				dst.append("\"implementClassNames\": [");
-				JsonStringify.joinConsume(implementInterfaces, ", ", dst, (intfType) -> intfType.toJson(dst, st));
-				dst.append("] ");
+				json.comma(dst).append("\"implementClassNames\": ", dst);
+				json.toArrayConsume(implementInterfaces, dst, (intfType) -> intfType.toJson(dst, st));
 			}
 
 			dst.append(" }");

@@ -35,7 +35,7 @@ public enum JavaKeyword implements AccessModifier {
 	ELSE("else"),
 	ENUM("enum", Flag.BLOCK_MOD),
 	EXTENDS("extends"),
-	FINAL("final", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
+	FINAL("final", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.PARAMETER_MOD | Flag.CLASS_MOD),
 	FINALLY("finally"),
 	FLOAT("float", Flag.IS_TYPE),
 	FOR("for"),
@@ -77,6 +77,7 @@ public enum JavaKeyword implements AccessModifier {
 	public final boolean isClassModifier;
 	public final boolean isFieldModifier;
 	public final boolean isMethodModifier;
+	public final boolean isParameterModifier;
 	public final boolean isBlockModifier;
 	public final boolean isOperator;
 	public final boolean isTypeLiteral;
@@ -88,6 +89,7 @@ public enum JavaKeyword implements AccessModifier {
 		this.isClassModifier = false;
 		this.isFieldModifier = false;
 		this.isMethodModifier = false;
+		this.isParameterModifier = false;
 		this.isBlockModifier = false;
 		this.isOperator = false;
 		this.isTypeLiteral = false;
@@ -100,6 +102,7 @@ public enum JavaKeyword implements AccessModifier {
 		this.isClassModifier = (typeFlags & Flag.CLASS_MOD) == Flag.CLASS_MOD;
 		this.isFieldModifier = (typeFlags & Flag.FIELD_MOD) == Flag.FIELD_MOD;
 		this.isMethodModifier = (typeFlags & Flag.METHOD_MOD) == Flag.METHOD_MOD;
+		this.isParameterModifier = (typeFlags & Flag.PARAMETER_MOD) == Flag.PARAMETER_MOD;
 		this.isBlockModifier = (typeFlags & Flag.BLOCK_MOD) == Flag.BLOCK_MOD;
 		this.isOperator = (typeFlags & Flag.OPERATOR_MOD) == Flag.OPERATOR_MOD;
 		this.isTypeLiteral = (typeFlags & Flag.TYPE_LITERAL) == Flag.TYPE_LITERAL;
@@ -123,6 +126,7 @@ public enum JavaKeyword implements AccessModifier {
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> classModifiers;
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> fieldModifiers;
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> methodModifiers;
+		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> parameterModifiers;
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> blockModifiers;
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> operators;
 		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> typeLiterals;
@@ -135,6 +139,7 @@ public enum JavaKeyword implements AccessModifier {
 					(e) -> e.isClassModifier,
 					(e) -> e.isFieldModifier,
 					(e) -> e.isMethodModifier,
+					(e) -> e.isParameterModifier,
 					(e) -> e.isBlockModifier,
 					(e) -> e.isOperator,
 					(e) -> e.isTypeLiteral
@@ -147,6 +152,7 @@ public enum JavaKeyword implements AccessModifier {
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];
 			methodModifiers = enumSets[i++];
+			parameterModifiers = enumSets[i++];
 			blockModifiers = enumSets[i++];
 			operators = enumSets[i++];
 			typeLiterals = enumSets[i++];
@@ -187,6 +193,12 @@ public enum JavaKeyword implements AccessModifier {
 
 
 		@Override
+		public boolean isParameterModifier(String str, int position) {
+			return parameterModifiers.find(str) != null;
+		}
+
+
+		@Override
 		public boolean isType(String str) {
 			return types.find(str) != null;
 		}
@@ -216,6 +228,7 @@ public enum JavaKeyword implements AccessModifier {
 		static final int CLASS_MOD = 2;
 		static final int FIELD_MOD = 4;
 		static final int METHOD_MOD = 8;
+		static final int PARAMETER_MOD = 8;
 		static final int BLOCK_MOD = 16;
 		static final int OPERATOR_MOD = 32;
 		static final int TYPE_LITERAL = 64;

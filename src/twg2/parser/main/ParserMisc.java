@@ -55,7 +55,7 @@ public class ParserMisc {
 			val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
 
 			if(printBlockSignatures) {
-				System.out.println("\n==== Blocks: \n" + StringJoin.Objects.join(blockDeclarations, "\n"));
+				System.out.println("\n==== Blocks: \n" + StringJoin.join(blockDeclarations, "\n"));
 			}
 
 			for(val blockInfo : blockDeclarations) {
@@ -63,12 +63,12 @@ public class ParserMisc {
 				System.out.println("\n==== Block: \n" + block.getSignature());
 				if(printFieldSignatures) {
 					if(block.getBlockType().canContainFields()) {
-						System.out.println("\n\t==== Fields: \n\t" + StringJoin.Objects.join(block.getFields(), "\n\t"));
+						System.out.println("\n\t==== Fields: \n\t" + StringJoin.join(block.getFields(), "\n\t"));
 					}
 				}
 				if(printMethodSignatures) {
 					if(block.getBlockType().canContainMethods()) {
-						System.out.println("\n\t==== Methods: \n\t" + StringJoin.Objects.join(block.getMethods(), "\n\t"));
+						System.out.println("\n\t==== Methods: \n\t" + StringJoin.join(block.getMethods(), "\n\t"));
 					}
 				}
 				System.out.println("====\n");

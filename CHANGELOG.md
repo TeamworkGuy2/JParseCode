@@ -4,7 +4,29 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.12.1](N/A) - 2016-10-02
+###[0.13.0](N/A) - 2016-10-26
+#### Added
+* Added ParameterSig and ParameterSigResolved 'parameterModifiers' field
+* Added KeywordUtil parameterModifiers() and isParameterModifier()
+
+#### Changed
+__Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
+* MethodParametersParser.extractParamsFromSignature() to support parameter modifiers
+* Renamed CodeTokenizerBuilder addConstParser() -> addParser()
+* Added FieldDef.initializerToJson() 'preClosingComma' parameter
+* Updated dependencies, specifically jfile-io to 0.7.0 which no longer contains JsonWrite, so added json-stringify library for new equivalent JsonStringify class and updated related code
+* Updated toJson() methods to use JsonStringify.inst:
+  * FieldDef
+  * FieldDefResolved
+  * FieldSig
+  * FieldSigResolver
+  * MethodSig
+  * ParameterSig
+  * ParameterSigResolved
+
+
+--------
+###[0.12.1](https://github.com/TeamworkGuy2/JParseCode/commit/a0ef508705fb685798e8762fbc08cd5a92eff273) - 2016-10-02
 #### Changed
 * Updated dependencies, specifically jfile-io to 0.7.0 which no longer contains JsonWrite, so added json-stringify library for new equivalent JsonStringify class and updated related code
 

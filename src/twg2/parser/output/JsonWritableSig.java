@@ -1,13 +1,10 @@
 package twg2.parser.output;
 
-import java.io.IOException;
+import twg2.io.json.stringify.JsonWritable;
 
 /**
  * @author TeamworkGuy2
  * @since 2015-12-10
  */
-public interface JsonWritableSig {
-
-	public void toJson(Appendable dst, WriteSettings st) throws IOException;
-
+public interface JsonWritableSig extends JsonWritable<WriteSettings> {
 }

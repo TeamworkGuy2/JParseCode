@@ -59,14 +59,14 @@ public enum CsKeyword implements AccessModifier {
 	NULL("null", Flag.TYPE_LITERAL),
 	OBJECT("object", Flag.IS_TYPE),
 	OPERATOR("operator"),
-	OUT("out"),
+	OUT("out", Flag.PARAMETER_MOD),
 	OVERRIDE("override", Flag.METHOD_MOD),
-	PARAMS("params"),
+	PARAMS("params", Flag.PARAMETER_MOD),
 	PRIVATE("private", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	PROTECTED("protected", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	PUBLIC("public", Flag.FIELD_MOD | Flag.METHOD_MOD | Flag.CLASS_MOD),
 	READONLY("readonly", Flag.FIELD_MOD),
-	REF("ref"),
+	REF("ref", Flag.PARAMETER_MOD),
 	RETURN("return"),
 	SBYTE("sbyte", Flag.IS_TYPE),
 	SEALED("sealed", Flag.METHOD_MOD | Flag.CLASS_MOD),
@@ -101,6 +101,7 @@ public enum CsKeyword implements AccessModifier {
 	public final boolean isClassModifier;
 	public final boolean isFieldModifier;
 	public final boolean isMethodModifier;
+	public final boolean isParameterModifier;
 	public final boolean isBlockModifier;
 	public final boolean isOperator;
 	public final boolean isTypeLiteral;
@@ -112,6 +113,7 @@ public enum CsKeyword implements AccessModifier {
 		this.isClassModifier = false;
 		this.isFieldModifier = false;
 		this.isMethodModifier = false;
+		this.isParameterModifier = false;
 		this.isBlockModifier = false;
 		this.isOperator = false;
 		this.isTypeLiteral = false;
@@ -124,6 +126,7 @@ public enum CsKeyword implements AccessModifier {
 		this.isClassModifier = (typeFlags & Flag.CLASS_MOD) == Flag.CLASS_MOD;
 		this.isFieldModifier = (typeFlags & Flag.FIELD_MOD) == Flag.FIELD_MOD;
 		this.isMethodModifier = (typeFlags & Flag.METHOD_MOD) == Flag.METHOD_MOD;
+		this.isParameterModifier = (typeFlags & Flag.PARAMETER_MOD) == Flag.PARAMETER_MOD;
 		this.isBlockModifier = (typeFlags & Flag.BLOCK_MOD) == Flag.BLOCK_MOD;
 		this.isOperator = (typeFlags & Flag.OPERATOR_MOD) == Flag.OPERATOR_MOD;
 		this.isTypeLiteral = (typeFlags & Flag.TYPE_LITERAL) == Flag.TYPE_LITERAL;
@@ -151,6 +154,7 @@ public enum CsKeyword implements AccessModifier {
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> classModifiers;
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> fieldModifiers;
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> methodModifiers;
+		@Getter private final CodeFragmentEnumSubSet<CsKeyword> parameterModifiers;
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> blockModifiers;
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> operators;
 		@Getter private final CodeFragmentEnumSubSet<CsKeyword> typeLiterals;
@@ -163,6 +167,7 @@ public enum CsKeyword implements AccessModifier {
 				(e) -> e.isClassModifier,
 				(e) -> e.isFieldModifier,
 				(e) -> e.isMethodModifier,
+				(e) -> e.isParameterModifier,
 				(e) -> e.isBlockModifier,
 				(e) -> e.isOperator,
 				(e) -> e.isTypeLiteral
@@ -175,6 +180,7 @@ public enum CsKeyword implements AccessModifier {
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];
 			methodModifiers = enumSets[i++];
+			parameterModifiers = enumSets[i++];
 			blockModifiers = enumSets[i++];
 			operators = enumSets[i++];
 			typeLiterals = enumSets[i++];
@@ -218,6 +224,12 @@ public enum CsKeyword implements AccessModifier {
 
 
 		@Override
+		public boolean isParameterModifier(String str, int position) {
+			return parameterModifiers.find(str) != null || (position == 0 && CsKeyword.THIS.srcName.equals(str));
+		}
+
+
+		@Override
 		public boolean isType(String str) {
 			return types.find(str) != null;
 		}
@@ -247,9 +259,10 @@ public enum CsKeyword implements AccessModifier {
 		static final int CLASS_MOD = 2;
 		static final int FIELD_MOD = 4;
 		static final int METHOD_MOD = 8;
-		static final int BLOCK_MOD = 16;
-		static final int OPERATOR_MOD = 32;
-		static final int TYPE_LITERAL = 64;
+		static final int PARAMETER_MOD = 16;
+		static final int BLOCK_MOD = 32;
+		static final int OPERATOR_MOD = 64;
+		static final int TYPE_LITERAL = 128;
 	}
 
 }

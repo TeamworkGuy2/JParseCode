@@ -170,7 +170,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 			val comments = new ArrayList<>(commentParser.getParserResult());
 			commentParser.recycle();
 
-			val params = MethodParametersParser.extractParamsFromSignature(tokenNode);
+			val params = MethodParametersParser.extractParamsFromSignature(keywordUtil, tokenNode);
 			val accessMods = new ArrayList<>(accessModifiers);
 
 			methods.add(new MethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));

@@ -165,10 +165,10 @@ public class ParserWorkflow {
 					sb.append(newline);
 				}
 				for(val fileSet : fileSets.entrySet()) {
-					sb.append(fileSet.getKey().getSrcName());
-					sb.append(": [");
-					JsonStringify.join(fileSet.getValue(), ", ", false, sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
-					sb.append("]" + newline);
+					JsonStringify.inst
+						.propName(fileSet.getKey().getSrcName(), sb)
+						.toArray(fileSet.getValue(), sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()))
+						.append(newline, sb);
 				}
 
 				log.log(level, this.getClass(), sb.toString());
@@ -232,10 +232,10 @@ public class ParserWorkflow {
 				}
 
 				for(val fileSet : fileSets.entrySet()) {
-					sb.append(fileSet.getKey().getSrcName());
-					sb.append(": [");
-					JsonStringify.join(fileSet.getValue(), ", ", false, sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()));
-					sb.append("]" + newline);
+					JsonStringify.inst
+						.propNameUnquoted(fileSet.getKey().getSrcName(), sb)
+						.toArray(fileSet.getValue(), sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()))
+						.append(newline, sb);
 				}
 
 				log.log(level, this.getClass(), sb.toString());
@@ -279,7 +279,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 					sb.append(entry.getKey());
 					sb.append(newline);
-					JsonStringify.join(entry.getValue(), newline, false, sb, (f) -> NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName()));
+					JsonStringify.inst.join(entry.getValue(), newline, false, sb, (f) -> NameUtil.joinFqName(f.getParsedClass().getSignature().getFullName()));
 					sb.append(newline);
 				}
 				log.log(level, this.getClass(), sb.toString());

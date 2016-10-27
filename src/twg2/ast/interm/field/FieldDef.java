@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig.TypeSigSimple;
@@ -35,26 +36,24 @@ public class FieldDef extends FieldSig {
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
+		val json = JsonStringify.inst;
+
 		dst.append("{ ");
-		dst.append("\"name\": \"" + (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)) + "\", ");
+		json.toProp("name", (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)), dst);
 
-		dst.append("\"type\": ");
+		json.comma(dst).propName("type", dst);
 		fieldType.toJson(dst, st);
-		dst.append(", ");
 
-		dst.append("\"accessModifiers\": [");
-		JsonStringify.join(accessModifiers, ", ", dst, (acs) -> '"' + acs.toSrc() + '"');
-		dst.append("], ");
+		json.comma(dst).propName("accessModifiers", dst)
+			.toStringArray(accessModifiers, dst, (acs) -> acs.toSrc());
 
-		dst.append("\"annotations\": [");
-		JsonStringify.joinConsume(annotations, ", ", dst, (ann) -> ann.toJson(dst, st));
-		dst.append("], ");
+		json.comma(dst).propName("annotations", dst)
+			.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
 
-		initializerToJson(initializer, dst, st);
+		initializerToJson(initializer, true, dst, st);
 
-		dst.append("\"comments\": [");
-		JsonStringify.joinConsume(comments, ", ", dst, (str) -> { dst.append('"'); StringEscapeJson.toJsonString(str, 0, str.length(), dst); dst.append('"'); });
-		dst.append("]");
+		json.comma(dst).propName("comments", dst)
+			.toStringArray(comments, dst);
 
 		dst.append(" }");
 	}
@@ -69,12 +68,15 @@ public class FieldDef extends FieldSig {
 	/** Write a field initializer to a JSON field named 'initializer' if the value is a number, boolean, string, or null literal, else write it to a field named 'initializerExpression'
 	 * @throws IOException
 	 */
-	public static void initializerToJson(SimpleTree<CodeFragment> astNode, Appendable dst, WriteSettings st) throws IOException {
+	public static void initializerToJson(SimpleTree<CodeFragment> astNode, boolean preClosingComma, Appendable dst, WriteSettings st) throws IOException {
 		CodeFragment data = null;
 		boolean isNumOrBoolOrNull = false;
 		if(astNode != null && !astNode.hasChildren() && (data = astNode.getData()) != null &&
 				(data.getFragmentType() == CodeFragmentType.STRING ||
 				(isNumOrBoolOrNull = (data.getFragmentType() == CodeFragmentType.NUMBER || DataTypeExtractor.isBooleanLiteral(data) || DataTypeExtractor.isNullLiteral(data))))) {
+			if(preClosingComma) {
+				dst.append(", ");
+			}
 			dst.append("\"initializer\": ");
 			if(isNumOrBoolOrNull) {
 				dst.append(data.getText());
@@ -84,9 +86,11 @@ public class FieldDef extends FieldSig {
 				dst.append(StringEscapeJson.toJsonString(data.getText()));
 				dst.append('"');
 			}
-			dst.append(", ");
 		}
 		else if(astNode != null && astNode.hasChildren()) {
+			if(preClosingComma) {
+				dst.append(", ");
+			}
 			dst.append("\"initializerExpression\": ");
 			if((data = astNode.getData()) != null && !DataTypeExtractor.isNullLiteral(data)) {
 				dst.append('"');
@@ -96,7 +100,6 @@ public class FieldDef extends FieldSig {
 			else {
 				dst.append(null);
 			}
-			dst.append(", ");
 		}
 	}
 

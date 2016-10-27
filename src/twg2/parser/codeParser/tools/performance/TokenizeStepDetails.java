@@ -85,7 +85,7 @@ public class TokenizeStepDetails implements JsonWritableSig {
 
 	public static void toJsons(Map<String, TokenizeStepDetails> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
-		JsonStringify.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
+		JsonStringify.inst.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
 			val stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);

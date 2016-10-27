@@ -26,6 +26,9 @@ public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
 	/** Check if a string is a keyword primitive data type */
 	public boolean isPrimitive(String str);
 
+	/** Check if a string is a method parameter modifier (at a given, 0-based, position in the parameter list) */
+	public boolean isParameterModifier(String str, int position);
+
 	/** Check if a string is a keyword data type */
 	public boolean isType(String str);
 
@@ -50,6 +53,10 @@ public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
 	/** Checks for method modifier keywords (i.e. 'synchronized', 'static', 'final', 'protected')
 	 */
 	public CodeFragmentEnumSubSet<T_KEYWORD> methodModifiers();
+
+	/** Checks for method parameter modifier keywords (i.e. 'out' , 'final')
+	 */
+	public CodeFragmentEnumSubSet<T_KEYWORD> parameterModifiers();
 
 	/** Checks for operator keywords (i.e. 'As', 'Is', 'instanceof')
 	 */

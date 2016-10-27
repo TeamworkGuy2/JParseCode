@@ -100,7 +100,7 @@ public class ParseTimes implements JsonWritableSig {
 
 	public static final void toJsons(Map<String, ParseTimes> fileParseTimes, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
-		JsonStringify.joinConsume(fileParseTimes.entrySet(), ",\n", dst, (entry) -> {
+		JsonStringify.inst.joinConsume(fileParseTimes.entrySet(), ",\n", dst, (entry) -> {
 			val stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);

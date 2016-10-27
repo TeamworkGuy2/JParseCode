@@ -159,26 +159,23 @@ public interface TypeSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			dst.append("{ ");
-			dst.append("\"typeName\": \"" + typeName + "\", ");
+			val json = JsonStringify.inst;
 
-			dst.append("\"genericParameters\": [");
-			JsonStringify.joinConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
-			dst.append("]");
+			dst.append("{ ");
+			json.toProp("typeName", typeName, dst).comma(dst)
+				.propName("genericParameters", dst)
+					.toArrayConsume(params, dst, (param) -> param.toJson(dst, st));
 
 			if(arrayDimensions > 0) {
-				dst.append(", ");
-				dst.append("\"arrayDimensions\": " + arrayDimensions);
+				json.comma(dst).toProp("arrayDimensions", arrayDimensions, dst);
 			}
 
 			if(nullable) {
-				dst.append(", ");
-				dst.append("\"nullable\": " + nullable);
+				json.comma(dst).toProp("nullable", nullable, dst);
 			}
 
 			if(primitive) {
-				dst.append(", ");
-				dst.append("\"primitive\": " + primitive);
+				json.comma(dst).toProp("primitive", primitive, dst);
 			}
 
 			dst.append(" }");
@@ -340,26 +337,23 @@ public interface TypeSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			dst.append("{ ");
-			dst.append("\"typeName\": \"" + NameUtil.joinFqName(fullName) + "\", ");
+			val json = JsonStringify.inst;
 
-			dst.append("\"genericParameters\": [");
-			JsonStringify.joinConsume(params, ", ", dst, (param) -> param.toJson(dst, st));
-			dst.append("]");
+			dst.append("{ ");
+			json.toProp("typeName", NameUtil.joinFqName(fullName), dst).comma(dst)
+				.propName("genericParameters", dst)
+					.toArrayConsume(params, dst, (param) -> param.toJson(dst, st));
 
 			if(arrayDimensions > 0) {
-				dst.append(", ");
-				dst.append("\"arrayDimensions\": " + arrayDimensions);
+				json.comma(dst).toProp("arrayDimensions", arrayDimensions, dst);
 			}
 
 			if(nullable) {
-				dst.append(", ");
-				dst.append("\"nullable\": " + nullable);
+				json.comma(dst).toProp("nullable", nullable, dst);
 			}
 
 			if(primitive) {
-				dst.append(", ");
-				dst.append("\"primitive\": " + primitive);
+				json.comma(dst).toProp("primitive", primitive, dst);
 			}
 
 			dst.append(" }");

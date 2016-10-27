@@ -178,13 +178,13 @@ public class CharConditionPipe {
 			int maxI = lists.size() - 1;
 			for(int i = 0; i < maxI; i++) {
 				sb.append(prefixDelimiter);
-				sb.append(StringJoin.Objects.join(lists.get(i), joiner));
+				sb.append(StringJoin.join(lists.get(i), joiner));
 				sb.append(suffixDelimiter);
 				sb.append(joiner);
 			}
 			if(maxI > -1) {
 				sb.append(prefixDelimiter);
-				sb.append(StringJoin.Objects.join(lists.get(maxI), joiner));
+				sb.append(StringJoin.join(lists.get(maxI), joiner));
 				sb.append(suffixDelimiter);
 			}
 			return sb.toString();

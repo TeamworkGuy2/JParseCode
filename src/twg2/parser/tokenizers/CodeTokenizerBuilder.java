@@ -42,20 +42,30 @@ public class CodeTokenizerBuilder<T_LANG> {
 	}
 
 
+	/** Add a token parser and an associated function which accepts a token and returns the {@link CodeFragmentType} of that token
+	 * @param parser the parser to add to this code tokenizer builder
+	 * @param transformer a function which accepts a token parsed by the {@code parser} and determines the token's {@link CodeFragmentType}
+	 * @return this instance
+	 */
 	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, TextTransformer<CodeFragmentType> transformer) {
 		this.parsers.add(parser, transformer);
 		return this;
 	}
 
 
-	public CodeTokenizerBuilder<T_LANG> addConstParser(CharParserFactory parser, CodeFragmentType type) {
+	/** Add a parser which always returns the specified {@code type}
+	 * @param parser the parser to add to this code tokenizer builder
+	 * @param type the {@link CodeFragmentType} to assign to tokens parsed by the {@code parser}
+	 * @return this instance
+	 */
+	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, CodeFragmentType type) {
 		this.parsers.add(parser, (text, off, len) -> type);
 		return this;
 	}
 
 
 	/** Build a document parser from the parsers added via {@link #addParser(CharParserFactory, TextTransformer)}
-	 * and {@link #addConstParser(CharParserFactory, CodeFragmentType)}
+	 * and {@link #addParser(CharParserFactory, CodeFragmentType)}
 	 */
 	public CodeTokenizer<T_LANG> build() {
 		return (src, srcOff, srcLen, srcName, stepDetails) -> tokenizeCodeFile(parsers, src, srcOff, srcLen, language, srcName, stepDetails);

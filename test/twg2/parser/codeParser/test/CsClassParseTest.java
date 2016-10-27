@@ -17,6 +17,7 @@ import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlockParser;
+import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
@@ -78,6 +79,16 @@ public class CsClassParseTest {
 		"    [TransactionFlow(TransactionFlowOption.Allowed)]",
 		"    Result<IList<String>> AddName(string name) {",
 		"        content of block;",
+		"    }",
+		"",
+		"    /// <summary>Set names</summary>",
+		"    /// <param name=\"names\">the names</param>",
+		"    /// <returns>the names</returns>",
+		"    [OperationContract]",
+		"    [WebInvoke(Method = \"PUT\", UriTemplate = \"/SetNames?names={names}\",",
+		"        ResponseFormat = WebMessageFormat.Json)]",
+		"    IList<int?> SetNames(this SimpleCs inst, ref Constraints constraints, params string[] names) {",
+		"        content of SetNames;",
 		"    }",
 		"",
 		"  }",
@@ -164,7 +175,10 @@ public class CsClassParseTest {
 		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
-		Assert.assertEquals(1, clas.getMethods().size());
+		// methods:
+		Assert.assertEquals(2, clas.getMethods().size());
+
+		// AddName()
 		MethodSig.SimpleImpl m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.getFullName()));
 		ParameterSig p = m.getParamSigs().get(0);
@@ -187,6 +201,24 @@ public class CsClassParseTest {
 		Assert.assertEquals("Result", m.getReturnType().getTypeName());
 		Assert.assertEquals("IList", m.getReturnType().getParams().get(0).getTypeName());
 		Assert.assertEquals("String", m.getReturnType().getParams().get(0).getParams().get(0).getTypeName());
+
+		// SetNames()
+		m = clas.getMethods().get(1);
+		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.getFullName()));
+		p = m.getParamSigs().get(0);
+		Assert.assertEquals("inst", p.getName());
+		Assert.assertEquals("SimpleCs", p.getTypeSimpleName());
+		Assert.assertEquals(Arrays.asList(CsKeyword.THIS), p.getParameterModifiers());
+
+		p = m.getParamSigs().get(1);
+		Assert.assertEquals("constraints", p.getName());
+		Assert.assertEquals("Constraints", p.getTypeSimpleName());
+		Assert.assertEquals(Arrays.asList(CsKeyword.REF), p.getParameterModifiers());
+
+		p = m.getParamSigs().get(2);
+		Assert.assertEquals("names", p.getName());
+		Assert.assertEquals("string[]", p.getTypeSimpleName());
+		Assert.assertEquals(Arrays.asList(CsKeyword.PARAMS), p.getParameterModifiers());
 	}
 
 }

@@ -24,17 +24,17 @@ public class JavaFileTokenizer {
 		val numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
 		val parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.JAVA)
-			.addConstParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)
-			.addConstParser(CodeStringTokenizer.createStringTokenizerForJava(), CodeFragmentType.STRING)
-			.addConstParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeFragmentType.BLOCK)
-			.addConstParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeFragmentType.BLOCK)
+			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)
+			.addParser(CodeStringTokenizer.createStringTokenizerForJava(), CodeFragmentType.STRING)
+			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeFragmentType.BLOCK)
+			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeFragmentType.BLOCK)
 			// no annotation parser, instead we parse
 			.addParser(identifierParser, (text, off, len) -> {
 				return JavaKeyword.check.isKeyword(text.toString()) ? CodeFragmentType.KEYWORD : CodeFragmentType.IDENTIFIER; // possible bad performance
 			})
-			.addConstParser(createOperatorTokenizer(), CodeFragmentType.OPERATOR)
-			.addConstParser(createSeparatorTokenizer(), CodeFragmentType.SEPARATOR)
-			.addConstParser(numericLiteralParser, CodeFragmentType.NUMBER);
+			.addParser(createOperatorTokenizer(), CodeFragmentType.OPERATOR)
+			.addParser(createSeparatorTokenizer(), CodeFragmentType.SEPARATOR)
+			.addParser(numericLiteralParser, CodeFragmentType.NUMBER);
 
 		return parser;
 	}

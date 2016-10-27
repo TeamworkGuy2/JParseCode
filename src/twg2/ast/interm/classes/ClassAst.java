@@ -71,51 +71,51 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
+			val json = JsonStringify.inst;
+
 			dst.append("{\n");
 
-			dst.append("\t\"classSignature\": ");
+			json.indent('\t', dst).propName("classSignature", dst);
 			signature.toJson(dst, st);
-			dst.append(",\n");
 
-			dst.append("\t\"blockType\": \"" + blockType + "\",\n");
+			json.comma("\n\t", dst).toProp("blockType", blockType.toString(), dst);
 
-			dst.append("\t\"using\": [");
-			JsonStringify.join(usingStatements, ", ", dst, (us) -> '"' + NameUtil.joinFqName(us) + '"');
-			dst.append("],\n");
+			json.comma("\n\t", dst).propName("using", dst)
+				.toStringArray(usingStatements, dst, (us) -> NameUtil.joinFqName(us));
 
 			if(enumMembers != null && blockType.isEnum()) {
-				dst.append("\t\"enumMembers\": [");
+				json.comma("\n\t", dst).propName("enumMembers", dst).append('[', dst);
 				if(enumMembers.size() > 0) {
 					dst.append("\n\t\t");
-					JsonStringify.joinConsume(enumMembers, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
+					json.joinConsume(enumMembers, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
 					dst.append("\n\t");
 				}
-				dst.append("],\n");
+				dst.append("]");
 			}
 
-			dst.append("\t\"fields\": [");
+			json.comma("\n\t", dst).propName("fields", dst).append('[', dst);
 			if(fields.size() > 0) {
 				dst.append("\n\t\t");
-				JsonStringify.joinConsume(fields, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
+				json.joinConsume(fields, ",\n\t\t", dst, (f) -> f.toJson(dst, st));
 				dst.append("\n\t");
 			}
-			dst.append("],\n");
+			dst.append("]");
 
-			dst.append("\t\"methods\": [");
+			json.comma("\n\t", dst).propName("methods", dst).append('[', dst);
 			if(methods.size() > 0) {
 				dst.append("\n\t\t");
-				JsonStringify.joinConsume(methods, ",\n\t\t", dst, (m) -> m.toJson(dst, st));
+				json.joinConsume(methods, ",\n\t\t", dst, (m) -> m.toJson(dst, st));
 				dst.append("\n\t");
 			}
-			dst.append("]\n");
+			dst.append("]");
 
-			dst.append("}");
+			dst.append("\n}");
 		}
 
 
 		@Override
 		public String toString() {
-			return blockType + " " + signature.toString() + " { " + StringJoin.Objects.join(fields, "; ") + " " + StringJoin.Objects.join(methods, "; ") + " }";
+			return blockType + " " + signature.toString() + " { " + StringJoin.join(fields, "; ") + " " + StringJoin.join(methods, "; ") + " }";
 		}
 
 	}

@@ -6,7 +6,10 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.method.ParameterSig;
+import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeFragmentType;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -16,7 +19,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
 public class MethodParametersParser {
 
 	// TODO does not support default parameters
-	public static List<ParameterSig> extractParamsFromSignature(SimpleTree<CodeFragment> sigNode) {
+	public static List<ParameterSig> extractParamsFromSignature(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeFragment> sigNode) {
 		val childs = sigNode.getChildren();
 		int size = childs.size();
 
@@ -27,15 +30,25 @@ public class MethodParametersParser {
 		List<ParameterSig> params = new ArrayList<>();
 
 		for(int i = 0; i < size; i += 2) {
-			val type = childs.get(i + 0).getData().getText();
+			CodeFragment token = childs.get(i + 0).getData();
+			List<AccessModifier> paramMods = new ArrayList<>();
+			if(token.getFragmentType() == CodeFragmentType.KEYWORD && keywordUtil.isParameterModifier(token.getText(), params.size())) {
+				paramMods.add(keywordUtil.toKeyword(token.getText()));
+				i++;
+				token = childs.get(i + 0).getData();
+			}
+
+			val type = token.getText();
+
 			boolean optional = false;
-			if(childs.get(i + 1).getData().getText().equals("?")) {
+			token = childs.get(i + 1).getData();
+			if(token.getText().equals("?")) {
 				optional = true;
 				// each parameter is expected to have 2, so jump the optional one
 				i++;
 			}
 			val name = childs.get(i + 1).getData().getText();
-			val param = new ParameterSig(name, type, optional, null);
+			val param = new ParameterSig(name, type, paramMods, optional, null);
 			params.add(param);
 		}
 

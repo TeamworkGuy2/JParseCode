@@ -43,8 +43,8 @@ public class CommentAndWhitespaceExtractor {
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
 		val parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
-			.addConstParser(commentParser, CodeFragmentType.COMMENT)
-			.addConstParser(stringParser, CodeFragmentType.STRING)
+			.addParser(commentParser, CodeFragmentType.COMMENT)
+			.addParser(stringParser, CodeFragmentType.STRING)
 			.build();
 		return parser.tokenizeDocument(src, srcOff, srcLen, srcName, null);
 	}

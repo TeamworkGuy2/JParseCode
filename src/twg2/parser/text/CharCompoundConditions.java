@@ -121,7 +121,7 @@ public class CharCompoundConditions {
 
 		@Override
 		public String toString() {
-			return StringJoin.Objects.join(originalConds, ", or ");
+			return StringJoin.join(originalConds, ", or ");
 		}
 
 	}

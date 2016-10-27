@@ -17,6 +17,7 @@ import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaBlockParser;
+import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
@@ -70,6 +71,12 @@ public class JavaClassParseTest {
 		"    @TransactionFlow(TransactionFlowOption.Allowed)",
 		"    Result<List<String>> AddName(String name) {",
 		"        content of block;",
+		"    }",
+		"",
+		"    @WebInvoke(Method = \"PUT\", UriTemplate = \"/SetNames?names={names}\",",
+		"        ResponseFormat = WebMessageFormat.Json)",
+		"    List<Integer> SetNames(final String[] names) {",
+		"        content of SetNames;",
 		"    }",
 		"",
 		"}"
@@ -147,7 +154,10 @@ public class JavaClassParseTest {
 		Assert.assertEquals("ZonedDateTime", f.getFieldType().getTypeName());
 		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
 
-		Assert.assertEquals(1, clas.getMethods().size());
+		// methods:
+		Assert.assertEquals(2, clas.getMethods().size());
+
+		// AddName()
 		MethodSig.SimpleImpl m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.getFullName()));
 		ParameterSig p = m.getParamSigs().get(0);
@@ -171,6 +181,14 @@ public class JavaClassParseTest {
 		Assert.assertEquals("Result", m.getReturnType().getTypeName());
 		Assert.assertEquals("List", m.getReturnType().getParams().get(0).getTypeName());
 		Assert.assertEquals("String", m.getReturnType().getParams().get(0).getParams().get(0).getTypeName());
+
+		// SetNames()
+		m = clas.getMethods().get(1);
+		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.getFullName()));
+		p = m.getParamSigs().get(0);
+		Assert.assertEquals("names", p.getName());
+		Assert.assertEquals("String[]", p.getTypeSimpleName());
+		Assert.assertEquals(Arrays.asList(JavaKeyword.FINAL), p.getParameterModifiers());
 	}
 
 }
