@@ -4,7 +4,7 @@ import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -14,11 +14,11 @@ import twg2.treeLike.simpleTree.SimpleTree;
 @Immutable
 public class BlockAst<T_BLOCK extends BlockType> {
 	private final @Getter ClassSig.SimpleImpl declaration;
-	private final @Getter SimpleTree<CodeFragment> blockTree;
+	private final @Getter SimpleTree<CodeToken> blockTree;
 	private final @Getter T_BLOCK blockType;
 
 
-	public BlockAst(ClassSig.SimpleImpl declaration, SimpleTree<CodeFragment> blockTree, T_BLOCK blockType) {
+	public BlockAst(ClassSig.SimpleImpl declaration, SimpleTree<CodeToken> blockTree, T_BLOCK blockType) {
 		this.declaration = declaration;
 		this.blockTree = blockTree;
 		this.blockType = blockType;

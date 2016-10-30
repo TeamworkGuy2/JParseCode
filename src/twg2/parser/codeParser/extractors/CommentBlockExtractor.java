@@ -6,8 +6,8 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.parser.stateMachine.Consume;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -41,7 +41,7 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -55,8 +55,8 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 	}
 
 
-	private Consume findComment(SimpleTree<CodeFragment> tokenNode) {
-		if(tokenNode.getData().getFragmentType() == CodeFragmentType.COMMENT) {
+	private Consume findComment(SimpleTree<CodeToken> tokenNode) {
+		if(tokenNode.getData().getTokenType() == CodeTokenType.COMMENT) {
 			this.state = State.FINDING_COMMENTS;
 			this.comments.add(extractCommentText(tokenNode.getData()));
 			return Consume.ACCEPTED;
@@ -69,7 +69,7 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 
 
 	// TODO makes assumptions about comment begin and end markers
-	private String extractCommentText(CodeFragment nodeData) {
+	private String extractCommentText(CodeToken nodeData) {
 		String text = nodeData.getText();
 		int len = text.length();
 		if(len == 0) { return text; }

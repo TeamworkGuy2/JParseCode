@@ -1,7 +1,7 @@
 package twg2.parser.tokenizers;
 
-import twg2.parser.codeParser.tools.performance.TokenizeStepDetails;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.workflow.CodeFileSrc;
 
 /**
@@ -15,8 +15,8 @@ public interface CodeTokenizer<T_LANG> {
 	 * @param src the source string
 	 * @param srcName (optional) the name of the source, can be null
 	 * @param stepsDetails (optional) code parser stat tracker, if null, no stats are tracked
-	 * @return a parsed {@link CodeFileSrc} containing {@link CodeFragment} nodes represented the tokens parsed from {@code src}
+	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
-	public CodeFileSrc<T_LANG> tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, TokenizeStepDetails stepsDetails);
+	public CodeFileSrc<T_LANG> tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, TokenizeStepLogger stepsDetails);
 
 }

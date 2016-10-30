@@ -1,5 +1,5 @@
 {
-	"version" : "0.13.0",
+	"version" : "0.14.0",
 	"name" : "jparse-code",
 	"description" : "An in-progress suite of parsing/transpilation tools for C#, Java, and TypeScript code.  Generates simple JSON ASTs.",
 	"homepage" : "https://github.com/TeamworkGuy2/JParseCode",
@@ -25,6 +25,7 @@
 		"json-stringify": "*",
 		"jstreamish": "*",
 		"jtext-parser": "*",
+		"jtext-tokenizer": "*",
 		"jtext-util": "*",
 		"jtree-walker": "*",
 		"jtuples": "*"

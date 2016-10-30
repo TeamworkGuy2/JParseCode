@@ -9,20 +9,21 @@ import java.util.function.Supplier;
 
 import lombok.val;
 import twg2.collections.dataStructures.PairList;
-import twg2.parser.codeParser.tools.performance.TokenizeStepDetails;
-import twg2.parser.codeParser.tools.performance.ParseTimes.TrackerAction;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
-import twg2.parser.fragment.DocumentFragment;
-import twg2.parser.text.CharMultiConditionParser;
-import twg2.parser.text.CharParserFactory;
+import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
+import twg2.parser.fragment.TextToken;
 import twg2.parser.textFragment.TextConsumer;
-import twg2.parser.textFragment.TextFragmentRef;
+import twg2.parser.textFragment.TextFragmentRefImpl;
+import twg2.parser.textFragment.TextFragmentRefImplMut;
 import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.textParser.TextCharsParser;
 import twg2.parser.textParser.TextParser;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.parser.workflow.ParseInput;
+import twg2.text.tokenizer.CharMultiConditionParser;
+import twg2.text.tokenizer.CharParserFactory;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.treeLike.simpleTree.SimpleTreeImpl;
 import twg2.tuple.Tuples;
@@ -32,7 +33,7 @@ import twg2.tuple.Tuples;
  * @since 2015-11-24
  */
 public class CodeTokenizerBuilder<T_LANG> {
-	private PairList<CharParserFactory, TextTransformer<CodeFragmentType>> parsers;
+	private PairList<CharParserFactory, TextTransformer<CodeTokenType>> parsers;
 	private T_LANG language;
 
 
@@ -42,12 +43,12 @@ public class CodeTokenizerBuilder<T_LANG> {
 	}
 
 
-	/** Add a token parser and an associated function which accepts a token and returns the {@link CodeFragmentType} of that token
+	/** Add a token parser and an associated function which accepts a token and returns the {@link CodeTokenType} of that token
 	 * @param parser the parser to add to this code tokenizer builder
-	 * @param transformer a function which accepts a token parsed by the {@code parser} and determines the token's {@link CodeFragmentType}
+	 * @param transformer a function which accepts a token parsed by the {@code parser} and determines the token's {@link CodeTokenType}
 	 * @return this instance
 	 */
-	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, TextTransformer<CodeFragmentType> transformer) {
+	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, TextTransformer<CodeTokenType> transformer) {
 		this.parsers.add(parser, transformer);
 		return this;
 	}
@@ -55,19 +56,20 @@ public class CodeTokenizerBuilder<T_LANG> {
 
 	/** Add a parser which always returns the specified {@code type}
 	 * @param parser the parser to add to this code tokenizer builder
-	 * @param type the {@link CodeFragmentType} to assign to tokens parsed by the {@code parser}
+	 * @param type the {@link CodeTokenType} to assign to tokens parsed by the {@code parser}
 	 * @return this instance
 	 */
-	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, CodeFragmentType type) {
+	public CodeTokenizerBuilder<T_LANG> addParser(CharParserFactory parser, CodeTokenType type) {
 		this.parsers.add(parser, (text, off, len) -> type);
 		return this;
 	}
 
 
 	/** Build a document parser from the parsers added via {@link #addParser(CharParserFactory, TextTransformer)}
-	 * and {@link #addParser(CharParserFactory, CodeFragmentType)}
+	 * and {@link #addParser(CharParserFactory, CodeTokenType)}
 	 */
 	public CodeTokenizer<T_LANG> build() {
+		// TODO should fix at some point, calling addParser() changes the behavior of CodeTokenizers returned by previous calls to build()
 		return (src, srcOff, srcLen, srcName, stepDetails) -> tokenizeCodeFile(parsers, src, srcOff, srcLen, language, srcName, stepDetails);
 	}
 
@@ -79,7 +81,6 @@ public class CodeTokenizerBuilder<T_LANG> {
 	public static <_T_LANG> Function<ParseInput, CodeFileSrc<_T_LANG>> createTokenizerWithTimer(Supplier<CodeTokenizer<_T_LANG>> parserConstructor) {
 		return (params) -> {
 			try {
-				// TODO debugging
 				long start = 0;
 				if(params.parseTimes() != null) { start = System.nanoTime(); }
 
@@ -110,20 +111,20 @@ public class CodeTokenizerBuilder<T_LANG> {
 	/** Parse a source string using the parsers provided by the {@link CodeTokenizer}
 	 * @param src the source string
 	 * @param srcName optional
-	 * @return a parsed {@link CodeFileSrc} containing {@link CodeFragment} nodes represented the tokens parsed from {@code src}
+	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
-	public static <_T_LANG> CodeFileSrc<_T_LANG> tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeFragmentType>> tokenizers,
-			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepDetails stepsDetails) {
+	public static <_T_LANG> CodeFileSrc<_T_LANG> tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
+			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepLogger stepsDetails) {
 
 		val input = TextCharsParser.of(src, srcOff, srcLen, true, true, true);
 
-		val docTextFragment = new TextFragmentRef.ImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
-		val docRoot = new CodeFragment(CodeFragmentType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
+		val docTextFragment = new TextFragmentRefImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
+		val docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
 
-		SimpleTree<CodeFragment> docTree = tokenizeDocument(srcName, input, stepsDetails, tokenizers, docRoot,
-				(type, frag) -> new CodeFragment(type, frag, frag.getText(src, srcOff, srcLen).toString()),
-				(docFrag) -> docFrag.getFragmentType().isCompound(),
-				(parent, child) -> parent != child && parent.getTextFragment().contains(child.getTextFragment()));
+		SimpleTree<CodeToken> docTree = tokenizeDocument(srcName, input, stepsDetails, tokenizers, docRoot,
+				(type, frag) -> new CodeToken(type, frag, frag.getText(src, srcOff, srcLen).toString()),
+				(docFrag) -> docFrag.getTokenType().isCompound(),
+				(parent, child) -> parent != child && parent.getToken().contains(child.getToken()));
 
 		docTextFragment.setLineEnd(input.getLineNumber() - 1);
 		docTextFragment.setColumnEnd(input.getColumnNumber() - 1);
@@ -141,8 +142,8 @@ public class CodeTokenizerBuilder<T_LANG> {
 	 * @param stepsDetails optional tracker to keep track of parser stats
 	 * @return a {@link SimpleTree} containing tokens parsed from the input
 	 */
-	public static <D extends DocumentFragment<S, T>, T, S> SimpleTree<D> tokenizeDocument(String srcName, TextParser input, TokenizeStepDetails stepsDetails,
-			PairList<CharParserFactory, TextTransformer<T>> tokenizers, D root, BiFunction<T, TextFragmentRef.Impl, ? extends D> fragmentConstructor,
+	public static <D extends TextToken<S, T>, T, S> SimpleTree<D> tokenizeDocument(String srcName, TextParser input, TokenizeStepLogger stepsDetails,
+			PairList<CharParserFactory, TextTransformer<T>> tokenizers, D root, BiFunction<T, TextFragmentRefImpl, ? extends D> fragmentConstructor,
 			Function<? super D, Boolean> isParent, IsParentChild<? super D> isInside) {
 		SimpleTreeImpl<D> tree = new SimpleTreeImpl<>(root);
 
@@ -153,7 +154,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 
 			conditions.add(Tuples.of(tokenizers.getKey(i), (text, off, len, lineStart, columnStart, lineEnd, columnEnd) -> {
 				T elemType = transformer.apply(text, off, len);
-				TextFragmentRef.Impl textFragment = new TextFragmentRef.Impl(off, off + len, lineStart, columnStart, lineEnd, columnEnd);
+				TextFragmentRefImpl textFragment = new TextFragmentRefImpl(off, off + len, lineStart, columnStart, lineEnd, columnEnd);
 
 				D docFrag = fragmentConstructor.apply(elemType, textFragment);
 
@@ -193,7 +194,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 	 * @param dstToAddTo the destination to add matching children to
 	 * @return the dstToAddTo list
 	 */
-	public static <D extends DocumentFragment<S, T>, S, T> List<SimpleTreeImpl<D>> getChildrenInRange(List<? extends SimpleTreeImpl<D>> src,
+	public static <D extends TextToken<S, T>, S, T> List<SimpleTreeImpl<D>> getChildrenInRange(List<? extends SimpleTreeImpl<D>> src,
 			D parent, IsParentChild<? super D> isInside, List<SimpleTreeImpl<D>> dstToAddTo) {
 		for(int i = 0, size = src.size(); i < size; i++) {
 			SimpleTreeImpl<D> child = src.get(i);
@@ -210,7 +211,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 	 * @param tree the tree to remove child nodes from
 	 * @param children the children to remove
 	 */
-	public static <D extends DocumentFragment<S, T>, S, T> void removeChildren(SimpleTreeImpl<D> tree, List<SimpleTreeImpl<D>> children) {
+	public static <D extends TextToken<S, T>, S, T> void removeChildren(SimpleTreeImpl<D> tree, List<SimpleTreeImpl<D>> children) {
 		for(int i = 0, size = children.size(); i < size; i++) {
 			SimpleTree<D> child = children.get(i);
 			boolean res = tree.removeChild(child);

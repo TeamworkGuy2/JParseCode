@@ -14,35 +14,35 @@ import twg2.treeLike.simpleTree.SimpleTree;
 public class AstFragType {
 
 
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1}
+	/** Check if a {@link TextToken} has a fragment type equal to {@code type1}
 	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1) {
-		return node != null && (node.getFragmentType() == type1);
+	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1) {
+		return node != null && (node.getTokenType() == type1);
 	}
 
 
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1 OR type2}
+	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2}
 	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1, CodeFragmentType type2) {
-		return node != null && (node.getFragmentType() == type1 || node.getFragmentType() == type2);
+	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1, CodeTokenType type2) {
+		return node != null && (node.getTokenType() == type1 || node.getTokenType() == type2);
 	}
 
 
-	/** Check if a {@link DocumentFragment} has a fragment type equal to {@code type1 OR type2 type3}
+	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2 type3}
 	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType type1, CodeFragmentType type2, CodeFragmentType type3) {
-		return node != null && (node.getFragmentType() == type1 || node.getFragmentType() == type2 || node.getFragmentType() == type3);
+	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1, CodeTokenType type2, CodeTokenType type3) {
+		return node != null && (node.getTokenType() == type1 || node.getTokenType() == type2 || node.getTokenType() == type3);
 	}
 
 
-	/** Check if a {@link DocumentFragment} has a fragment type equal to any of {@code types}
+	/** Check if a {@link TextToken} has a fragment type equal to any of {@code types}
 	 */
-	public static final boolean isType(DocumentFragment<?, CodeFragmentType> node, CodeFragmentType... types) {
+	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType... types) {
 		if(node == null) {
 			return false;
 		}
-		CodeFragmentType nodeType = node.getFragmentType();
-		for(CodeFragmentType type : types) {
+		CodeTokenType nodeType = node.getTokenType();
+		for(CodeTokenType type : types) {
 			if(nodeType != type) {
 				return false;
 			}
@@ -51,48 +51,48 @@ public class AstFragType {
 	}
 
 
-	public static final boolean isOperator(CodeFragment node, Operator op) {
-		return node != null && node.getFragmentType() == CodeFragmentType.OPERATOR && op.toSrc().equals(node.getText());
+	public static final boolean isOperator(CodeToken node, Operator op) {
+		return node != null && node.getTokenType() == CodeTokenType.OPERATOR && op.toSrc().equals(node.getText());
 	}
 
 
-	public static final boolean isOptionalTypeMarker(CodeFragment node) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.OPERATOR && "?".equals(node.getText()));
+	public static final boolean isOptionalTypeMarker(CodeToken node) {
+		return node != null && (node.getTokenType() == CodeTokenType.OPERATOR && "?".equals(node.getText()));
 	}
 
 
-	public static final boolean isSeparator(CodeFragment node, String separator) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.SEPARATOR && separator.equals(node.getText()));
+	public static final boolean isSeparator(CodeToken node, String separator) {
+		return node != null && (node.getTokenType() == CodeTokenType.SEPARATOR && separator.equals(node.getText()));
 	}
 
 
-	public static final boolean isIdentifier(CodeFragment node) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.IDENTIFIER);
+	public static final boolean isIdentifier(CodeToken node) {
+		return node != null && (node.getTokenType() == CodeTokenType.IDENTIFIER);
 	}
 
 
-	public static final boolean isIdentifierOrKeyword(CodeFragment node) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD || node.getFragmentType() == CodeFragmentType.IDENTIFIER);
+	public static final boolean isIdentifierOrKeyword(CodeToken node) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD || node.getTokenType() == CodeTokenType.IDENTIFIER);
 	}
 
 
-	public static final boolean isKeyword(CodeFragment node) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD);
+	public static final boolean isKeyword(CodeToken node) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD);
 	}
 
 
-	public static final boolean isBlock(CodeFragment node, String blockSymbol) {
-		return node != null && node.getFragmentType().isCompound() && node.getText().startsWith(blockSymbol);
+	public static final boolean isBlock(CodeToken node, String blockSymbol) {
+		return node != null && node.getTokenType().isCompound() && node.getText().startsWith(blockSymbol);
 	}
 
 
 	// TODO unused
-	public static final boolean blockContainsOnly(SimpleTree<CodeFragment> block, BiPredicate<CodeFragment, CodeFragmentType> cond, boolean emptyTreeValid, CodeFragmentType... optionalAllows) {
+	public static final boolean blockContainsOnly(SimpleTree<CodeToken> block, BiPredicate<CodeToken, CodeTokenType> cond, boolean emptyTreeValid, CodeTokenType... optionalAllows) {
 		if(block == null) {
 			return emptyTreeValid;
 		}
 		if(optionalAllows == null) {
-			optionalAllows = new CodeFragmentType[0];
+			optionalAllows = new CodeTokenType[0];
 		}
 		val childs = block.getChildren();
 		if(childs.size() == 0) {
@@ -101,7 +101,7 @@ public class AstFragType {
 
 		for(val child : childs) {
 			val frag = child.getData();
-			if(ArrayUtil.indexOf(optionalAllows, frag.getFragmentType()) < 0 && !cond.test(frag, frag.getFragmentType())) {
+			if(ArrayUtil.indexOf(optionalAllows, frag.getTokenType()) < 0 && !cond.test(frag, frag.getTokenType())) {
 				return false;
 			}
 		}

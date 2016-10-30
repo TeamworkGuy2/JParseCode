@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.val;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -36,7 +36,7 @@ public class CsUsingStatementExtractor extends AstParserReusableBase<CsUsingStat
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state != State.FOUND_USING) {
 			if(lang.getAstUtil().getChecker().isKeyword(tokenNode.getData(), CsKeyword.USING)) {
 				state = State.FOUND_USING;

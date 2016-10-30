@@ -7,8 +7,8 @@ import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.parser.codeParser.extractors.AnnotationExtractor;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -26,7 +26,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 
 	List<AnnotationSig> annotations = new ArrayList<>();
 	String foundName;
-	CodeFragmentType foundNameType;
+	CodeTokenType foundNameType;
 
 
 	public JavaAnnotationExtractor() {
@@ -35,7 +35,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		val lang = CodeLanguageOptions.JAVA;
 
 		if((state == State.COMPLETE || state == State.FAILED || state == State.FOUND_NAME) && AstFragType.isSeparator(tokenNode.getData(), "@")) {
@@ -51,7 +51,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 		else if(state == State.FOUND_ANNOTATION_MARK) {
 			if(AstFragType.isIdentifier(tokenNode.getData())) {
 				foundName = tokenNode.getData().getText();
-				foundNameType = tokenNode.getData().getFragmentType();
+				foundNameType = tokenNode.getData().getTokenType();
 				state = State.FOUND_NAME;
 				return true;
 			}

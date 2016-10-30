@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.tools.performance;
+package twg2.parser.codeParser.analytics;
 
 import java.io.IOException;
 import java.util.Map;

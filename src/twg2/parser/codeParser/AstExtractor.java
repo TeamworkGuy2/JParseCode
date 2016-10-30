@@ -10,7 +10,7 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.stateMachine.AstParser;
 import twg2.treeLike.simpleTree.SimpleTree;
 
@@ -40,12 +40,12 @@ public interface AstExtractor<T_BLOCK extends BlockType> {
 	 * @param astTree the AST tree containing blocks to extract
 	 * @param parentScope the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or astTree is the root and has no parent)
 	 */
-	public List<BlockAst<T_BLOCK>> extractBlocks(List<String> nameScope, SimpleTree<CodeFragment> astTree, BlockAst<T_BLOCK> parentScope);
+	public List<BlockAst<T_BLOCK>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<T_BLOCK> parentScope);
 
 	/** Parses a simple AST tree
-	 * @param astTree the tree of basic {@link CodeFragment} tokens
+	 * @param astTree the tree of basic {@link CodeToken} tokens
 	 * @return a list of entries with simple AST tree blocks as keys and classes ({@link ClassAst} instances) as values containing the annotations, comments, fields, and methods found inside the AST tree
 	 */
-	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<T_BLOCK>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeFragment> astTree);
+	public List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<T_BLOCK>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeToken> astTree);
 
 }

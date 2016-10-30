@@ -13,11 +13,11 @@ import lombok.val;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
+import twg2.parser.codeParser.analytics.ParseTimes;
+import twg2.parser.codeParser.analytics.PerformanceTrackers;
+import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
-import twg2.parser.codeParser.tools.performance.ParseTimes;
-import twg2.parser.codeParser.tools.performance.PerformanceTrackers;
-import twg2.parser.codeParser.tools.performance.TokenizeStepDetails;
-import twg2.parser.codeParser.tools.performance.ParseTimes.TrackerAction;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.workflow.CodeFileSrc;
@@ -71,7 +71,7 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepDetails stepsTracker) {
+	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepLogger stepsTracker) {
 		val parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
 		try {
 			@SuppressWarnings("unchecked")

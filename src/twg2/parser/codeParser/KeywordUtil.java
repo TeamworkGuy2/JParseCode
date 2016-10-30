@@ -1,6 +1,6 @@
 package twg2.parser.codeParser;
 
-import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 
 /**
  * @author TeamworkGuy2
@@ -40,30 +40,30 @@ public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
 
 	/** Checks for block identifying keywords (i.e. 'namespace', 'module', 'class', 'interface')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> blockModifiers();
+	public CodeTokenEnumSubSet<T_KEYWORD> blockModifiers();
 
 	/** Checks for class/interface block modifier keywords (i.e. 'abstract', 'static', 'final', 'sealed')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> classModifiers();
+	public CodeTokenEnumSubSet<T_KEYWORD> classModifiers();
 
 	/** Checks for field modifier keywords (i.e. 'volatile', 'readonly', 'static', 'private')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> fieldModifiers();
+	public CodeTokenEnumSubSet<T_KEYWORD> fieldModifiers();
 
 	/** Checks for method modifier keywords (i.e. 'synchronized', 'static', 'final', 'protected')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> methodModifiers();
+	public CodeTokenEnumSubSet<T_KEYWORD> methodModifiers();
 
 	/** Checks for method parameter modifier keywords (i.e. 'out' , 'final')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> parameterModifiers();
+	public CodeTokenEnumSubSet<T_KEYWORD> parameterModifiers();
 
 	/** Checks for operator keywords (i.e. 'As', 'Is', 'instanceof')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> operators();
+	public CodeTokenEnumSubSet<T_KEYWORD> operators();
 
 	/** Checks for type literal keywords (i.e. 'true', 'false', 'null')
 	 */
-	public CodeFragmentEnumSubSet<T_KEYWORD> typeLiterals();
+	public CodeTokenEnumSubSet<T_KEYWORD> typeLiterals();
 
 }

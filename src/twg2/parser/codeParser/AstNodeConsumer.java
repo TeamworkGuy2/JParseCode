@@ -2,11 +2,11 @@ package twg2.parser.codeParser;
 
 import java.util.List;
 
-import twg2.parser.fragment.DocumentFragmentText;
+import twg2.parser.fragment.TextFragmentRefToken;
 import twg2.treeLike.IndexedSubtreeConsumer;
 import twg2.treeLike.simpleTree.SimpleTree;
 
-/** Interface which adds additional parameters to {@link IndexedSubtreeConsumer} designed to consume a {@link SimpleTree} of {@link DocumentFragmentText}.
+/** Interface which adds additional parameters to {@link IndexedSubtreeConsumer} designed to consume a {@link SimpleTree} of {@link TextFragmentRefToken}.
  * New parameters are:
  * <ul>
  *   <li>node - the current tree node</li>
@@ -34,8 +34,8 @@ public interface AstNodeConsumer<T> {
 	 * @param parentNode the parent tree node of the current node
 	 * @param parentNodeFrag the parent tree node's data
 	 */
-	public void accept(SimpleTree<DocumentFragmentText<T>> node, DocumentFragmentText<T> nodeFrag,
-			int idx, int size, int depth, List<SimpleTree<DocumentFragmentText<T>>> siblings,
-			SimpleTree<DocumentFragmentText<T>> parentNode, DocumentFragmentText<T> parentNodeFrag);
+	public void accept(SimpleTree<TextFragmentRefToken<T>> node, TextFragmentRefToken<T> nodeFrag,
+			int idx, int size, int depth, List<SimpleTree<TextFragmentRefToken<T>>> siblings,
+			SimpleTree<TextFragmentRefToken<T>> parentNode, TextFragmentRefToken<T> parentNodeFrag);
 
 }

@@ -11,7 +11,7 @@ import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.stateMachine.AstParser;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.tuple.Tuples;
@@ -24,18 +24,18 @@ public class BlockExtractor {
 
 	/** Parses a simple AST tree using an {@link AstExtractor}
 	 * @param extractor provides parsers and extract methods to consume the astTree
-	 * @param astTree the tree of basic {@link CodeFragment} tokens
+	 * @param astTree the tree of basic {@link CodeToken} tokens
 	 * @return a list of entries with simple AST tree blocks as keys and classes ({@link ClassAst} instances) as values containing the annotations, comments, fields, and methods found inside the AST tree
 	 */
 	// TODO this only parses some fields and interface methods
-	public static <_T_BLOCK extends BlockType> List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
-			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeFragment> astTree) {
+	public static <_T_BLOCK extends BlockType> List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
+			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeToken> astTree) {
 
 		val nameScope = new ArrayList<String>();
 
 		val blocks = extractor.extractBlocks(nameScope, astTree, null);
 
-		val resBlocks = new ArrayList<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<_T_BLOCK>>>();
+		val resBlocks = new ArrayList<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>>();
 
 		val usingStatementExtractor = extractor.createImportStatementParser();
 
@@ -91,7 +91,7 @@ public class BlockExtractor {
 
 
 	@SafeVarargs
-	public static void runParsers(SimpleTree<CodeFragment> tree, AstParser<?>... parsers) {
+	public static void runParsers(SimpleTree<CodeToken> tree, AstParser<?>... parsers) {
 		val children = tree.getChildren();
 		val parserCount = parsers.length;
 

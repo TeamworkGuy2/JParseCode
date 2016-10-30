@@ -3,17 +3,17 @@ package twg2.parser.codeParser.csharp;
 import lombok.val;
 import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
-import twg2.parser.text.CharParserFactory;
-import twg2.parser.text.StringBoundedParserBuilder;
-import twg2.parser.text.StringParserBuilder;
 import twg2.parser.tokenizers.CodeBlockTokenizer;
 import twg2.parser.tokenizers.CodeStringTokenizer;
-import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.IdentifierTokenizer;
 import twg2.parser.tokenizers.NumberTokenizer;
+import twg2.text.tokenizer.CharParserFactory;
+import twg2.text.tokenizer.StringBoundedParserBuilder;
+import twg2.text.tokenizer.StringParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -26,17 +26,17 @@ public class CsFileTokenizer {
 		val numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
 		val parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.C_SHARP)
-			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeFragmentType.COMMENT)
-			.addParser(CodeStringTokenizer.createStringTokenizerForCSharp(), CodeFragmentType.STRING)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeFragmentType.BLOCK)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeFragmentType.BLOCK)
-			.addParser(createAnnotationTokenizer(), CodeFragmentType.BLOCK)
+			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeTokenType.COMMENT)
+			.addParser(CodeStringTokenizer.createStringTokenizerForCSharp(), CodeTokenType.STRING)
+			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeTokenType.BLOCK)
+			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeTokenType.BLOCK)
+			.addParser(createAnnotationTokenizer(), CodeTokenType.BLOCK)
 			.addParser(identifierParser, (text, off, len) -> {
-				return CsKeyword.check.isKeyword(text.toString()) ? CodeFragmentType.KEYWORD : CodeFragmentType.IDENTIFIER; // possible bad performance
+				return CsKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
 			})
-			.addParser(createOperatorTokenizer(), CodeFragmentType.OPERATOR)
-			.addParser(createSeparatorTokenizer(), CodeFragmentType.SEPARATOR)
-			.addParser(numericLiteralParser, CodeFragmentType.NUMBER);
+			.addParser(createOperatorTokenizer(), CodeTokenType.OPERATOR)
+			.addParser(createSeparatorTokenizer(), CodeTokenType.SEPARATOR)
+			.addParser(numericLiteralParser, CodeTokenType.NUMBER);
 
 		return parser;
 	}

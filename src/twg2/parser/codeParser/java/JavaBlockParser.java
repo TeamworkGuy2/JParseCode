@@ -24,7 +24,7 @@ import twg2.parser.codeParser.extractors.MethodExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParser;
 import twg2.streams.EnhancedListBuilderIterator;
@@ -88,13 +88,13 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	@Override
-	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeFragment> astTree) {
+	public List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<JavaBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeToken> astTree) {
 		return extractBlockFieldsAndInterfaceMethods(astTree);
 	}
 
 
 	@Override
-	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeFragment> astTree, BlockAst<JavaBlock> parentScope) {
+	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<JavaBlock> parentScope) {
 		List<BlockAst<JavaBlock>> blocks = new ArrayList<>();
 		// parse package name and push it into the name scope
 		String pkgName = parsePackageDeclaration(astTree);
@@ -109,7 +109,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	// TODO this only parses some fields and interface methods
-	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<CodeFragment> tokenTree) {
+	public List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<JavaBlock>>> extractBlockFieldsAndInterfaceMethods(SimpleTree<CodeToken> tokenTree) {
 		// TODO are all Java blocks valid blocks possibly containing fields/methods
 		val blocks = BlockExtractor.extractBlockFieldsAndInterfaceMethods(this, tokenTree);
 		return blocks;
@@ -122,8 +122,8 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeFragment> blockTree,
-			int depth, SimpleTree<CodeFragment> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
+	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
+			int depth, SimpleTree<CodeToken> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
 		val lang = CodeLanguageOptions.JAVA;
 		val children = blockTree.getChildren();
 
@@ -176,9 +176,9 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	}
 
 
-	private static String parsePackageDeclaration(SimpleTree<CodeFragment> astTree) {
+	private static String parsePackageDeclaration(SimpleTree<CodeToken> astTree) {
 		val lang = CodeLanguageOptions.JAVA;
-		List<SimpleTree<CodeFragment>> childs = null;
+		List<SimpleTree<CodeToken>> childs = null;
 		if(astTree.hasChildren() && (childs = astTree.getChildren()).size() > 1) {
 			if(lang.getAstUtil().isKeyword(childs.get(0).getData(), JavaKeyword.PACKAGE) &&
 					AstFragType.isIdentifier(childs.get(1).getData())) {
@@ -194,7 +194,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * Returns the iterator where {@code next()} would return the class name element.
 	 * @return {@code <className, extendImplementNames>}
 	 */
-	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeFragment>> iter) {
+	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
 		val lang = CodeLanguageOptions.JAVA;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
@@ -203,7 +203,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 		// get the first element and begin checking
 		if(iter.hasPrevious()) { prevCount++; }
-		SimpleTree<CodeFragment> prevNode = iter.hasPrevious() ? iter.previous() : null;
+		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
 		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {

@@ -11,7 +11,7 @@ import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.output.WriteSettings;
 import twg2.treeLike.simpleTree.SimpleTree;
 
@@ -21,11 +21,11 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 @Immutable
 public class FieldDefResolved extends FieldSigResolved {
-	private final @Getter SimpleTree<CodeFragment> initializer;
+	private final @Getter SimpleTree<CodeToken> initializer;
 
 
 	public FieldDefResolved(String name, List<String> fullName, TypeSigResolved fieldType, List<AccessModifier> accessModifiers,
-			List<AnnotationSig> annotations, List<String> comments, SimpleTree<CodeFragment> initializer) {
+			List<AnnotationSig> annotations, List<String> comments, SimpleTree<CodeToken> initializer) {
 		super(name, fullName, fieldType, accessModifiers, annotations, comments);
 		this.initializer = initializer;
 	}

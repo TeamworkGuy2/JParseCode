@@ -13,7 +13,7 @@ import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.stateMachine.AstMemberInClassParserReusable;
 import twg2.parser.stateMachine.AstParser;
 import twg2.parser.stateMachine.Consume;
@@ -64,7 +64,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -102,7 +102,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume updateAndCheckTypeParser(SimpleTree<CodeFragment> tokenNode) {
+	private Consume updateAndCheckTypeParser(SimpleTree<CodeToken> tokenNode) {
 		boolean res = typeParser.acceptNext(tokenNode);
 		boolean complete = typeParser.isComplete();
 		boolean failed = typeParser.isFailed();
@@ -120,7 +120,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume findingAccessModifiers(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingAccessModifiers(SimpleTree<CodeToken> tokenNode) {
 		val accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
@@ -138,7 +138,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume findingReturnType(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingReturnType(SimpleTree<CodeToken> tokenNode) {
 		val res = updateAndCheckTypeParser(tokenNode);
 		// TODO required because type parser has to look ahead
 		if(state == State.FINDING_NAME) {
@@ -149,7 +149,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume findingName(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingName(SimpleTree<CodeToken> tokenNode) {
 		if(AstFragType.isIdentifier(tokenNode.getData())) {
 			methodName = tokenNode.getData().getText();
 			state = State.FINDING_PARAMS;
@@ -161,7 +161,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume findingParams(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingParams(SimpleTree<CodeToken> tokenNode) {
 		if(AstFragType.isBlock(tokenNode.getData(), "(")) {
 			state = State.COMPLETE;
 			val annotations = new ArrayList<>(annotationParser.getParserResult());

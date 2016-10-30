@@ -4,7 +4,28 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.13.0](N/A) - 2016-10-26
+###[0.14.0](N/A) - 2016-10-30
+#### Changed
+__Reduced library complexity/scope by moving twg2.parser.text conditions/tokenizers to separate [jtext-tokenizer](https://github.com/TeamworkGuy2/JTextTokenizer) library__
+* Moved twg2.parser.text package to jtext-tokenizer library
+* Moved twg2.parser.Inclusion to jtext-parser library
+* Renamed classes *Fragment -> *Token:
+  * CodeFragment -> CodeToken
+  * CodeFragmentType -> CodeTokenType
+  * DocumentFragment -> TextToken and renamed methods:
+    * getTextFragment() -> getToken()
+	* getFragmentType() -> getTokenType()
+  * DocumentFragmentText -> TextFragmentRefToken
+  * CodeFragmentEnumSubSet -> CodeTokenEnumSubSet
+* Renamed twg2.parser.codeParser.tools.performance -> twg2.parser.codeParser.analytics
+* TokenizeStepDetails -> TokenizeStepLogger and now implements TypedLogger from jtext-tokenizer library
+
+#### Removed
+* Removed twg2.parser.text package (moved to jtext-tokenizer library)
+
+
+--------
+###[0.13.0](https://github.com/TeamworkGuy2/JParseCode/commit/76734b17d16c67a89df7245a2cea2a1133c3b6b0) - 2016-10-26
 #### Added
 * Added ParameterSig and ParameterSigResolved 'parameterModifiers' field
 * Added KeywordUtil parameterModifiers() and isParameterModifier()

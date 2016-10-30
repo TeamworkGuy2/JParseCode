@@ -9,8 +9,8 @@ import twg2.collections.builder.ListBuilder;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.primitive.NumericParser;
 import twg2.parser.stateMachine.AstParserReusableBase;
@@ -53,7 +53,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -124,7 +124,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 	/** Check if a tree node is possibly a data type (just a type name, no generics)
 	 */
-	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeFragment> node, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeToken> node, boolean allowVoid) {
 		val nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordUtil.isKeyword(nodeData.getText()) || keywordUtil.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
@@ -132,15 +132,15 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 	/** Check if a tree node is a boolean literal
 	 */
-	public static boolean isBooleanLiteral(CodeFragment node) {
-		return node.getFragmentType() == CodeFragmentType.KEYWORD && ("true".equals(node.getText()) || "false".equals(node.getText()));
+	public static boolean isBooleanLiteral(CodeToken node) {
+		return node.getTokenType() == CodeTokenType.KEYWORD && ("true".equals(node.getText()) || "false".equals(node.getText()));
 	}
 
 
 	/** Check if a tree node is a null literal
 	 */
-	public static boolean isNullLiteral(CodeFragment node) {
-		return node.getFragmentType() == CodeFragmentType.KEYWORD && "null".equals(node.getText());
+	public static boolean isNullLiteral(CodeToken node) {
+		return node.getTokenType() == CodeTokenType.KEYWORD && "null".equals(node.getText());
 	}
 
 
@@ -149,13 +149,13 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	 * @param node2Optional
 	 * @return the number of nodes used, 0 if neither node was a number, 1 if the first node was a number, 2 if the first node was a sign and the second node was a number
 	 */
-	public static int isNumber(CodeFragment node1, CodeFragment node2Optional) {
+	public static int isNumber(CodeToken node1, CodeToken node2Optional) {
 		String n1Text;
-		int matches = node1.getFragmentType() == CodeFragmentType.NUMBER ? 1 : 0;
+		int matches = node1.getTokenType() == CodeTokenType.NUMBER ? 1 : 0;
 		if(matches > 0) {
 			return matches;
 		}
-		matches = (node2Optional != null && (n1Text = node1.getText()).length() == 1 && NumericParser.isSign.test(n1Text.charAt(0)) && node2Optional.getFragmentType() == CodeFragmentType.NUMBER) ? 2 : 0;
+		matches = (node2Optional != null && (n1Text = node1.getText()).length() == 1 && NumericParser.isSign.test(n1Text.charAt(0)) && node2Optional.getTokenType() == CodeTokenType.NUMBER) ? 2 : 0;
 		return matches;
 	}
 

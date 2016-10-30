@@ -6,8 +6,8 @@ import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.AccessModifierParser;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.fragment.AstTypeChecker;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -106,20 +106,20 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, CsKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
+	public boolean isKeyword(CodeToken node, CsKeyword keyword1) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, CsKeyword keyword1, CsKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
+	public boolean isKeyword(CodeToken node, CsKeyword keyword1, CsKeyword keyword2) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
+	public boolean isKeyword(CodeToken node, CsKeyword keyword1, CsKeyword keyword2, CsKeyword keyword3) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
 	}
 
 
@@ -130,7 +130,7 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 	 *}</code></pre>
 	 */
 	@Override
-	public boolean isFieldBlock(SimpleTree<CodeFragment> block) {
+	public boolean isFieldBlock(SimpleTree<CodeToken> block) {
 		if(block == null) { return true; }
 		val childs = block.getChildren();
 		// properties must have at-least one indexer (i.e. 'get' or 'set')
@@ -143,14 +143,14 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 			val child = childs.get(i);
 			val nextChild = i < size - 1 ? childs.get(i + 1) : null;
 			val frag = child.getData();
-			val fragType = frag.getFragmentType();
-			if(fragType == CodeFragmentType.COMMENT) {
+			val fragType = frag.getTokenType();
+			if(fragType == CodeTokenType.COMMENT) {
 				continue;
 			}
 			val isGetOrSet = isGetOrSet(frag);
 			val isAccessMod = keywords.fieldModifiers().is(frag);
 			if(isGetOrSet ||
-					(prevWasGetOrSet && (fragType == CodeFragmentType.BLOCK || fragType == CodeFragmentType.SEPARATOR)) ||
+					(prevWasGetOrSet && (fragType == CodeTokenType.BLOCK || fragType == CodeTokenType.SEPARATOR)) ||
 					(isAccessMod && nextChild != null && isGetOrSet(nextChild.getData()))) {
 				// allow
 			}
@@ -163,8 +163,8 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 	}
 
 
-	private static boolean isGetOrSet(CodeFragment frag) {
-		return frag.getFragmentType() == CodeFragmentType.IDENTIFIER && ("get".equals(frag.getText()) || "set".equals(frag.getText()));
+	private static boolean isGetOrSet(CodeToken frag) {
+		return frag.getTokenType() == CodeTokenType.IDENTIFIER && ("get".equals(frag.getText()) || "set".equals(frag.getText()));
 	}
 
 }

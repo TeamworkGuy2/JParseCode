@@ -1,6 +1,6 @@
 JParseCode
 ==============
-version: 0.13.0
+version: 0.14.0
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
@@ -9,7 +9,7 @@ In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://gi
 * A code first parser aimed at manipulating the resulting AST and writing it back as source code or JSON.  With the goal of allowing simple language constructs like interfaces and data models to be transpiled to different languages. 
 
 ### Not Goals:
-* NOT to create another compiler for C#, Java, or JS/TS. This project's parser expects valid code as input, the few error messages that are present are NOT design to highlight syntax errors in the input. 
+* NOT to create another compiler for C#, Java, or JavaScript/TypeScript. This project's parser expects valid code as input, the few error messages that are present are NOT design to highlight syntax errors in the input. 
 * NOT to create a valid AST for each supported language. Rather an AST like structure that supports the lowest common denominator between the targeted languages. This means many AST compromises are inevitable due to differences in language specs. 
 
 
@@ -65,7 +65,7 @@ Java code to parser SimpleCs.cs (simple_cs_source_string is a string containing 
 	CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode("SimpleCs.cs", CodeLanguageOptions.C_SHARP, simple_cs_source_string);
 	WriteSettings ws = new WriteSettings(true, true, true, true);
 	
-	for(Map.Entry<SimpleTree<DocumentFragmentText<CodeFragmentType>>, IntermClass.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
+	for(Map.Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
 		CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
 	
 		StringBuilder sb = new StringBuilder();

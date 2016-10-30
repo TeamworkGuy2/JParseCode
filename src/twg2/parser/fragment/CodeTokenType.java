@@ -9,7 +9,7 @@ import lombok.Getter;
  * @author TeamworkGuy2
  * @since 2015-5-28
  */
-public enum CodeFragmentType {
+public enum CodeTokenType {
 	DOCUMENT(true),
 	/** multi or single line */
 	COMMENT(false),
@@ -31,7 +31,7 @@ public enum CodeFragmentType {
 	@Getter
 	private final boolean compound;
 
-	private CodeFragmentType(boolean compound) {
+	private CodeTokenType(boolean compound) {
 		this.compound = compound;
 	}
 

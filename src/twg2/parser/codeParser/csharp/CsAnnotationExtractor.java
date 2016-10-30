@@ -7,7 +7,7 @@ import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.parser.codeParser.extractors.AnnotationExtractor;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -30,14 +30,14 @@ public class CsAnnotationExtractor extends AstParserReusableBase<CsAnnotationExt
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		val lang = CodeLanguageOptions.C_SHARP;
 
 		if(state != State.FAILED) {
 			val childs = tokenNode.getChildren();
-			CodeFragment annotTypeFrag = null;
+			CodeToken annotTypeFrag = null;
 			if(AstFragType.isBlock(tokenNode.getData(), "[") && childs != null && childs.size() > 0 && AstFragType.isIdentifier(annotTypeFrag = childs.get(0).getData())) {
-				val annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getFragmentType(), annotTypeFrag.getText(), (childs.size() > 1 ? childs.get(1) : null));
+				val annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getTokenType(), annotTypeFrag.getText(), (childs.size() > 1 ? childs.get(1) : null));
 				annotations.add(annot);
 				state = State.COMPLETE;
 				return true;

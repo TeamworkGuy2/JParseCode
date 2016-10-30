@@ -16,8 +16,8 @@ import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstMemberInClassParserReusable;
 import twg2.parser.stateMachine.AstParser;
@@ -85,9 +85,9 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 	 * @return parsed enum members
 	 */
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
-		CodeFragment tokenData = tokenNode.getData();
-		if(tokenData.getFragmentType() == CodeFragmentType.COMMENT) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
+		CodeToken tokenData = tokenNode.getData();
+		if(tokenData.getTokenType() == CodeTokenType.COMMENT) {
 			return true;
 		}
 		if(AstFragType.isBlock(tokenData, "[")) {
@@ -171,7 +171,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 	}
 
 
-	private void addEnumMember(String memberName, SimpleTree<CodeFragment> tokenNode) {
+	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
 		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.<AnnotationSig>emptyList(), comments, tokenNode);

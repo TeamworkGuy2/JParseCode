@@ -8,9 +8,9 @@ import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
-import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeTokenType;
 
 public enum CsKeyword implements AccessModifier {
 	// NOTE: these must be in alphabetical order for Inst array binary searches to work
@@ -150,14 +150,14 @@ public enum CsKeyword implements AccessModifier {
 		public final String[] keywords;
 		private final CsKeyword[] values;
 		private final String[] primitives;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> types;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> classModifiers;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> fieldModifiers;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> methodModifiers;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> parameterModifiers;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> blockModifiers;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> operators;
-		@Getter private final CodeFragmentEnumSubSet<CsKeyword> typeLiterals;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> types;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> classModifiers;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> fieldModifiers;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> methodModifiers;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> parameterModifiers;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> blockModifiers;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> operators;
+		@Getter private final CodeTokenEnumSubSet<CsKeyword> typeLiterals;
 
 
 		{
@@ -175,7 +175,7 @@ public enum CsKeyword implements AccessModifier {
 			this.keywords = enumData.getKey();
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeFragmentEnumSubSet.class, (es) -> new CodeFragmentEnumSubSet<>(CodeFragmentType.KEYWORD, es));
+			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
 			types = enumSets[i++];
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];

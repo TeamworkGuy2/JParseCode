@@ -4,11 +4,11 @@ package twg2.parser.fragment;
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public interface DocumentFragment<S, T> {
+public interface TextToken<S, T> {
 
-	public S getTextFragment();
+	public S getToken();
 
-	public T getFragmentType();
+	public T getTokenType();
 
 	@Override
 	public String toString();

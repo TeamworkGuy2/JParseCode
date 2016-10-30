@@ -4,9 +4,9 @@ import lombok.val;
 import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
 import twg2.parser.primitive.NumericParser;
-import twg2.parser.text.CharParserMatchableFactory;
 import twg2.parser.textParser.TextParser;
 import twg2.ranges.CharSearchSet;
+import twg2.text.tokenizer.CharParserMatchableFactory;
 import twg2.tuple.Tuples;
 
 /**

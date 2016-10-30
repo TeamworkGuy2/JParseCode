@@ -6,9 +6,9 @@ import twg2.parser.textFragment.TextFragmentRef;
  * @author TeamworkGuy2
  * @since 2016-4-12
  */
-public class CodeFragment extends DocumentFragmentText<CodeFragmentType> {
+public class CodeToken extends TextFragmentRefToken<CodeTokenType> {
 
-	public CodeFragment(CodeFragmentType type, TextFragmentRef textFrag, String text) {
+	public CodeToken(CodeTokenType type, TextFragmentRef textFrag, String text) {
 		super(type, textFrag, text);
 	}
 

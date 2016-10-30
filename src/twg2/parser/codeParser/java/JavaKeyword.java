@@ -8,9 +8,9 @@ import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
-import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeTokenType;
 
 /**
  * @author TeamworkGuy2
@@ -122,14 +122,14 @@ public enum JavaKeyword implements AccessModifier {
 		public final String[] keywords;
 		private final JavaKeyword[] values;
 		private final String[] primitives;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> types;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> classModifiers;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> fieldModifiers;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> methodModifiers;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> parameterModifiers;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> blockModifiers;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> operators;
-		@Getter private final CodeFragmentEnumSubSet<JavaKeyword> typeLiterals;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> types;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> classModifiers;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> fieldModifiers;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> methodModifiers;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> parameterModifiers;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> blockModifiers;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> operators;
+		@Getter private final CodeTokenEnumSubSet<JavaKeyword> typeLiterals;
 
 
 		{
@@ -147,7 +147,7 @@ public enum JavaKeyword implements AccessModifier {
 			this.keywords = enumData.getKey();
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeFragmentEnumSubSet.class, (es) -> new CodeFragmentEnumSubSet<>(CodeFragmentType.KEYWORD, es));
+			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
 			types = enumSets[i++];
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];

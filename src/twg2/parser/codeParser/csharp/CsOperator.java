@@ -8,9 +8,9 @@ import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntListReadOnly;
 import twg2.parser.codeParser.Operator;
 import twg2.parser.codeParser.OperatorUtil;
-import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeTokenType;
 
 /** C# operators enum (i.e. '+', '==', '&&')
  * @author TeamworkGuy2
@@ -128,14 +128,14 @@ public enum CsOperator implements Operator {
 	public static class Inst implements OperatorUtil<CsOperator> {
 		public final String[] keywords;
 		private final CsOperator[] values;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> arithmeticOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> assignmentOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> bitwiseOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> concatOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> conditionalOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> equalityOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> typeCheckOperators;
-		@Getter private final CodeFragmentEnumSubSet<CsOperator> unaryOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> arithmeticOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> assignmentOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> bitwiseOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> concatOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> conditionalOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> equalityOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> typeCheckOperators;
+		@Getter private final CodeTokenEnumSubSet<CsOperator> unaryOperators;
 
 
 		{
@@ -153,7 +153,7 @@ public enum CsOperator implements Operator {
 			this.keywords = enumData.getKey();
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeFragmentEnumSubSet.class, (es) -> new CodeFragmentEnumSubSet<>(CodeFragmentType.OPERATOR, es));
+			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.OPERATOR, es));
 			arithmeticOperators = enumSets[i++];
 			assignmentOperators = enumSets[i++];
 			bitwiseOperators = enumSets[i++];

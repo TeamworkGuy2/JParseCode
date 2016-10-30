@@ -12,8 +12,8 @@ import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -24,11 +24,11 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 @Immutable
 public class FieldDef extends FieldSig {
-	private final @Getter SimpleTree<CodeFragment> initializer;
+	private final @Getter SimpleTree<CodeToken> initializer;
 
 
 	public FieldDef(String name, List<String> fullName, TypeSigSimple fieldType, List<AccessModifier> accessModifiers,
-			List<AnnotationSig> annotations, List<String> comments, SimpleTree<CodeFragment> initializer) {
+			List<AnnotationSig> annotations, List<String> comments, SimpleTree<CodeToken> initializer) {
 		super(name, fullName, fieldType, accessModifiers, annotations, comments);
 		this.initializer = initializer;
 	}
@@ -68,12 +68,12 @@ public class FieldDef extends FieldSig {
 	/** Write a field initializer to a JSON field named 'initializer' if the value is a number, boolean, string, or null literal, else write it to a field named 'initializerExpression'
 	 * @throws IOException
 	 */
-	public static void initializerToJson(SimpleTree<CodeFragment> astNode, boolean preClosingComma, Appendable dst, WriteSettings st) throws IOException {
-		CodeFragment data = null;
+	public static void initializerToJson(SimpleTree<CodeToken> astNode, boolean preClosingComma, Appendable dst, WriteSettings st) throws IOException {
+		CodeToken data = null;
 		boolean isNumOrBoolOrNull = false;
 		if(astNode != null && !astNode.hasChildren() && (data = astNode.getData()) != null &&
-				(data.getFragmentType() == CodeFragmentType.STRING ||
-				(isNumOrBoolOrNull = (data.getFragmentType() == CodeFragmentType.NUMBER || DataTypeExtractor.isBooleanLiteral(data) || DataTypeExtractor.isNullLiteral(data))))) {
+				(data.getTokenType() == CodeTokenType.STRING ||
+				(isNumOrBoolOrNull = (data.getTokenType() == CodeTokenType.NUMBER || DataTypeExtractor.isBooleanLiteral(data) || DataTypeExtractor.isNullLiteral(data))))) {
 			if(preClosingComma) {
 				dst.append(", ");
 			}

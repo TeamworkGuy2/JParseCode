@@ -18,12 +18,25 @@ public class EnumSubSet<E> {
 	protected E[] enumValues;
 
 
+	/** Create an enum subset with an array of names and values (both arrays must be the same length).
+	 * Note: the arrays are not copied modifications should not be made to them after being passed to this constructor.
+	 * @param enumNames the list of enum names
+	 * @param enumValues the list of enum values
+	 */
 	public EnumSubSet(String[] enumNames, E[] enumValues) {
+		if(enumNames == null || enumValues == null) { throw new IllegalArgumentException((enumNames == null ? "enumNames" : "enumValues") + " cannot be null"); }
+		if(enumNames.length != enumValues.length) { throw new IllegalArgumentException("enumNames and enumValues arrays must be the same length"); }
+
 		this.enumNames = enumNames;
 		this.enumValues = enumValues;
 	}
 
 
+	/** Create an enum subset filtered by a Predicate and with new enum names transformed by a Function
+	 * @param enums the list of values to create a subset from
+	 * @param filter a filter function, values which pass this filter are included in the subset
+	 * @param getName a function to get the names of individual values (the results are used by {@link #find(String)} to match against)
+	 */
 	public EnumSubSet(Iterable<E> enums, Predicate<E> filter, Function<E, String> getName) {
 		List<String> enumNameList = new ArrayList<>();
 		List<E> enumValuesList = new ArrayList<>();
@@ -38,13 +51,17 @@ public class EnumSubSet<E> {
 		String[] matchingNames = enumNameList.toArray(new String[enumNameList.size()]);
 		Arrays.sort(matchingNames);
 
-		E[] matchingEnums = sortSecondListIntoArrayMatchingFirst(enumNameList, enumNames, enumValuesList);
+		E[] matchingEnums = createSortedValuesArrayInSameOrderAsNames(enumNameList, enumNames, enumValuesList);
 
 		this.enumNames = matchingNames;
 		this.enumValues = matchingEnums;
 	}
 
 
+	/** Search this enum subset for an enum matching the given name
+	 * @param name the enum name.<br> The names to match against may not be the same as {@link Enum#name()}, see the {@link #EnumSubSet(Iterable, Predicate, Function)} constructor 'getName' parameter.
+	 * @return the enum value associated with the name if a match is found, else null
+	 */
 	public E find(String name) {
 		int idx = Arrays.binarySearch(enumNames, name);
 		return idx > -1 ? enumValues[idx] : null;
@@ -57,10 +74,11 @@ public class EnumSubSet<E> {
 	}
 
 
-	/** Given a list of names in original order (names) and sorted order (namesSorted) and a list of values (values), return a sorted 'values' array
-	 * in the same order as (namesSorted) by using names.indexOf() to determine which index from (values) goes into each index of the returned array
+	/** Given a list of names in original order (names) and sorted order (namesSorted) and a list of values (values),
+	 * return the 'values' list in a new array sorted in the same order as (namesSorted) by using names.indexOf() to
+	 * determine which index from (values) goes into each index of the returned array.
 	 */
-	private static <G> G[] sortSecondListIntoArrayMatchingFirst(List<String> names, String[] namesSorted, List<G> values) {
+	private static <G> G[] createSortedValuesArrayInSameOrderAsNames(List<String> names, String[] namesSorted, List<G> values) {
 		if(names.size() != namesSorted.length || namesSorted.length != values.size()) {
 			throw new IllegalArgumentException("enum names and values arrays must be the same length: " +
 					"enumNames=" + names.size() + ", enumNamesSorted=" + namesSorted.length + ", enumValues=" + values.size());
@@ -128,7 +146,7 @@ public class EnumSubSet<E> {
 			String[] enumNames = enumNameList.toArray(new String[enumNameList.size()]);
 			Arrays.sort(enumNames);
 
-			F[] enumValues = sortSecondListIntoArrayMatchingFirst(enumNameList, enumNames, enumValuesList);
+			F[] enumValues = createSortedValuesArrayInSameOrderAsNames(enumNameList, enumNames, enumValuesList);
 
 			return new EnumSubSet<>(enumNames, enumValues);
 		}

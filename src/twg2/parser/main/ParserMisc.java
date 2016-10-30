@@ -16,8 +16,8 @@ import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.tools.performance.PerformanceTrackers;
-import twg2.parser.codeParser.tools.performance.ParseTimes.TrackerAction;
+import twg2.parser.codeParser.analytics.PerformanceTrackers;
+import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.project.ProjectClassSet;
 import twg2.parser.tokenizers.CodeTreeToSource;
@@ -41,7 +41,7 @@ public class ParserMisc {
 		System.out.println("\nFile: " + fileName);
 		if(printParsedTokens) {
 			SimpleTreeUtil.traverseLeafNodes(tree, TreeTraversalOrder.PRE_ORDER, (token, idx, parent) -> {
-				System.out.println(token.getFragmentType() + ": " + token.getText());
+				System.out.println(token.getTokenType() + ": " + token.getText());
 			});
 		}
 

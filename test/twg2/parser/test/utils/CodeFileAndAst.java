@@ -4,16 +4,20 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import lombok.val;
+import twg2.ast.interm.classes.ClassAst;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringJoin;
+import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
  * @author TeamworkGuy2
@@ -57,7 +61,7 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 		}
 
 		@SuppressWarnings("unchecked")
-		val blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.getDoc());
+		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.getDoc());
 		for(val block : blockDeclarations) {
 			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
 			val fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());

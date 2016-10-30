@@ -10,16 +10,16 @@ import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntListSorted;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.codeParser.codeStats.ParsedFileStats;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
-import twg2.parser.text.CharParserFactory;
 import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.tokenizers.CodeStringTokenizer;
-import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringCheck;
+import twg2.text.tokenizer.CharParserFactory;
 import twg2.treeLike.TreeTraversalOrder;
 import twg2.treeLike.TreeTraverse;
 import twg2.treeLike.parameters.SimpleTreeTraverseParameters;
@@ -43,14 +43,14 @@ public class CommentAndWhitespaceExtractor {
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
 		val parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
-			.addParser(commentParser, CodeFragmentType.COMMENT)
-			.addParser(stringParser, CodeFragmentType.STRING)
+			.addParser(commentParser, CodeTokenType.COMMENT)
+			.addParser(stringParser, CodeTokenType.STRING)
 			.build();
 		return parser.tokenizeDocument(src, srcOff, srcLen, srcName, null);
 	}
 
 
-	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, char[] src, int srcOff, int srcLen, IntListSorted lineStartOffsets, SimpleTree<CodeFragment> tree) {
+	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, char[] src, int srcOff, int srcLen, IntListSorted lineStartOffsets, SimpleTree<CodeToken> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
 		val tokensPerLine = documentTreeToTokensPerLine(tree);
 
@@ -68,13 +68,13 @@ public class CommentAndWhitespaceExtractor {
 			}
 
 			val lineTokens = tokensPerLine.get(i);
-			if(lineTokens.size() > 0 && lineTokens.stream().allMatch((t) -> t.getFragmentType() == CodeFragmentType.COMMENT)) {
+			if(lineTokens.size() > 0 && lineTokens.stream().allMatch((t) -> t.getTokenType() == CodeTokenType.COMMENT)) {
 				if(lineTokens.size() > 1) {
 					// TODO this was causing issues parsing a particular project that had a number of multiple-comments-per-line files
 					//throw new RuntimeException("not implemented support for checking if a line is to exclusively comments when more than one comment appears on the line, lineNum=" + (i + 1) + ", srcId='" + srcId + "'");
 				}
 				else {
-					TextFragmentRef comment = lineTokens.get(0).getTextFragment();
+					TextFragmentRef comment = lineTokens.get(0).getToken();
 					String prefix = comment.getLineStart() < i ? "" : new String(line, 0, comment.getColumnStart()); // if the token started on a previous line, there is no prefix text before it starts on this line
 					String suffix = "";
 					// in case the token ends at the end of the line
@@ -103,15 +103,15 @@ public class CommentAndWhitespaceExtractor {
 	}
 
 
-	public static List<List<CodeFragment>> documentTreeToTokensPerLine(SimpleTree<CodeFragment> tree) {
+	public static List<List<CodeToken>> documentTreeToTokensPerLine(SimpleTree<CodeToken> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
-		List<List<CodeFragment>> tokensPerLine = new ArrayList<>();
+		List<List<CodeToken>> tokensPerLine = new ArrayList<>();
 
 		val treeTraverseParams = SimpleTreeTraverseParameters.of(tree, false, TreeTraversalOrder.PRE_ORDER)
 				.setSkipRoot(true)
 				.setConsumerSimpleTree((branch, index, size, depth, parentBranch) -> {
-					int startLine0 = branch.getTextFragment().getLineStart();
-					int endLine0 = branch.getTextFragment().getLineEnd();
+					int startLine0 = branch.getToken().getLineStart();
+					int endLine0 = branch.getToken().getLineEnd();
 					while(tokensPerLine.size() <= endLine0) {
 						tokensPerLine.add(new ArrayList<>());
 					}

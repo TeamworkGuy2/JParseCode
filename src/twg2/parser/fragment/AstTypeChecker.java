@@ -14,12 +14,12 @@ public interface AstTypeChecker<T_KEYWORD> {
 	 * @param tokenNode the document code fragment
 	 * @return true if the token represents a field block, false if not
 	 */
-	public boolean isFieldBlock(SimpleTree<CodeFragment> tokenNode);
+	public boolean isFieldBlock(SimpleTree<CodeToken> tokenNode);
 
-	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1);
+	public boolean isKeyword(CodeToken node, T_KEYWORD keyword1);
 
-	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1, T_KEYWORD keyword2);
+	public boolean isKeyword(CodeToken node, T_KEYWORD keyword1, T_KEYWORD keyword2);
 
-	public boolean isKeyword(CodeFragment node, T_KEYWORD keyword1, T_KEYWORD keyword2, T_KEYWORD keyword3);
+	public boolean isKeyword(CodeToken node, T_KEYWORD keyword1, T_KEYWORD keyword2, T_KEYWORD keyword3);
 
 }

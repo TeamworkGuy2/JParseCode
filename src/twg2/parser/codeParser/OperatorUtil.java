@@ -1,6 +1,6 @@
 package twg2.parser.codeParser;
 
-import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
+import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 
 /**
  * @author TeamworkGuy2
@@ -8,20 +8,20 @@ import twg2.parser.codeParser.tools.CodeFragmentEnumSubSet;
  */
 public interface OperatorUtil<T_OP extends Operator> {
 
-	public CodeFragmentEnumSubSet<T_OP> arithmeticOperators();
+	public CodeTokenEnumSubSet<T_OP> arithmeticOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> assignmentOperators();
+	public CodeTokenEnumSubSet<T_OP> assignmentOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> bitwiseOperators();
+	public CodeTokenEnumSubSet<T_OP> bitwiseOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> concatOperators();
+	public CodeTokenEnumSubSet<T_OP> concatOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> conditionalOperators();
+	public CodeTokenEnumSubSet<T_OP> conditionalOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> equalityOperators();
+	public CodeTokenEnumSubSet<T_OP> equalityOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> typeCheckOperators();
+	public CodeTokenEnumSubSet<T_OP> typeCheckOperators();
 
-	public CodeFragmentEnumSubSet<T_OP> unaryOperators();
+	public CodeTokenEnumSubSet<T_OP> unaryOperators();
 
 }

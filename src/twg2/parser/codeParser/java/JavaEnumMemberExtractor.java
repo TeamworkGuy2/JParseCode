@@ -15,8 +15,8 @@ import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstMemberInClassParserReusable;
 import twg2.parser.stateMachine.AstParser;
@@ -75,12 +75,12 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	 * @return parsed enum members
 	 */
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state == State.COMPLETE) {
 			return false;
 		}
-		CodeFragment tokenData = tokenNode.getData();
-		if(tokenData.getFragmentType() == CodeFragmentType.COMMENT) {
+		CodeToken tokenData = tokenNode.getData();
+		if(tokenData.getTokenType() == CodeTokenType.COMMENT) {
 			return true;
 		}
 		// TODO handle annotations
@@ -186,7 +186,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	}
 
 
-	private Consume foundName(SimpleTree<CodeFragment> tokenNode) {
+	private Consume foundName(SimpleTree<CodeToken> tokenNode) {
 		nextMemberName = tokenNode.getData().getText();
 		// minimum viable enum
 		addEnumMember(nextMemberName, null);
@@ -195,7 +195,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	}
 
 
-	private void updateLastAddedEnumMember(SimpleTree<CodeFragment> tokenNode) {
+	private void updateLastAddedEnumMember(SimpleTree<CodeToken> tokenNode) {
 		// remove the minimum viable enum OR partially complete enum with args that was added when the previous identifier node OR argument block was found, this is going to be a full enum with arguments OR a body block
 		val partialEnum = enumMembers.remove(enumMembers.size() - 1);
 		nextMemberComments = partialEnum.getComments();
@@ -203,7 +203,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	}
 
 
-	private void addEnumMember(String memberName, SimpleTree<CodeFragment> tokenNode) {
+	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
 		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.emptyList(), comments, tokenNode);

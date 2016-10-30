@@ -1,5 +1,7 @@
 package twg2.parser.test;
 
+import static twg2.text.tokenizer.test.ParserTestUtils.parseTest;
+
 import org.junit.Test;
 
 import twg2.parser.primitive.NumericParser;
@@ -18,11 +20,11 @@ public class NumericLiteralTest {
 
 		long[] vals = new long[] {		 132_32, 	 0_312___4,			 0x2_F_3A1L,	 0X3aacab3F3L,		 0xCAB33BABEL };
 
-		ParserTestUtils.parseTest(true, false, name, cond, "132_32");
-		ParserTestUtils.parseTest(true, false, name, cond, "0_312___4");
-		ParserTestUtils.parseTest(true, false, name, cond, "0x2_F_3A1L");
-		ParserTestUtils.parseTest(true, false, name, cond, "0X3aacab3F3L");
-		ParserTestUtils.parseTest(true, false, name, cond, "0xCAB33BABEL");
+		parseTest(true, false, name, cond, "132_32");
+		parseTest(true, false, name, cond, "0_312___4");
+		parseTest(true, false, name, cond, "0x2_F_3A1L");
+		parseTest(true, false, name, cond, "0X3aacab3F3L");
+		parseTest(true, false, name, cond, "0xCAB33BABEL");
 	}
 
 
@@ -33,11 +35,11 @@ public class NumericLiteralTest {
 
 		double[] vals = new double[] { 15_37.4_6e8_2,	 -3_4.98e-54D,		 0x2_F_3.39b1p1D,	 0x3A5.86p143D,	 234.433444D };
 
-		ParserTestUtils.parseTest(true, false, name, cond, "15_37.4_6e8_2");
-		ParserTestUtils.parseTest(true, false, name, cond, "3_4.98e-54D");
-		ParserTestUtils.parseTest(true, false, name, cond, "0x2_F_3.39b1p1D");
-		ParserTestUtils.parseTest(false, true, name, cond, "0x3A5.86p143D__ ");
-		ParserTestUtils.parseTest(true, false, name, cond, "234.433444D");
+		parseTest(true, false, name, cond, "15_37.4_6e8_2");
+		parseTest(true, false, name, cond, "3_4.98e-54D");
+		parseTest(true, false, name, cond, "0x2_F_3.39b1p1D");
+		parseTest(false, true, name, cond, "0x3A5.86p143D__ ");
+		parseTest(true, false, name, cond, "234.433444D");
 	}
 
 

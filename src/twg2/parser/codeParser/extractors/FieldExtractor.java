@@ -14,8 +14,8 @@ import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.AstTypeChecker;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.stateMachine.AstMemberInClassParserReusable;
 import twg2.parser.stateMachine.AstParser;
 import twg2.parser.stateMachine.Consume;
@@ -62,7 +62,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 
 
 	@Override
-	public boolean acceptNext(SimpleTree<CodeFragment> tokenNode) {
+	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		if(state == State.COMPLETE || state == State.FAILED) {
 			state = State.INIT;
 		}
@@ -100,7 +100,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	private Consume updateAndCheckTypeParser(SimpleTree<CodeFragment> tokenNode) {
+	private Consume updateAndCheckTypeParser(SimpleTree<CodeToken> tokenNode) {
 		boolean res = typeParser.acceptNext(tokenNode);
 		boolean complete = typeParser.isComplete();
 		boolean failed = typeParser.isFailed();
@@ -118,7 +118,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	private Consume findingAccessModifiers(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingAccessModifiers(SimpleTree<CodeToken> tokenNode) {
 		AccessModifier accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
@@ -136,7 +136,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	private Consume findingDataType(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingDataType(SimpleTree<CodeToken> tokenNode) {
 		val res = updateAndCheckTypeParser(tokenNode);
 		// TODO because the type parser has to look ahead for now, but may not consume the look ahead token while also completing based on a look ahead
 		if(res == Consume.REJECTED && state == State.FINDING_NAME) {
@@ -147,7 +147,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	private Consume findingName(SimpleTree<CodeFragment> tokenNode) {
+	private Consume findingName(SimpleTree<CodeToken> tokenNode) {
 		if(AstFragType.isIdentifier(tokenNode.getData())) {
 			fieldName = tokenNode.getData().getText();
 			state = State.FOUND_NAME_CHECK;
@@ -159,8 +159,8 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	private Consume foundNameCheck(SimpleTree<CodeFragment> tokenNode) {
-		if((tokenNode == null || tokenNode.getData().getFragmentType() != CodeFragmentType.BLOCK || typeChecker.isFieldBlock(tokenNode))) {
+	private Consume foundNameCheck(SimpleTree<CodeToken> tokenNode) {
+		if((tokenNode == null || tokenNode.getData().getTokenType() != CodeTokenType.BLOCK || typeChecker.isFieldBlock(tokenNode))) {
 			state = State.COMPLETE;
 			val annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();

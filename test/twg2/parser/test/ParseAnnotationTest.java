@@ -1,6 +1,6 @@
 package twg2.parser.test;
 
-import static twg2.parser.test.ParserTestUtils.parseTestSameParsed;
+import static twg2.text.tokenizer.test.ParserTestUtils.parseTestSameParsed;
 
 import org.junit.Test;
 

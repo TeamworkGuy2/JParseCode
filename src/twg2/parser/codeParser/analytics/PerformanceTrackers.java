@@ -1,4 +1,4 @@
-package twg2.parser.codeParser.tools.performance;
+package twg2.parser.codeParser.analytics;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -14,12 +14,12 @@ import javax.swing.SortOrder;
 import lombok.val;
 import twg2.collections.builder.ListBuilder;
 import twg2.dataUtil.dataUtils.EnumError;
-import twg2.parser.codeParser.tools.performance.ParseTimes.TrackerAction;
-import twg2.parser.codeParser.tools.performance.TokenizeStepDetails.ParserAction;
+import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringPad;
 import twg2.text.stringUtils.StringSplit;
+import twg2.text.tokenizer.analytics.ParserAction;
 import twg2.tuple.Tuple3;
 import twg2.tuple.Tuples;
 
@@ -29,9 +29,8 @@ import twg2.tuple.Tuples;
  */
 public class PerformanceTrackers implements JsonWritableSig {
 	private Function<String, ParseTimes> parseTimesFactory = (srcName) -> new ParseTimes();
-	private Function<String, TokenizeStepDetails> stepDetailsFactory = (srcName) -> new TokenizeStepDetails();
-	private HashMap<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>> fileParseStats = new HashMap<>();
-	
+	private Function<String, TokenizeStepLogger> stepDetailsFactory = (srcName) -> new TokenizeStepLogger();
+	private HashMap<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>> fileParseStats = new HashMap<>();
 
 
 	public void log(TrackerAction action, String srcName, long timeNanos) {
@@ -42,7 +41,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 
 	public void log(ParserAction action, String srcName, long detail) {
 		val stat = getOrCreateParseStats(srcName, null);
-		stat.getValue1().log(action, detail);
+		stat.getValue1().logCount(action, detail);
 	}
 
 
@@ -51,7 +50,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public TokenizeStepDetails getOrCreateStepDetails(String srcName) {
+	public TokenizeStepLogger getOrCreateStepDetails(String srcName) {
 		return getOrCreateParseStats(srcName, null).getValue1();
 	}
 
@@ -65,12 +64,12 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public Map<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>> getParseStats() {
+	public Map<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>> getParseStats() {
 		return this.fileParseStats;
 	}
 
 
-	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>>> getTopParseTimes(SortOrder s, int size) {
+	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> getTopParseTimes(SortOrder s, int size) {
 		val list = ListBuilder.mutable(
 			this.fileParseStats.entrySet().stream()
 				.sorted(PerformanceTrackers.createParseTimesSorter(s)).iterator()
@@ -79,7 +78,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>>> getTopParseStepDetails(SortOrder s, int size) {
+	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> getTopParseStepDetails(SortOrder s, int size) {
 		val list = ListBuilder.mutable(
 			this.fileParseStats.entrySet().stream()
 				.sorted(PerformanceTrackers.createParseStepDetailsSorter(s)).iterator()
@@ -88,7 +87,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private Tuple3<ParseTimes, TokenizeStepDetails, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
+	private Tuple3<ParseTimes, TokenizeStepLogger, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
 		val stats = fileParseStats.get(srcName);
 		if(stats == null) {
 			val inst = Tuples.of(parseTimesFactory.apply(srcName), stepDetailsFactory.apply(srcName), fileSize);
@@ -122,7 +121,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public static final String toString(Iterator<Entry<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>>> parseStatsIter) {
+	public static final String toString(Iterator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> parseStatsIter) {
 		val sb = new StringBuilder();
 		while(parseStatsIter.hasNext()) {
 			val stat = parseStatsIter.next();
@@ -140,7 +139,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>>> createParseTimesSorter(SortOrder s) {
+	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> createParseTimesSorter(SortOrder s) {
 		switch(s) {
 		case ASCENDING:
 			return (a, b) -> (int)(a.getValue().getValue0().getTotalNs() - b.getValue().getValue0().getTotalNs());
@@ -152,12 +151,12 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepDetails, Integer>>> createParseStepDetailsSorter(SortOrder s) {
+	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> createParseStepDetailsSorter(SortOrder s) {
 		switch(s) {
 		case ASCENDING:
-			return (a, b) -> (a.getValue().getValue1().getCharChecks() - b.getValue().getValue1().getCharChecks());
+			return (a, b) -> (int)(a.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS) - b.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS));
 		case DESCENDING:
-			return (a, b) -> (b.getValue().getValue1().getCharChecks() - a.getValue().getValue1().getCharChecks());
+			return (a, b) -> (int)(b.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS) - a.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS));
 		default:
 			throw EnumError.unsupportedValue(s, SortOrder.class);
 		}

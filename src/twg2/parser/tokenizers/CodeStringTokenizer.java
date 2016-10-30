@@ -1,8 +1,8 @@
 package twg2.parser.tokenizers;
 
 import twg2.parser.Inclusion;
-import twg2.parser.text.CharParserFactory;
-import twg2.parser.text.StringBoundedParserBuilder;
+import twg2.text.tokenizer.CharParserFactory;
+import twg2.text.tokenizer.StringBoundedParserBuilder;
 
 /**
  * @author TeamworkGuy2

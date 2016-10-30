@@ -5,8 +5,8 @@ import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.AccessModifierParser;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.fragment.AstTypeChecker;
-import twg2.parser.fragment.CodeFragment;
-import twg2.parser.fragment.CodeFragmentType;
+import twg2.parser.fragment.CodeToken;
+import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -108,27 +108,27 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && keyword1.toSrc().equals(node.getText()));
+	public boolean isKeyword(CodeToken node, JavaKeyword keyword1) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && keyword1.toSrc().equals(node.getText()));
 	}
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1, JavaKeyword keyword2) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
+	public boolean isKeyword(CodeToken node, JavaKeyword keyword1, JavaKeyword keyword2) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText())));
 	}
 
 
 	@Override
-	public boolean isKeyword(CodeFragment node, JavaKeyword keyword1, JavaKeyword keyword2, JavaKeyword keyword3) {
-		return node != null && (node.getFragmentType() == CodeFragmentType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
+	public boolean isKeyword(CodeToken node, JavaKeyword keyword1, JavaKeyword keyword2, JavaKeyword keyword3) {
+		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD && (keyword1.toSrc().equals(node.getText()) || keyword2.toSrc().equals(node.getText()) || keyword3.toSrc().equals(node.getText())));
 	}
 
 
 	/** Java does not have a field block
 	 */
 	@Override
-	public boolean isFieldBlock(SimpleTree<CodeFragment> tokenNode) {
+	public boolean isFieldBlock(SimpleTree<CodeToken> tokenNode) {
 		return false;
 	}
 

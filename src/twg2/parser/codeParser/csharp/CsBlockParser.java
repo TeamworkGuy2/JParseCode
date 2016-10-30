@@ -24,7 +24,7 @@ import twg2.parser.codeParser.extractors.MethodExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.fragment.AstFragType;
-import twg2.parser.fragment.CodeFragment;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParser;
 import twg2.streams.EnhancedListBuilderIterator;
@@ -89,14 +89,14 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 
 	@Override
-	public List<Entry<SimpleTree<CodeFragment>, ClassAst.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeFragment> astTree) {
+	public List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeToken> astTree) {
 		val blocks = BlockExtractor.extractBlockFieldsAndInterfaceMethods(this, astTree);
 		return blocks;
 	}
 
 
 	@Override
-	public List<BlockAst<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeFragment> astTree, BlockAst<CsBlock> parentScope) {
+	public List<BlockAst<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<CsBlock> parentScope) {
 		List<BlockAst<CsBlock>> blocks = new ArrayList<>();
 		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, blocks);
 		return blocks;
@@ -109,8 +109,8 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeFragment> blockTree,
-			int depth, SimpleTree<CodeFragment> parentNode, BlockAst<CsBlock> parentScope, List<BlockAst<CsBlock>> blocks) {
+	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
+			int depth, SimpleTree<CodeToken> parentNode, BlockAst<CsBlock> parentScope, List<BlockAst<CsBlock>> blocks) {
 		val lang = CodeLanguageOptions.C_SHARP;
 		val keywordUtil = lang.getKeywordUtil();
 		val children = blockTree.getChildren();
@@ -169,7 +169,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * Returns the iterator where {@code next()} would return the class name element.
 	 * @return {@code <className, extendImplementNames>}
 	 */
-	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeFragment>> iter) {
+	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
 		val lang = CodeLanguageOptions.C_SHARP;
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
@@ -178,7 +178,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 		// get the first element and begin checking
 		if(iter.hasPrevious()) { prevCount++; }
-		SimpleTree<CodeFragment> prevNode = iter.hasPrevious() ? iter.previous() : null;
+		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
 		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {

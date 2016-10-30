@@ -7,9 +7,9 @@ import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
-import twg2.parser.text.CharConditionPipe;
-import twg2.parser.text.CharConditions;
-import twg2.parser.text.StringConditions;
+import twg2.text.tokenizer.CharConditionPipe;
+import twg2.text.tokenizer.CharConditions;
+import twg2.text.tokenizer.StringConditions;
 
 /**
  * @author TeamworkGuy2
