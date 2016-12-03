@@ -44,7 +44,7 @@ public class CsFileTokenizer {
 
 	public static CharParserFactory createAnnotationTokenizer() {
 		CharParserFactory annotationParser = new StringBoundedParserBuilder("C# annotation")
-			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', 1, Inclusion.INCLUDE)
+			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();
 		return annotationParser;

@@ -23,8 +23,7 @@ public class IdentifierTokenizer {
 
 	public static CharParserFactory createIdentifierWithGenericTypeTokenizer() {
 		val typeStatementCond = GenericTypeTokenizer.createGenericTypeTokenizer(genericTypeDepth, IdentifierTokenizer::createCompoundIdentifierTokenizer);
-		CharParserFactory identifierWithGenericTypeParser = new CharParserMatchableFactory<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
-		return identifierWithGenericTypeParser;
+		return new CharParserMatchableFactory<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
 	}
 
 
@@ -60,7 +59,10 @@ public class IdentifierTokenizer {
 	public static CharParserMatchable createCompoundIdentifierTokenizer() {
 		val identifierParser = Arrays.asList(newIdentifierTokenizer());
 		val separatorParser = Arrays.asList(new CharConditions.Literal("identifier namespace separator", CharArrayList.of('.'), Inclusion.INCLUDE));
-		return CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser);
+		return CharConditionPipe.createPipeOptionalSuffix("compound identifier (nullable)",
+			Arrays.asList(CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser)),
+			Arrays.asList(new CharConditions.Literal("nullable '?' type", CharArrayList.of('?'), Inclusion.INCLUDE))
+		);
 	}
 
 }

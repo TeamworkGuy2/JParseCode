@@ -4,9 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.0](N/A) - 2016-10-30
+###[0.14.1](N/A) - 2016-12-03
 #### Changed
+* Updated dependencies to latest versions: jtext-parser@0.11.0, jtext-tokenizer@0.2.0, jparser-primitive@0.2.0
+  * This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 
+* GenericTypeTokenizer and IdentifierTokenizer changes to properly parse nullable generic parameters
+
+
+--------
+###[0.14.0](https://github.com/TeamworkGuy2/JParseCode/commit/07bd715ecd29a42d781b663cd3a20c2436e69bff) - 2016-10-30
 __Reduced library complexity/scope by moving twg2.parser.text conditions/tokenizers to separate [jtext-tokenizer](https://github.com/TeamworkGuy2/JTextTokenizer) library__
+#### Changed
 * Moved twg2.parser.text package to jtext-tokenizer library
 * Moved twg2.parser.Inclusion to jtext-parser library
 * Renamed classes *Fragment -> *Token:
@@ -26,12 +34,12 @@ __Reduced library complexity/scope by moving twg2.parser.text conditions/tokeniz
 
 --------
 ###[0.13.0](https://github.com/TeamworkGuy2/JParseCode/commit/76734b17d16c67a89df7245a2cea2a1133c3b6b0) - 2016-10-26
+__Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 #### Added
 * Added ParameterSig and ParameterSigResolved 'parameterModifiers' field
 * Added KeywordUtil parameterModifiers() and isParameterModifier()
 
 #### Changed
-__Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 * MethodParametersParser.extractParamsFromSignature() to support parameter modifiers
 * Renamed CodeTokenizerBuilder addConstParser() -> addParser()
 * Added FieldDef.initializerToJson() 'preClosingComma' parameter

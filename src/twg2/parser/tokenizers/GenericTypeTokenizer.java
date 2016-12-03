@@ -30,9 +30,9 @@ public class GenericTypeTokenizer {
 		// the condition that parses identifiers nested inside the generic type definition
 		val nestedGenericTypeIdentifierCond = recursionDepth > 1 ? _createGenericTypeTokenizer(recursionDepth - 1, singleIdentifierParserConstructor) : singleIdentifierParserConstructor.get();
 
-		val requiredParser = Arrays.asList(singleIdentifierParserConstructor.get());
+		val typeIdentifierParser = Arrays.asList(singleIdentifierParserConstructor.get());
 		// TODO only matches generic types in the format '<a, b>', allow whitespace between '<'/'>' and after ','
-		val optionalParser = Arrays.asList(CharConditionPipe.createPipeOptionalSuffixesAny("generic type and array dimensions", Arrays.asList(
+		val genericParamsParser = Arrays.asList(CharConditionPipe.createPipeOptionalSuffixesAny("generic type and array dimensions", Arrays.asList(
 			CharConditionPipe.createPipeAllRequired("generic type signature", Arrays.asList(
 				new CharConditions.Literal("<", CharArrayList.of('<'), Inclusion.INCLUDE),
 				CharConditionPipe.createPipeRepeatableSeparator("generic type params",
@@ -45,7 +45,7 @@ public class GenericTypeTokenizer {
 			)
 		));
 
-		return CharConditionPipe.createPipeOptionalSuffix("type parser", requiredParser, optionalParser);
+		return CharConditionPipe.createPipeOptionalSuffix("type parser", typeIdentifierParser, genericParamsParser);
 	}
 
 }

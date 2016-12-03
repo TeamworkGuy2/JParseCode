@@ -3,6 +3,7 @@ package twg2.parser.codeParser.test;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
 import lombok.val;
 
@@ -31,7 +32,7 @@ import static twg2.parser.test.utils.ParseAnnotationAssert.*;
  * @since 2016-1-1
  */
 public class CsClassParseTest {
-	private static CodeFileAndAst<CsBlock> simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, Arrays.asList(
+	private static List<String> srcLines = Arrays.asList(
 		"namespace ParserExamples.Samples {",
 		"",
 		"  /// <summary>",
@@ -94,8 +95,10 @@ public class CsClassParseTest {
 		"  }",
 		"",
 		"}"
-	));
+	);
 
+	@Parameter
+	private CodeFileAndAst<CsBlock> simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, srcLines);
 
 	@Parameter
 	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);

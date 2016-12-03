@@ -118,7 +118,7 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 		if(includeSurroundingBrackets) { dst.append("{\n"); }
 		if(srcName != null) {
 			dst.append("\t\"file\": \"");
-			StringEscapeJson.toJsonString(srcName, 0, srcName.length(), dst);
+			StringEscapeJson.toJsonString(srcName, dst);
 			dst.append("\"");
 		}
 

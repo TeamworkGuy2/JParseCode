@@ -180,7 +180,8 @@ public class CodeTokenizerBuilder<T_LANG> {
 
 		while(input.hasNext()) {
 			char ch = input.nextChar();
-			parser.acceptNext(ch, input);
+			//System.out.println(input.getPositionDisplayText());
+			parser.parse(ch, input);
 		}
 
 		return tree;
