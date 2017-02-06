@@ -212,6 +212,12 @@ public enum CsKeyword implements AccessModifier {
 
 
 		@Override
+		public boolean isInheritanceKeyword(String str) {
+			return ":".equals(str);
+		}
+
+
+		@Override
 		public boolean isKeyword(String str) {
 			return Arrays.binarySearch(keywords, str) > -1;
 		}

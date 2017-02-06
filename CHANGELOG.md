@@ -4,7 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.1](N/A) - 2016-12-03
+###[0.14.2](N/A) - 2017-02-06
+#### Changed
+* Removed lombok.val usage/dependency from from test classes.
+
+#### Fixed
+* Fixed parsing C# classes that extend/implement multiple types, unrecognized types are assumed to possibly be interfaces.
+* Fixed parsing Java classes that implement multiple types, unrecognized types are assumed to possibly be interfaces.
+
+
+--------
+###[0.14.1](https://github.com/TeamworkGuy2/JParseCode/commit/53806a53d3b8152b35e3166a81dbe9a81a49f354) - 2016-12-03
 #### Changed
 * Updated dependencies to latest versions: jtext-parser@0.11.0, jtext-tokenizer@0.2.0, jparser-primitive@0.2.0
   * This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 

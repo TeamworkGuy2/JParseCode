@@ -181,17 +181,18 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
 		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
-		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData()) && !lang.getKeywordUtil().isInheritanceKeyword(prevNode.getData().getText())) {
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
 		}
 
 		// if the class signature extends/implements, then the identifiers just read are the class/interface names, next read the actual class name
-		if(prevNode != null && prevNode.getData().getText().trim().equals(":")) {
+		if(prevNode != null && prevNode.getData().getText().equals(":")) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
 			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+				Collections.reverse(names);
 				val extendImplementNames = names;
 				val className = prevNode.getData().getText();
 				nameCompoundRes = Tuples.of(className, extendImplementNames);

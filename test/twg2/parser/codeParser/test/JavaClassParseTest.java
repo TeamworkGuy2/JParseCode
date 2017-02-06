@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-
-import lombok.val;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
@@ -20,12 +20,15 @@ import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.java.JavaBlockParser;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
-import static twg2.parser.test.utils.ParseAnnotationAssert.*;
+import twg2.treeLike.simpleTree.SimpleTree;
+import static twg2.parser.test.utils.ParseAnnotationAssert.assertAnnotation;
 
 /**
  * @author TeamworkGuy2
@@ -96,24 +99,26 @@ public class JavaClassParseTest {
 
 	@Test
 	public void parseBlocksTest() {
-		val tree = file.getDoc();
-		val blocks = new JavaBlockParser().extractClassFieldsAndMethodSignatures(tree);
+		SimpleTree<CodeToken> tree = file.getDoc();
+		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<JavaBlock>>> blocks = new JavaBlockParser().extractClassFieldsAndMethodSignatures(tree);
 
 		Assert.assertEquals(1, blocks.size());
 
-		val trackInfoBlock = blocks.get(0).getValue();
+		ClassAst.SimpleImpl<JavaBlock> trackInfoBlock = blocks.get(0).getValue();
 		Assert.assertEquals(JavaBlock.CLASS, trackInfoBlock.getBlockType());
 		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
+
+		Assert.assertEquals(Arrays.asList("Serializable", "Comparable<TrackInfo>"), trackInfoBlock.getSignature().getExtendImplementSimpleNames());
 	}
 
 
 	@Test
 	public void simpleJavaParseTest() {
-		val blocks = simpleJava.parsedBlocks;
-		val fullClassName = simpleJava.fullClassName;
+		List<CodeFileParsed.Simple<String, JavaBlock>> blocks = simpleJava.parsedBlocks;
+		String fullClassName = simpleJava.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		val clas = blocks.get(0).getParsedClass();
-		val fields = clas.getFields();
+		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).getParsedClass();
+		List<FieldSig> fields = clas.getFields();
 		Assert.assertEquals(5, fields.size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));

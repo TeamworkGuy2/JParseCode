@@ -1,5 +1,7 @@
 package ParserExamples.Models;
 
+import java.io.Serializable;
+
 import System.Runtime.Serialization;
 
 /// <summary>
@@ -9,7 +11,7 @@ import System.Runtime.Serialization;
 /// This class is mutable. And it is not thread-safe.
 /// </threadsafety>
 [DataContract]
-public class TrackInfo {
+public class TrackInfo implements Serializable, Comparable<TrackInfo> {
 
 	/// <value>The track name.</value>
 	@DataMember
@@ -24,5 +26,11 @@ public class TrackInfo {
 
 	/// <value>The track duration in milliseconds</value>
 	public long contentId;
+
+
+	@Override
+	public int compareTo(TrackInfo o) {
+		return other != null ? (this.Name != null ? this.Name.CompareTo(other.Name) : (other.Name != null ? 1 : 0)) : (this.Name != null ? -1 : 0);
+	}
 
 }

@@ -1,25 +1,27 @@
 package twg2.parser.codeParser.test;
 
 import java.util.Arrays;
-
-import lombok.val;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.parser.codeParser.AccessModifierEnum;
-import twg2.parser.codeParser.csharp.CsBlock;
+import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.workflow.CodeFileParsed;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-1-1
  */
 public class JavasEnumParseTest {
-	private static final CodeFileAndAst<CsBlock> simpleEnumJava = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.JAVA, "SimpleEnumJava.java", "ParserExamples.Samples.SimpleEnumJava", true, Arrays.asList(
+	private static final CodeFileAndAst<JavaBlock> simpleEnumJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleEnumJava.java", "ParserExamples.Samples.SimpleEnumJava", true, Arrays.asList(
 		"package ParserExamples.Samples;",
 		"",
 		"/** A simple enum to test parsing.",
@@ -52,11 +54,11 @@ public class JavasEnumParseTest {
 
 	@Test
 	public void simpleEnumCsParseTest() {
-		val blocks = simpleEnumJava.parsedBlocks;
-		val fullClassName = simpleEnumJava.fullClassName;
+		List<CodeFileParsed.Simple<String, JavaBlock>> blocks = simpleEnumJava.parsedBlocks;
+		String fullClassName = simpleEnumJava.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		val clas = blocks.get(0).getParsedClass();
-		val enums = clas.getEnumMembers();
+		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).getParsedClass();
+		List<FieldDef> enums = clas.getEnumMembers();
 		Assert.assertEquals(3, enums.size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));

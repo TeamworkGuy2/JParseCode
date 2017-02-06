@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-
-import lombok.val;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
@@ -20,11 +20,14 @@ import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
+import twg2.treeLike.simpleTree.SimpleTree;
 import static twg2.parser.test.utils.ParseAnnotationAssert.*;
 
 /**
@@ -110,12 +113,12 @@ public class CsClassParseTest {
 
 	@Test
 	public void parseBlocksTest() {
-		val tree = file.getDoc();
-		val blocks = new CsBlockParser().extractClassFieldsAndMethodSignatures(tree);
+		SimpleTree<CodeToken> tree = file.getDoc();
+		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>>> blocks = new CsBlockParser().extractClassFieldsAndMethodSignatures(tree);
 
 		Assert.assertEquals(1, blocks.size());
 
-		val trackInfoBlock = blocks.get(0).getValue();
+		ClassAst.SimpleImpl<CsBlock> trackInfoBlock = blocks.get(0).getValue();
 		Assert.assertEquals(CsBlock.CLASS, trackInfoBlock.getBlockType());
 		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
 	}
@@ -123,10 +126,10 @@ public class CsClassParseTest {
 
 	@Test
 	public void simpleCsParseTest() {
-		val blocks = simpleCs.parsedBlocks;
-		val fullClassName = simpleCs.fullClassName;
+		List<CodeFileParsed.Simple<String, CsBlock>> blocks = simpleCs.parsedBlocks;
+		String fullClassName = simpleCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		val clas = blocks.get(0).getParsedClass();
+		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).getParsedClass();
 		Assert.assertEquals(8, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));

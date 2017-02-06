@@ -27,20 +27,20 @@ public class ClassSigResolver {
 	 */
 	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
 			ProjectClassSet.Simple<T_ID, ? extends BlockType> projFiles, BlockType defaultBlockType, Collection<List<String>> missingNamespacesDst) {
-		List<List<String>> resolvedCompilationUnitNames = new ArrayList<>();
-		List<BlockType> resolvedCompilationUnitBlockTypes = new ArrayList<>();
+		List<List<String>> resolvedParentNames = new ArrayList<>();
+		List<BlockType> resolvedParentBlockTypess = new ArrayList<>();
 		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();
 
 		if(classExtendImplementNames != null) {
 			for(val simpleName : classExtendImplementNames) {
 				val resolvedClass = projFiles.resolveSimpleNameToClass(simpleName, namespaceClass, missingNamespacesDst);
 				if(resolvedClass != null) {
-					resolvedCompilationUnitBlockTypes.add(resolvedClass.getBlockType());
-					resolvedCompilationUnitNames.add(resolvedClass.getSignature().getFullName());
+					resolvedParentBlockTypess.add(resolvedClass.getBlockType());
+					resolvedParentNames.add(resolvedClass.getSignature().getFullName());
 				}
 				else {
-					resolvedCompilationUnitBlockTypes.add(defaultBlockType);
-					resolvedCompilationUnitNames.add(new ArrayList<>(Arrays.asList(simpleName)));
+					resolvedParentBlockTypess.add(defaultBlockType);
+					resolvedParentNames.add(new ArrayList<>(Arrays.asList(simpleName)));
 				}
 			}
 		}
@@ -48,9 +48,9 @@ public class ClassSigResolver {
 		// check the extends/implements name list, ensure that the first
 		TypeSig.TypeSigResolved extendClassType = null;
 		List<TypeSig.TypeSigResolved> implementInterfaceTypes = Collections.emptyList();
-		if(resolvedCompilationUnitNames.size() > 0) {
-			val firstCompilationUnitName = resolvedCompilationUnitNames.get(0);
-			val firstCompilationUnitBlockType = resolvedCompilationUnitBlockTypes.get(0);
+		if(resolvedParentNames.size() > 0) {
+			val firstCompilationUnitName = resolvedParentNames.get(0);
+			val firstCompilationUnitBlockType = resolvedParentBlockTypess.get(0);
 			boolean extendsClass = false;
 			// Get the extends class name
 			// TODO maybe should check isClass() rather than !isInterface()
@@ -61,13 +61,15 @@ public class ClassSigResolver {
 				extendsClass = true;
 			}
 			// Get the implements interface names
-			if(resolvedCompilationUnitBlockTypes.size() > (extendsClass ? 1 : 0)) {
+			if(resolvedParentBlockTypess.size() > (extendsClass ? 1 : 0)) {
 				implementInterfaceTypes = new ArrayList<>();
-				for(int i = extendsClass ? 1 : 0, size = resolvedCompilationUnitBlockTypes.size(); i < size; i++) {
-					if(!resolvedCompilationUnitBlockTypes.get(i).isInterface()) {
+				for(int i = extendsClass ? 1 : 0, size = resolvedParentBlockTypess.size(); i < size; i++) {
+					// if the extend/implement type is not a recognized interface and the name is resolved (resolved names are longer than 1 part, since all classes should come from a namespace)
+					// assume that unresolved names could be interfaces and don't count them against the 1 extend class limit
+					if(!resolvedParentBlockTypess.get(i).isInterface() && resolvedParentNames.get(i).size() > 1) {
 						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullName() + "'");
 					}
-					val name = NameUtil.joinFqName(resolvedCompilationUnitNames.get(i));
+					val name = NameUtil.joinFqName(resolvedParentNames.get(i));
 					val implementInterfaceSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
 					val implementInterfaceType = TypeSigResolver.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 					implementInterfaceTypes.add(implementInterfaceType);

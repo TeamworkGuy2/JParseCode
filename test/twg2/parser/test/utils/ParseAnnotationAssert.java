@@ -1,9 +1,10 @@
 package twg2.parser.test.utils;
 
 import java.util.List;
+import java.util.Map;
 
-import lombok.val;
 import org.junit.Assert;
+
 import twg2.ast.interm.annotation.AnnotationSig;
 
 /**
@@ -30,11 +31,11 @@ public class ParseAnnotationAssert {
 
 		Assert.assertTrue("annotation '" + name + "' argument names " + argNames.length + " and values " + argValues.length + " lengths must be equal", argNames.length == argValues.length);
 
-		val sigArgs = sig.getArguments();
+		Map<String, String> sigArgs = sig.getArguments();
 
 		for(int i = 0, size = argNames.length; i < size; i++) {
-			val argName = argNames[i];
-			val argVal = argValues[i];
+			String argName = argNames[i];
+			String argVal = argValues[i];
 			Assert.assertTrue("annotation '" + name + "' missing name '" + argName + "' found " + sigArgs.keySet(), sigArgs.containsKey(argName));
 			Assert.assertEquals("annotation '" + name + "' mismatching value '" + argVal + "' vs '" + sigArgs.get(argName) + "'", argVal, sigArgs.get(argName));
 		}

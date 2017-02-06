@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
@@ -52,9 +51,9 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 
 
 	public static <_T_BLOCK extends BlockType> CodeFileAndAst<_T_BLOCK> parse(CodeLanguage lang, String fileName, String fullClassName, boolean print, Iterable<String> srcCodeLines) {
-		val srcCode = StringJoin.join(srcCodeLines, "\n").toCharArray();
-		val ast = ParseCodeFile.parseCode(fileName, lang, srcCode, 0, srcCode.length, null, null);
-		val parsedBlocks = new ArrayList<CodeFileParsed.Simple<String, _T_BLOCK>>();
+		char[] srcCode = StringJoin.join(srcCodeLines, "\n").toCharArray();
+		CodeFileSrc<CodeLanguage> ast = ParseCodeFile.parseCode(fileName, lang, srcCode, 0, srcCode.length, null, null);
+		List<CodeFileParsed.Simple<String, _T_BLOCK>> parsedBlocks = new ArrayList<CodeFileParsed.Simple<String, _T_BLOCK>>();
 
 		if(print) {
 			System.out.println(srcCode);
@@ -62,14 +61,14 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 
 		@SuppressWarnings("unchecked")
 		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.getDoc());
-		for(val block : blockDeclarations) {
+		for(Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>> block : blockDeclarations) {
 			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
-			val fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
+			CodeFileParsed.Simple<String, _T_BLOCK> fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
 			parsedBlocks.add(fileParsed);
 
 			try {
-				val ws = new WriteSettings(true, true, true, true);
-				val sb = new StringBuilder();
+				WriteSettings ws = new WriteSettings(true, true, true, true);
+				StringBuilder sb = new StringBuilder();
 				fileParsed.getParsedClass().toJson(sb, ws);
 
 				if(print) {
@@ -80,7 +79,7 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 			}
 		}
 
-		val inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, 0, srcCode.length, ast, parsedBlocks);
+		CodeFileAndAst<_T_BLOCK> inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, 0, srcCode.length, ast, parsedBlocks);
 
 		return inst;
 	}

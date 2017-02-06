@@ -1,18 +1,20 @@
 package twg2.parser.codeParser.test;
 
 import java.util.Arrays;
-
-import lombok.val;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import twg2.ast.interm.classes.ClassAst;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.workflow.CodeFileParsed;
 
 /**
  * @author TeamworkGuy2
@@ -39,11 +41,11 @@ public class CsEnumParseTest {
 
 	@Test
 	public void simpleEnumCsParseTest() {
-		val blocks = simpleEnumCs.parsedBlocks;
-		val fullClassName = simpleEnumCs.fullClassName;
+		List<CodeFileParsed.Simple<String, CsBlock>> blocks = simpleEnumCs.parsedBlocks;
+		String fullClassName = simpleEnumCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		val clas = blocks.get(0).getParsedClass();
-		val enums = clas.getEnumMembers();
+		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).getParsedClass();
+		List<FieldDef> enums = clas.getEnumMembers();
 		Assert.assertEquals(3, enums.size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));

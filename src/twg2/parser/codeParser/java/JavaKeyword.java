@@ -181,6 +181,12 @@ public enum JavaKeyword implements AccessModifier {
 
 
 		@Override
+		public boolean isInheritanceKeyword(String str) {
+			return EXTENDS.srcName.equals(str) || IMPLEMENTS.srcName.equals(str);
+		}
+
+
+		@Override
 		public boolean isKeyword(String str) {
 			return Arrays.binarySearch(keywords, str) > -1;
 		}

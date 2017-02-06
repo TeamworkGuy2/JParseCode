@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.Serialization;
 
 namespace ParserExamples.Models {
@@ -9,7 +10,7 @@ namespace ParserExamples.Models {
     /// This class is mutable. And it is not thread-safe.
     /// </threadsafety>
     [DataContract]
-    public class TrackInfo {
+    public class TrackInfo : ISerializable, IComparable<TrackInfo> {
 
         /// <value>The track name.</value>
         [DataMember]
@@ -24,6 +25,15 @@ namespace ParserExamples.Models {
 
         /// <value>The track duration in milliseconds</value>
         public long contentId;
+
+
+        public int CompareTo(Implementer other) {
+            return other != null ? (this.Name != null ? this.Name.CompareTo(other.Name) : (other.Name != null ? 1 : 0)) : (this.Name != null ? -1 : 0);
+        }
+
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+        }
 
     }
 
