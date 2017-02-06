@@ -18,7 +18,6 @@ import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.csharp.CsBlock;
-import twg2.parser.codeParser.test.JavaClassParseTest;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
@@ -77,12 +76,6 @@ public class MainParser {
 
 
 	public static void main(String[] args) throws IOException, FileFormatException {
-		new JavaClassParseTest().parseBlocksTest();
-
-		if(3/1.4 > 1.6) {
-			return;
-		}
-
 		boolean multithread = false;
 		boolean logPerformance = false;
 		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;

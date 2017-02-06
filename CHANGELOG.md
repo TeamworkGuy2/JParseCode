@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.2](N/A) - 2017-02-06
+###[0.14.3](N/A) - 2017-02-06
+#### Changed
+* Forgot to remove test code from MainParser
+
+
+--------
+###[0.14.2](https://github.com/TeamworkGuy2/JParseCode/commit/c9ff08c26752a18e8f38e4365181876d81461190) - 2017-02-06
 #### Changed
 * Removed lombok.val usage/dependency from from test classes.
 
