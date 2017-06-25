@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
+import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSig;
@@ -28,7 +29,10 @@ import twg2.parser.test.utils.CodeFileAndAst;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.treeLike.simpleTree.SimpleTree;
-import static twg2.parser.test.utils.ParseAnnotationAssert.*;
+import static twg2.parser.test.utils.AnnotationAssert.*;
+import static twg2.parser.test.utils.FieldAssert.*;
+import static twg2.parser.test.utils.MethodAssert.*;
+import static twg2.parser.test.utils.TypeAssert.*;
 
 /**
  * @author TeamworkGuy2
@@ -136,50 +140,31 @@ public class CsClassParseTest {
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 
-		FieldSig f = clas.getFields().get(0);
-		Assert.assertEquals(fullClassName + ".mod", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("int", f.getFieldType().getTypeName());
-		Assert.assertEquals(Arrays.asList(" <value>The modification count.</value>\n"), f.getComments());
+		List<FieldSig> fs = clas.getFields();
+		assertField(fs, 0, fullClassName + ".mod", "int");
+		Assert.assertEquals(Arrays.asList(" <value>The modification count.</value>\n"), fs.get(0).getComments());
 		// annotation: EmptyAnnotation()
-		assertAnnotation(f.getAnnotations(), 0, "EmptyAnnotation", new String[0], new String[0]);
+		List<AnnotationSig> as = fs.get(0).getAnnotations();
+		assertAnnotation(as, 0, "EmptyAnnotation", new String[0], new String[0]);
 		// annotation: IntAnnotation(-1)
-		assertAnnotation(f.getAnnotations(), 1, "IntAnnotation", new String[] { "value" }, "-1");
+		assertAnnotation(as, 1, "IntAnnotation", new String[] { "value" }, "-1");
 		// annotation: BoolAnnotation(-1)
-		assertAnnotation(f.getAnnotations(), 2, "BoolAnnotation", new String[] { "value" }, "true");
+		assertAnnotation(as, 2, "BoolAnnotation", new String[] { "value" }, "true");
 		// annotation: IdentifierAnnotation(Integer.TYPE)
-		assertAnnotation(f.getAnnotations(), 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
+		assertAnnotation(as, 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
 		// annotation: StringAnnotation(Name = "")
-		assertAnnotation(f.getAnnotations(), 4, "StringAnnotation", new String[] { "Name" }, "");
+		assertAnnotation(as, 4, "StringAnnotation", new String[] { "Name" }, "");
 		// annotation: MultiArgAnnotation(\"abc\", false, 1.23)
-		assertAnnotation(f.getAnnotations(), 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
+		assertAnnotation(as, 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
 		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
-		assertAnnotation(f.getAnnotations(), 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
+		assertAnnotation(as, 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
-		f = clas.getFields().get(1);
-		Assert.assertEquals(fullClassName + "._name", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("string", f.getFieldType().getTypeName());
-
-		f = clas.getFields().get(2);
-		Assert.assertEquals(fullClassName + ".Names", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("IList", f.getFieldType().getTypeName());
-		Assert.assertEquals("string", f.getFieldType().getParams().get(0).getTypeName());
-
-		f = clas.getFields().get(3);
-		Assert.assertEquals(fullClassName + ".Count", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("int", f.getFieldType().getTypeName());
-
-		f = clas.getFields().get(4);
-		Assert.assertEquals(fullClassName + ".C2", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("float", f.getFieldType().getTypeName());
-
-		f = clas.getFields().get(5);
-		Assert.assertEquals(fullClassName + ".C3", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("decimal", f.getFieldType().getTypeName());
-
-		f = clas.getFields().get(6);
-		Assert.assertEquals(fullClassName + ".accesses", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals("DateTime", f.getFieldType().getTypeName());
-		Assert.assertEquals(1, f.getFieldType().getArrayDimensions());
+		assertField(fs, 1, fullClassName + "._name", "string");
+		assertField(fs, 2, fullClassName + ".Names", ls("IList", ls("string")));
+		assertField(fs, 3, fullClassName + ".Count", "int");
+		assertField(fs, 4, fullClassName + ".C2", "float");
+		assertField(fs, 5, fullClassName + ".C3", "decimal");
+		assertField(fs, 6, fullClassName + ".accesses", "DateTime[]");
 
 		// methods:
 		Assert.assertEquals(2, clas.getMethods().size());
@@ -187,12 +172,10 @@ public class CsClassParseTest {
 		// AddName()
 		MethodSig.SimpleImpl m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.getFullName()));
-		ParameterSig p = m.getParamSigs().get(0);
-		Assert.assertEquals("name", p.getName());
-		Assert.assertEquals("string", p.getTypeSimpleName());
-		Assert.assertEquals(Arrays.asList(" <summary>Add name</summary>\n",
+		List<ParameterSig> ps = m.getParamSigs();
+		assertParameter(ps, 0, "name", "string", null, Arrays.asList(" <summary>Add name</summary>\n",
 				" <param name=\"name\">the name</param>\n",
-				" <returns>the names</returns>\n"), m.getComments());
+				" <returns>the names</returns>\n"));
 		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
 		assertAnnotation(m.getAnnotations(), 0, "OperationContract", new String[0], new String[0]);
@@ -204,27 +187,15 @@ public class CsClassParseTest {
 		assertAnnotation(m.getAnnotations(), 2, "TransactionFlow", new String[] { "value" }, new String[] { "TransactionFlowOption.Allowed" });
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		Assert.assertEquals("Result", m.getReturnType().getTypeName());
-		Assert.assertEquals("IList", m.getReturnType().getParams().get(0).getTypeName());
-		Assert.assertEquals("String", m.getReturnType().getParams().get(0).getParams().get(0).getTypeName());
+		assertType(ls("Result", ls("IList", ls("String"))), m.getReturnType());
 
 		// SetNames()
 		m = clas.getMethods().get(1);
 		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.getFullName()));
-		p = m.getParamSigs().get(0);
-		Assert.assertEquals("inst", p.getName());
-		Assert.assertEquals("SimpleCs", p.getTypeSimpleName());
-		Assert.assertEquals(Arrays.asList(CsKeyword.THIS), p.getParameterModifiers());
-
-		p = m.getParamSigs().get(1);
-		Assert.assertEquals("constraints", p.getName());
-		Assert.assertEquals("Constraints", p.getTypeSimpleName());
-		Assert.assertEquals(Arrays.asList(CsKeyword.REF), p.getParameterModifiers());
-
-		p = m.getParamSigs().get(2);
-		Assert.assertEquals("names", p.getName());
-		Assert.assertEquals("string[]", p.getTypeSimpleName());
-		Assert.assertEquals(Arrays.asList(CsKeyword.PARAMS), p.getParameterModifiers());
+		List<ParameterSig> params = m.getParamSigs();
+		assertParameter(params, 0, "inst", "SimpleCs", Arrays.asList(CsKeyword.THIS), null);
+		assertParameter(params, 1, "constraints", "Constraints", Arrays.asList(CsKeyword.REF), null);
+		assertParameter(params, 2, "names", "string[]", Arrays.asList(CsKeyword.PARAMS), null);
 	}
 
 }

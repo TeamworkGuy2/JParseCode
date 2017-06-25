@@ -11,7 +11,7 @@ import twg2.ast.interm.annotation.AnnotationSig;
  * @author TeamworkGuy2
  * @since 2016-09-05
  */
-public class ParseAnnotationAssert {
+public class AnnotationAssert {
 
 	public static void assertAnnotation(List<AnnotationSig> sigs, int idx, String name, String[] argNames, String... argValues) {
 		Assert.assertTrue("there are only " + sigs.size() + " '" + name + "' annotations, cannot check index " + idx, idx < sigs.size());

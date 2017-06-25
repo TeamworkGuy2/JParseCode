@@ -21,6 +21,8 @@ import java.util.logging.Level;
 
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
+import twg2.collections.builder.MapBuilder;
+import twg2.collections.dataStructures.PairList;
 import twg2.dateTimes.TimeUnitUtil;
 import twg2.io.fileLoading.DirectorySearchInfo;
 import twg2.io.fileLoading.SourceFiles;
@@ -311,7 +313,7 @@ public class ParserWorkflow {
 		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<CodeFileSrc<CodeLanguage>, BlockType>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
 			val writeSettings = new WriteSettings(true, false, false, true);
 			// associates file paths with how many times each has been written to (so we can append on subsequent writes)
-			val definitionsByOutputFile = new HashMap<String, List<char[]>>();
+			val definitionsByOutputFile = new HashMap<String, PairList<String, char[]>>();
 
 			val tmpSb = new StringBuilder(2048);
 
@@ -319,37 +321,37 @@ public class ParserWorkflow {
 			for(val dstSet : resSets.entrySet()) {
 				val dst = dstSet.getKey();
 				val classes = dstSet.getValue();
-				val resClasses = new ArrayList<>(classes);
 				
-				resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getParsedClass().getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getParsedClass().getSignature().getFullName())));
-
-				List<char[]> definitionStrs = definitionsByOutputFile.get(dst.path);
+				PairList<String, char[]> definitionStrs = definitionsByOutputFile.get(dst.path);
 				if(definitionStrs == null) {
-					definitionStrs = new ArrayList<>();
+					definitionStrs = new PairList<>();
 					definitionsByOutputFile.put(dst.path, definitionStrs);
 				}
 
-				for(val classInfo : resClasses) {
+				for(val classInfo : classes) {
 					tmpSb.setLength(0);
-					tmpSb.append("\"" + NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullName()) + "\": ");
+					val classNameFq = NameUtil.joinFqName(classInfo.getParsedClass().getSignature().getFullName());
+					tmpSb.append("\"" + classNameFq + "\": ");
 					classInfo.getParsedClass().toJson(tmpSb, writeSettings);
 					val dstChars = new char[tmpSb.length()];
 					tmpSb.getChars(0, tmpSb.length(), dstChars, 0);
-					definitionStrs.add(dstChars);
+					definitionStrs.add(classNameFq, dstChars);
 				}
-
 			}
 
 			for(val dstData : definitionsByOutputFile.entrySet()) {
+				List<Entry<String, char[]>> defs = new ArrayList<>(MapBuilder.mutable(dstData.getValue().keyList(), dstData.getValue().valueList(), true).entrySet());
+				Collections.sort(defs, (c1, c2) -> c1.getKey().compareTo(c2.getKey()));
+
 				try(val output = Files.newBufferedWriter(Paths.get(dstData.getKey()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 					boolean first = true;
 					output.write("{\n\"files\": {");
 
-					for(val defChars : dstData.getValue()) {
+					for(val def : defs) {
 						if(!first) {
 							output.append(",\n");
 						}
-						output.write(defChars, 0, defChars.length);
+						output.write(def.getValue(), 0, def.getValue().length);
 						first = false;
 					}
 

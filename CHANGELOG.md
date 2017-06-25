@@ -4,13 +4,25 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.3](N/A) - 2017-02-06
+### [0.14.4](N/A) - 2017-06-25
+#### Added
+* Two more JUnit tests, CsModelParseTest and JavaModelParseTest
+* Added unit test helpers: test.twg2.parser.test.utils FieldAssert, MethodAssert, and TypeAssert
+
+#### Changed
+* Ensure output write order of parsed file definitions (sorted by fully qualifying name)
+* Updated/refactored unit tests to use new unit test helpers
+* Renamed unit test helper ParseAnnotationAssert -> AnnotationAssert
+
+
+--------
+### [0.14.3](https://github.com/TeamworkGuy2/JParseCode/commit/d91e7d4a82827c3289d72d2feea9a5b9a0fe4cd3) - 2017-02-06
 #### Changed
 * Forgot to remove test code from MainParser
 
 
 --------
-###[0.14.2](https://github.com/TeamworkGuy2/JParseCode/commit/c9ff08c26752a18e8f38e4365181876d81461190) - 2017-02-06
+### [0.14.2](https://github.com/TeamworkGuy2/JParseCode/commit/c9ff08c26752a18e8f38e4365181876d81461190) - 2017-02-06
 #### Changed
 * Removed lombok.val usage/dependency from from test classes.
 
@@ -20,7 +32,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.1](https://github.com/TeamworkGuy2/JParseCode/commit/53806a53d3b8152b35e3166a81dbe9a81a49f354) - 2016-12-03
+### [0.14.1](https://github.com/TeamworkGuy2/JParseCode/commit/53806a53d3b8152b35e3166a81dbe9a81a49f354) - 2016-12-03
 #### Changed
 * Updated dependencies to latest versions: jtext-parser@0.11.0, jtext-tokenizer@0.2.0, jparser-primitive@0.2.0
   * This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 
@@ -28,7 +40,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-###[0.14.0](https://github.com/TeamworkGuy2/JParseCode/commit/07bd715ecd29a42d781b663cd3a20c2436e69bff) - 2016-10-30
+### [0.14.0](https://github.com/TeamworkGuy2/JParseCode/commit/07bd715ecd29a42d781b663cd3a20c2436e69bff) - 2016-10-30
 __Reduced library complexity/scope by moving twg2.parser.text conditions/tokenizers to separate [jtext-tokenizer](https://github.com/TeamworkGuy2/JTextTokenizer) library__
 #### Changed
 * Moved twg2.parser.text package to jtext-tokenizer library
@@ -49,7 +61,7 @@ __Reduced library complexity/scope by moving twg2.parser.text conditions/tokeniz
 
 
 --------
-###[0.13.0](https://github.com/TeamworkGuy2/JParseCode/commit/76734b17d16c67a89df7245a2cea2a1133c3b6b0) - 2016-10-26
+### [0.13.0](https://github.com/TeamworkGuy2/JParseCode/commit/76734b17d16c67a89df7245a2cea2a1133c3b6b0) - 2016-10-26
 __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 #### Added
 * Added ParameterSig and ParameterSigResolved 'parameterModifiers' field
@@ -71,13 +83,13 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.12.1](https://github.com/TeamworkGuy2/JParseCode/commit/a0ef508705fb685798e8762fbc08cd5a92eff273) - 2016-10-02
+### [0.12.1](https://github.com/TeamworkGuy2/JParseCode/commit/a0ef508705fb685798e8762fbc08cd5a92eff273) - 2016-10-02
 #### Changed
 * Updated dependencies, specifically jfile-io to 0.7.0 which no longer contains JsonWrite, so added json-stringify library for new equivalent JsonStringify class and updated related code
 
 
 --------
-###[0.12.0](https://github.com/TeamworkGuy2/JParseCode/commit/0ca793a0dd5f2d41f629e7f133dbd3bf2a2c4adb) - 2016-09-13
+### [0.12.0](https://github.com/TeamworkGuy2/JParseCode/commit/0ca793a0dd5f2d41f629e7f133dbd3bf2a2c4adb) - 2016-09-13
 #### Added
 * PerformanceTrackers, ParseTimes, TokenizeStepDetails in new twg2.parser.codeParser.tools.performance package - used for tracking performance
 
@@ -95,7 +107,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.11.0](https://github.com/TeamworkGuy2/JParseCode/commit/3029d0d08bda6cc308d3732eb09eb971fd0e6030) - 2016-09-06
+### [0.11.0](https://github.com/TeamworkGuy2/JParseCode/commit/3029d0d08bda6cc308d3732eb09eb971fd0e6030) - 2016-09-06
 #### Added
 * __basic C# and Java enum parsing__
   * Added twg2.ast.interm.field FieldDef and FieldDefResolved to represent enum members (TODO could use some clarification/refactoring)
@@ -123,7 +135,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.10.8](https://github.com/TeamworkGuy2/JParseCode/commit/a89e38e23341bb999ec136fc61212c8271ad4332) - 2016-09-02
+### [0.10.8](https://github.com/TeamworkGuy2/JParseCode/commit/a89e38e23341bb999ec136fc61212c8271ad4332) - 2016-09-02
 #### Changed
 * Updated dependency, switched jparser-data-type-like (now deprecated/removed) to jparse-primitive which is a separate project containing just the primitive parsing code from jparser-data-type-like
 * Renamed project from JParserTools -> JParseCode
@@ -131,7 +143,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.10.7](https://github.com/TeamworkGuy2/JParseCode/commit/ee313a3fe1bfe4e4be59c85b5997c5b13c26d1c8) - 2016-08-28
+### [0.10.7](https://github.com/TeamworkGuy2/JParseCode/commit/ee313a3fe1bfe4e4be59c85b5997c5b13c26d1c8) - 2016-08-28
 #### Added
 * Added jdate-times dependency (since dependent date/time code was moved from jdata-util and jparser-data-type-like to jdate-times)
 
@@ -140,27 +152,27 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.10.6](https://github.com/TeamworkGuy2/JParseCode/commit/d1099ba9ef35ff0109c2c923044efe2219bd061d) - 2016-08-27
+### [0.10.6](https://github.com/TeamworkGuy2/JParseCode/commit/d1099ba9ef35ff0109c2c923044efe2219bd061d) - 2016-08-27
 #### Changed
 * Fixed version numbers and jackson-* dependency names in package-lib.json
 
 
 --------
-###[0.10.5](https://github.com/TeamworkGuy2/JParseCode/commit/d2efb99774df457392525dbdf4341c438fb20160) - 2016-08-21
+### [0.10.5](https://github.com/TeamworkGuy2/JParseCode/commit/d2efb99774df457392525dbdf4341c438fb20160) - 2016-08-21
 #### Changed
 * Added JCollectionBuilders and JTuples dependencies
 * Updated jcollection-util to latest 0.7.x version (removed twg2.collections.builder and twg2.collections.tuple)
 
 
 --------
-###[0.10.4](https://github.com/TeamworkGuy2/JParseCode/commit/5a3686f828a91eac9896755fb8f6ee8d888b3ca7) - 2016-08-18
+### [0.10.4](https://github.com/TeamworkGuy2/JParseCode/commit/5a3686f828a91eac9896755fb8f6ee8d888b3ca7) - 2016-08-18
 #### Changed
 * Updated jdata-util to latest 0.3.x version (EnumUtil renamed ErrorUtil, TimeUnitUtil package name changed)
 * Fixed compiled jar path and name
 
 
 --------
-###[0.10.3](https://github.com/TeamworkGuy2/JParseCode/commit/5e2e75da19451f6e99427405b6b04f844fb260de) - 2016-08-07
+### [0.10.3](https://github.com/TeamworkGuy2/JParseCode/commit/5e2e75da19451f6e99427405b6b04f844fb260de) - 2016-08-07
 #### Changed
 * Updated jcollection-util to latest 0.5.x version
 * Updated jfile-io to latest 0.6.x version (SourceInfo renamed to DirectorySearchInfo)
@@ -169,14 +181,14 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.10.2](https://github.com/TeamworkGuy2/JParseCode/commit/719509161f795fbafc56c8beefd51562103b6cb7) - 2016-06-21
+### [0.10.2](https://github.com/TeamworkGuy2/JParseCode/commit/719509161f795fbafc56c8beefd51562103b6cb7) - 2016-06-21
 #### Added
 * plugin-js to help generate CLI strings from TypeScript/Javascript projects, with Node.js in mind
 * Readme section about the CLI
 
 
 --------
-###[0.10.1](https://github.com/TeamworkGuy2/JParseCode/commit/5cdf7fabab17d8d9d8037c83c29047979a6438e7) - 2016-05-13
+### [0.10.1](https://github.com/TeamworkGuy2/JParseCode/commit/5cdf7fabab17d8d9d8037c83c29047979a6438e7) - 2016-05-13
 #### Changed
 * Merged DocumentFragmentRef with DocumentFragmentText
 * Added some documentation
@@ -192,7 +204,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.10.0](https://github.com/TeamworkGuy2/JParseCode/commit/3e8a324ccada6af273339e6f29ae569795e3abcd) - 2016-04-12
+### [0.10.0](https://github.com/TeamworkGuy2/JParseCode/commit/3e8a324ccada6af273339e6f29ae569795e3abcd) - 2016-04-12
 #### Added
 * Added better annotation parsing, including support for negative numbers as arguments
 * Added CodeFragment which extends 'DocumentFragmentText<CodeFragmentType>' so don't have to keep typing that every time, updated most of the code to use CodeFragment
@@ -209,7 +221,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.9.0](https://github.com/TeamworkGuy2/JParseCode/commit/679778bafd13a413854bd169cabe747b12bbc894) - 2016-03-20
+### [0.9.0](https://github.com/TeamworkGuy2/JParseCode/commit/679778bafd13a413854bd169cabe747b12bbc894) - 2016-03-20
 #### Added
 * Added commented parsing for comments attached to methods and fields (future TODO: add comment parsing for comments attached to classes and namespaces)
 
@@ -221,7 +233,7 @@ __Parameter modifier parsing support__ (i.e. 'final' in Java or 'params' in C#):
 
 
 --------
-###[0.8.0](https://github.com/TeamworkGuy2/JParseCode/commit/32ee2a5ec5c218d3f90d1438f893a86e34b9c716) - 2016-02-28
+### [0.8.0](https://github.com/TeamworkGuy2/JParseCode/commit/32ee2a5ec5c218d3f90d1438f893a86e34b9c716) - 2016-02-28
 #### Changed
 Move from assuming that conditions can list the initial chars that match them (CharParser.WithMarks.getMatchFirstChars()) to CharParserMatchable and new getFirstCharMatcher() method which allows for a flexible definition of matching first chars
 * Moved/renamed ParserWorkFlow SourceInfo and LoadResult \(renamed to SourceFiles) nested classes and ParserMain.getFilesByExtension() to [JFileIo] (https://github.com/TeamworkGuy2/JFileIo) library
@@ -232,7 +244,7 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.7.0](https://github.com/TeamworkGuy2/JParseCode/commit/218036c37673615e6bced0eecfb8a9b7d6eb7808) - 2016-02-24
+### [0.7.0](https://github.com/TeamworkGuy2/JParseCode/commit/218036c37673615e6bced0eecfb8a9b7d6eb7808) - 2016-02-24
 #### Changed
 * Updated to latest version of JTextParser and JStreamish
 * Switched from StringLineSupplier for reading lines from a source string to CharLineSupplier (slightly less garbage generated due to less conversion between strings and char arrays)
@@ -245,7 +257,7 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.6.0](https://github.com/TeamworkGuy2/JParseCode/commit/5ae0793feb0475654bbdf835ef5d350e91cdd438) - 2016-02-21
+### [0.6.0](https://github.com/TeamworkGuy2/JParseCode/commit/5ae0793feb0475654bbdf835ef5d350e91cdd438) - 2016-02-21
 #### Added
 * Added numeric literal parsing \(i.e. '23' or '1.5f')
 * Added field and method access modifier parsing \(i.e. public, static, synchronized, volatile)
@@ -257,7 +269,7 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.5.0](https://github.com/TeamworkGuy2/JParseCode/commit/eea353c111f789b315ab5471661c6a305c0701d2) - 2016-02-09
+### [0.5.0](https://github.com/TeamworkGuy2/JParseCode/commit/eea353c111f789b315ab5471661c6a305c0701d2) - 2016-02-09
 #### Added
 * Added array type parsing, \(i.e. 'int\[]\[]')
 * Added some more tests
@@ -268,7 +280,7 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.4.0](https://github.com/TeamworkGuy2/JParseCode/commit/ab23d86656221e6b1a540d7129446b08c808aca4) - 2016-01-16
+### [0.4.0](https://github.com/TeamworkGuy2/JParseCode/commit/ab23d86656221e6b1a540d7129446b08c808aca4) - 2016-01-16
 #### Changed
 * Moved twg2.parser.condition.AstParser -> twg2.parser.baseAst.AstParser
 * Modified CodeLanguageOptions, so implementation class is a sub-class and CodeLanguageOptions contains only static fields and methods
@@ -281,7 +293,7 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.3.0](https://github.com/TeamworkGuy2/JParseCode/commit/0b7128980ba31623d17f85d9f10bd4d99bd1288e) - 2016-01-16
+### [0.3.0](https://github.com/TeamworkGuy2/JParseCode/commit/0b7128980ba31623d17f85d9f10bd4d99bd1288e) - 2016-01-16
 #### Added
 * __Java parsing support and tests.__
 * Added Keyword interface for generic language keyword operations such as isKeyword(), isBlockModifierKeyword(), isDataTypeKeyword(), etc.
@@ -294,13 +306,13 @@ Move from assuming that conditions can list the initial chars that match them (C
 
 
 --------
-###[0.2.1](https://github.com/TeamworkGuy2/JParseCode/commit/a33f37ad6a116e7e697498af88327dfaa46709a0) - 2016-01-13
+### [0.2.1](https://github.com/TeamworkGuy2/JParseCode/commit/a33f37ad6a116e7e697498af88327dfaa46709a0) - 2016-01-13
 #### Added
 * Simple C# parse example with resulting JSON.  Added and refactored some test cases.
 
 
 --------
-###[0.2.0](https://github.com/TeamworkGuy2/JParseCode/commit/5b692bc3476ca94c6dedb5b6424d1319fcad2057) - 2016-01-12
+### [0.2.0](https://github.com/TeamworkGuy2/JParseCode/commit/5b692bc3476ca94c6dedb5b6424d1319fcad2057) - 2016-01-12
 #### Added
 * __Finished command line interface (CLI) argument parsing for ['sources', 'destinations', 'log'] and ParserWorkflow.__
 

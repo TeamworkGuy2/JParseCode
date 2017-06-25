@@ -35,7 +35,6 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 
 	private CodeFileAndAst(CodeLanguage lang, String fileName, String fullClassName, char[] srcCode, int srcOff, int srcLen,
 			CodeFileSrc<CodeLanguage> ast, List<CodeFileParsed.Simple<String, T_BLOCK>> parsedBlocks) {
-		super();
 		this.fileName = fileName;
 		this.lang = lang;
 		this.fullClassName = fullClassName;
@@ -45,8 +44,6 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 		this.ast = ast;
 		this.parsedBlocks = parsedBlocks;
 	}
-
-
 
 
 
