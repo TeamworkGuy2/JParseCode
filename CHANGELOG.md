@@ -2,9 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project does its best to adhere to [Semantic Versioning](http://semver.org/).
 
+--------
+### [0.14.5](N/A) - 2017-08-20
+#### Changed
+* Update dependencies:
+  * jfunc@0.3.0 (Predicates.Char -> CharPredicate)
+  * jtext-parser@0.12.0 (CharParserPredicate interface instead of BiPredicates.CharObject<TextParser>)
+
 
 --------
-### [0.14.4](N/A) - 2017-06-25
+### [0.14.4](https://github.com/TeamworkGuy2/JParseCode/commit/8ac1384c8de1a310d5097b843e657bacc029f11a) - 2017-06-25
 #### Added
 * Two more JUnit tests, CsModelParseTest and JavaModelParseTest
 * Added unit test helpers: test.twg2.parser.test.utils FieldAssert, MethodAssert, and TypeAssert

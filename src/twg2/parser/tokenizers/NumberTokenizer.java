@@ -1,10 +1,8 @@
 package twg2.parser.tokenizers;
 
-import lombok.val;
-import twg2.functions.BiPredicates;
 import twg2.parser.condition.text.CharParser;
+import twg2.parser.condition.text.CharParserPredicate;
 import twg2.parser.primitive.NumericParser;
-import twg2.parser.textParser.TextParser;
 import twg2.ranges.CharSearchSet;
 import twg2.text.tokenizer.CharParserMatchableFactory;
 import twg2.tuple.Tuples;
@@ -24,9 +22,9 @@ public class NumberTokenizer {
 		notPreceedingSet.addRange('a', 'z');
 
 		// do not parse number sign -/+
-		val numParser = new NumericParser("numeric literal", false);
+		NumericParser numParser = new NumericParser("numeric literal", false);
 
-		BiPredicates.CharObject<TextParser> charCheck = (ch, buf) -> {
+		CharParserPredicate charCheck = (ch, buf) -> {
 			boolean isFirst = numParser.getFirstCharMatcher().test(ch, buf);
 			boolean hasPrev = buf.hasPrevChar();
 			if(!hasPrev) { return isFirst; }
@@ -36,8 +34,7 @@ public class NumberTokenizer {
 			return isFirst && !notPreceedingSet.contains(prevCh);
 		};
 
-		val numericLiteralParser = new CharParserMatchableFactory<CharParser>("numeric literal", false, Tuples.of(charCheck, numParser));
-		return numericLiteralParser;
+		return new CharParserMatchableFactory<CharParser>("numeric literal", false, Tuples.of(charCheck, numParser));
 	}
 
 }
