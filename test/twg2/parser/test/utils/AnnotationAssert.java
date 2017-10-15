@@ -20,7 +20,7 @@ public class AnnotationAssert {
 
 
 	public static void assertAnnotation(AnnotationSig sig, String name, String[] argNames, String... argValues) {
-		Assert.assertEquals(name, sig.getName());
+		Assert.assertEquals(name, sig.name);
 
 		if((argNames == null && argValues == null) || (argNames.length == 0 && argValues.length == 0)) {
 			return;
@@ -31,7 +31,7 @@ public class AnnotationAssert {
 
 		Assert.assertTrue("annotation '" + name + "' argument names " + argNames.length + " and values " + argValues.length + " lengths must be equal", argNames.length == argValues.length);
 
-		Map<String, String> sigArgs = sig.getArguments();
+		Map<String, String> sigArgs = sig.arguments;
 
 		for(int i = 0, size = argNames.length; i < size; i++) {
 			String argName = argNames[i];

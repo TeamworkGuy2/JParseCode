@@ -149,7 +149,7 @@ public class ParseDirectoryCodeFiles {
 			}
 			else {
 				val parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), src, srcOff, srcLen);
-				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.getLineStartOffsets(), parsedFileInfo.getDoc());
+				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.lineStartOffsets, parsedFileInfo.astTree);
 				filesStats.add(parsedStats);
 			}
 		}

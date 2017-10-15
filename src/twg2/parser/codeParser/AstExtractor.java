@@ -8,7 +8,7 @@ import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.stateMachine.AstParser;
@@ -33,7 +33,7 @@ public interface AstExtractor<T_BLOCK extends BlockType> {
 
 	public AstParser<List<FieldSig>> createFieldParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
 
-	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
+	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
 
 	/** This method recursively loops over all nodes, adding/removing scope names on a name stack as named blocks of code are parsed (such as namespaces, or classes)
 	 * @param nameScope the current name scope of the code (list of scope names that the current {@code blockTree} is inside of)

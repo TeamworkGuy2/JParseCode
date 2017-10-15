@@ -10,7 +10,8 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldDefResolved;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.field.FieldSigResolved;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.MethodSigResolved;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.ast.interm.method.ParameterSigResolved;
 import twg2.io.json.stringify.JsonStringify;
@@ -24,13 +25,9 @@ import twg2.text.stringUtils.StringJoin;
  * @author TeamworkGuy2
  * @since 2015-12-4
  */
-public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableSig, T_BLOCK extends BlockType> extends JsonWritableSig {
+public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> extends JsonWritableSig {
 
 	public T_SIG getSignature();
-
-	public List<List<String>> getUsingStatements();
-
-	public List<T_METHOD> getMethods();
 
 	public T_BLOCK getBlockType();
 
@@ -43,7 +40,7 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 	 */
 	@Immutable
 	public static class Impl<T_SIG extends ClassSig, T_ENUM extends JsonWritableSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends BlockType>
-			implements ClassAst<T_SIG, T_METHOD, T_BLOCK> {
+			implements ClassAst<T_SIG, T_BLOCK> {
 		private final @Getter T_SIG signature;
 		private final @Getter List<List<String>> usingStatements;
 		private final @Getter List<T_ENUM> enumMembers;
@@ -128,10 +125,10 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 	 * @since 2016-1-2
 	 */
 	@Immutable
-	public static class SimpleImpl<T_BLOCK extends BlockType> extends Impl<ClassSig.SimpleImpl, FieldDef, FieldSig, MethodSig.SimpleImpl, ParameterSig, T_BLOCK> {
+	public static class SimpleImpl<T_BLOCK extends BlockType> extends Impl<ClassSigSimple, FieldDef, FieldSig, MethodSigSimple, ParameterSig, T_BLOCK> {
 
-		public SimpleImpl(ClassSig.SimpleImpl signature, List<List<String>> usingStatements, List<? extends FieldSig> fields,
-				List<? extends MethodSig.SimpleImpl> methods, List<? extends FieldDef> enums, T_BLOCK blockType) {
+		public SimpleImpl(ClassSigSimple signature, List<List<String>> usingStatements, List<? extends FieldSig> fields,
+				List<? extends MethodSigSimple> methods, List<? extends FieldDef> enums, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, enums, blockType);
 		}
 		
@@ -145,10 +142,10 @@ public interface ClassAst<T_SIG extends ClassSig, T_METHOD extends JsonWritableS
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	public static class ResolvedImpl<T_BLOCK extends BlockType> extends Impl<ClassSig.ResolvedImpl, FieldDefResolved, FieldSigResolved, MethodSig.ResolvedImpl, ParameterSigResolved, T_BLOCK> {
+	public static class ResolvedImpl<T_BLOCK extends BlockType> extends Impl<ClassSigResolved, FieldDefResolved, FieldSigResolved, MethodSigResolved, ParameterSigResolved, T_BLOCK> {
 
-		public ResolvedImpl(ClassSig.ResolvedImpl signature, List<List<String>> usingStatements, List<? extends FieldSigResolved> fields,
-				List<? extends MethodSig.ResolvedImpl> methods, List<? extends FieldDefResolved> enums, T_BLOCK blockType) {
+		public ResolvedImpl(ClassSigResolved signature, List<List<String>> usingStatements, List<? extends FieldSigResolved> fields,
+				List<? extends MethodSigResolved> methods, List<? extends FieldDefResolved> enums, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, enums, blockType);
 		}
 		

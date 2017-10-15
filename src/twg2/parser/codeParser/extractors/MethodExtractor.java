@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.BlockType;
@@ -23,7 +23,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtractor.State, List<MethodSig.SimpleImpl>> {
+public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtractor.State, List<MethodSigSimple>> {
 
 	static enum State {
 		INIT,
@@ -43,7 +43,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	List<AccessModifier> accessModifiers = new ArrayList<>();
 	String methodName;
 	TypeSig.TypeSigSimple returnTypeSig;
-	List<MethodSig.SimpleImpl> methods = new ArrayList<>();
+	List<MethodSigSimple> methods = new ArrayList<>();
 
 
 	/**
@@ -173,7 +173,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 			val params = MethodParametersParser.extractParamsFromSignature(keywordUtil, tokenNode);
 			val accessMods = new ArrayList<>(accessModifiers);
 
-			methods.add(new MethodSig.SimpleImpl(methodName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
+			methods.add(new MethodSigSimple(methodName, NameUtil.newFqName(parentBlock.declaration.getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}
@@ -184,7 +184,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	@Override
-	public List<MethodSig.SimpleImpl> getParserResult() {
+	public List<MethodSigSimple> getParserResult() {
 		return methods;
 	}
 

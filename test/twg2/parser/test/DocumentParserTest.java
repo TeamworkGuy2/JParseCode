@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.codeParser.codeStats.ParsedFileStats;
 import twg2.parser.codeParser.extractors.CommentAndWhitespaceExtractor;
-import twg2.parser.language.CodeLanguage;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.TreePrint;
@@ -29,10 +28,10 @@ public class DocumentParserTest {
 				"line 3 // end of line comment\n" +
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n";
-		CodeFileSrc<CodeLanguage> parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
 
 		// TODO debugging
-		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
+		TreePrint.printTree(parserRes.astTree, (f) -> f.getText(), System.out);
 	}
 
 
@@ -46,19 +45,19 @@ public class DocumentParserTest {
 				"line 4 = \"string \\\"with\\\" embedded string\"; /* multiline\n" +
 				"line 5 - comment */\n" +
 				"'last \\'line\\' string' ending";
-		CodeFileSrc<CodeLanguage> parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "1", src.toCharArray(), 0, src.length());
 
 		// TODO debugging
-		TreePrint.printTree(parserRes.getDoc(), (f) -> f.getText(), System.out);
+		TreePrint.printTree(parserRes.astTree, (f) -> f.getText(), System.out);
 	}
 
 
 	public ParsedFileStats parseFileWhitespaceComments(EnumSet<CommentStyle> style) throws IOException {
 		Path file = Paths.get("src/twg2/parser/documentParser/blocks/ParseBlocks.java");
 		String src = StringJoin.join(Files.readAllLines(file), "\n");
-		CodeFileSrc<CodeLanguage> parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, file.toFile().getName(), src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, file.toFile().getName(), src.toCharArray(), 0, src.length());
 
-		return CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src.toCharArray(), 0, src.length(), parserRes.getLineStartOffsets(), parserRes.getDoc());
+		return CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src.toCharArray(), 0, src.length(), parserRes.lineStartOffsets, parserRes.astTree);
 	}
 
 

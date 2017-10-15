@@ -54,7 +54,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 		this.commentParser = commentParser;
 		this.state = State.INIT;
 
-		val enumSig = parentBlock.getDeclaration();
+		val enumSig = parentBlock.declaration;
 		if(enumSig.getParams().size() > 0) {
 			enumType = new TypeSig.TypeSigSimpleGeneric(enumSig.getSimpleName(), enumSig.getParams(), 0, false, false);
 		}
@@ -205,7 +205,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
-		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), memberName), enumType,
+		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.emptyList(), comments, tokenNode);
 		nextMemberComments = null;
 		commentParser.recycle();

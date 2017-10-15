@@ -63,7 +63,7 @@ public enum CodeLanguageOptions {
 		@Getter final T_AST_UTIL astUtil;
 		@Getter final KeywordUtil<T_KEYWORD> keywordUtil;
 		@Getter final T_OP_UTIL operatorUtil;
-		@Getter final Function<ParseInput, CodeFileSrc<T_LANG>> parser;
+		@Getter final Function<ParseInput, CodeFileSrc> parser;
 		@Getter final T_AST_EXTRACTOR extractor;
 		@Getter final List<String> fileExtensions;
 
@@ -71,7 +71,7 @@ public enum CodeLanguageOptions {
 		// package-private
 		@SuppressWarnings("unchecked")
 		CodeLanguageImpl(String displayName, BlockUtil<T_BLOCK, T_KEYWORD> blockUtil, AstUtil<? extends T_BLOCK, ? extends T_KEYWORD> astUtil, KeywordUtil<? extends T_KEYWORD> keywordUtil, T_OP_UTIL operatorUtil,
-				Function<ParseInput, CodeFileSrc<T_LANG>> parser, T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
+				Function<ParseInput, CodeFileSrc> parser, T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
 			this.displayName = displayName;
 			this.parser = parser;
 			this.fileExtensions = new ArrayList<>(fileExtensions);
@@ -94,7 +94,7 @@ public enum CodeLanguageOptions {
 	public static class CSharp extends CodeLanguageImpl<CsBlock, CsKeyword, CSharp, CsOperator, CsAstUtil, CsOperator.Inst, AstExtractor<CsBlock>> {
 
 		CSharp(String displayName, CsBlockUtil blockUtil, CsAstUtil astUtil, KeywordUtil<CsKeyword> keywordUtil, CsOperator.Inst operatorUtil,
-				Function<ParseInput, CodeFileSrc<CSharp>> parser, AstExtractor<CsBlock> extractor, List<String> fileExtensions) {
+				Function<ParseInput, CodeFileSrc> parser, AstExtractor<CsBlock> extractor, List<String> fileExtensions) {
 			super(displayName, blockUtil, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		}
 
@@ -104,7 +104,7 @@ public enum CodeLanguageOptions {
 	public static class Java extends CodeLanguageImpl<JavaBlock, JavaKeyword, Java, JavaOperator, JavaAstUtil, JavaOperator.Inst, AstExtractor<JavaBlock>> {
 
 		Java(String displayName, JavaBlockUtil blockUtil, JavaAstUtil astUtil, KeywordUtil<JavaKeyword> keywordUtil, JavaOperator.Inst operatorUtil,
-				Function<ParseInput, CodeFileSrc<Java>> parser, AstExtractor<JavaBlock> extractor, List<String> fileExtensions) {
+				Function<ParseInput, CodeFileSrc> parser, AstExtractor<JavaBlock> extractor, List<String> fileExtensions) {
 			super(displayName, blockUtil, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);
 		}
 
@@ -156,7 +156,7 @@ public enum CodeLanguageOptions {
 			_T_OP_UTIL extends OperatorUtil<_T_OP>,
 			_T_AST_EXTRACTOR extends AstExtractor<_T_BLOCK>
 			> CodeLanguage registerCodeLanguage(String displayName, BlockUtil<_T_BLOCK, _T_KEYWORD> block, _T_AST_UTIL astUtil, KeywordUtil<? extends _T_KEYWORD> keywordUtil,
-					_T_OP_UTIL operatorUtil, Function<ParseInput, CodeFileSrc<_T_LANG>> parser, _T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
+					_T_OP_UTIL operatorUtil, Function<ParseInput, CodeFileSrc> parser, _T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
 
 		CodeLanguageImpl<_T_BLOCK, _T_KEYWORD, _T_LANG, _T_OP, _T_AST_UTIL, _T_OP_UTIL, _T_AST_EXTRACTOR> inst =
 				new CodeLanguageImpl<>(displayName, block, astUtil, keywordUtil, operatorUtil, parser, extractor, fileExtensions);

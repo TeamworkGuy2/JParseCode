@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -15,9 +14,9 @@ import twg2.parser.output.WriteSettings;
 @Immutable
 @AllArgsConstructor
 public class AnnotationSig implements JsonWritableSig {
-	private final @Getter String name;
-	private final @Getter List<String> fullName;
-	private final @Getter Map<String, String> arguments;
+	public final String name;
+	public final List<String> fullName;
+	public final Map<String, String> arguments;
 
 
 	@Override

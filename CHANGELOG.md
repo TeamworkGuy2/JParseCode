@@ -2,8 +2,22 @@
 All notable changes to this project will be documented in this file.
 This project does its best to adhere to [Semantic Versioning](http://semver.org/).
 
+
 --------
-### [0.14.5](N/A) - 2017-08-20
+### [0.15.0](N/A) - 2017-10-15
+#### Changed
+Simplified class names and generic type signatures:
+* Changed `AnnotationSig`, `BlockAst`, `MethodSig`, `CodeFileSrc`, and `CodeFileParsed` to have `public final` properties and remove getters
+* CodeFileSrc `language` property type is now `CodeLanguage`, not a generic type parameter
+* CodeFileSrc `doc` property renamed `astTree`
+* `CodeFileParsed`, `CodeTokenizerBuilder`,
+* `CodeFileParsed` and `ProjectClassSet` added `Intermediate` implementations to existing `Simple` and `Resolved` implementations with simplified generic type parameters
+* Split ClassSig `SimpleImpl` and `ResolvedImpl` into separate files
+* Split MethodSig `SimpleImpl` and `ResolvedImpl` into separate `MethodSigSimple` and `MethodSigResolved` files
+
+
+--------
+### [0.14.5](https://github.com/TeamworkGuy2/JParseCode/commit/283d487a7e04d7355451f2fe641cacff2e026cc3) - 2017-08-20
 #### Changed
 * Update dependencies:
   * jfunc@0.3.0 (Predicates.Char -> CharPredicate)
@@ -41,9 +55,12 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 --------
 ### [0.14.1](https://github.com/TeamworkGuy2/JParseCode/commit/53806a53d3b8152b35e3166a81dbe9a81a49f354) - 2016-12-03
 #### Changed
-* Updated dependencies to latest versions: jtext-parser@0.11.0, jtext-tokenizer@0.2.0, jparser-primitive@0.2.0
-  * This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 
-* GenericTypeTokenizer and IdentifierTokenizer changes to properly parse nullable generic parameters
+* Updated dependencies:
+  * jtext-parser@0.11.0
+  * jtext-tokenizer@0.2.0
+  * jparser-primitive@0.2.0
+* This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 
+* `GenericTypeTokenizer` and `IdentifierTokenizer` changes to properly parse nullable generic parameters
 
 
 --------

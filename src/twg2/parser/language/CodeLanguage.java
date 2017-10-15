@@ -32,7 +32,7 @@ public interface CodeLanguage {
 	/**
 	 * @return a function which takes parser input parameters and an optional parser performance tracker (can be null, in which case no stats are recorded) and returns a {@link CodeFileSrc}
 	 */
-	public Function<ParseInput, ? extends CodeFileSrc<? extends CodeLanguage>> getParser();
+	public Function<ParseInput, ? extends CodeFileSrc> getParser();
 
 	public AstExtractor<? extends BlockType> getExtractor();
 

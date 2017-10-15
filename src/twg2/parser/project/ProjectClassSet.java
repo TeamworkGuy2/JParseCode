@@ -9,11 +9,10 @@ import java.util.Map;
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.collections.builder.ListUtil;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.language.CodeLanguage;
-import twg2.parser.output.JsonWritableSig;
 import twg2.parser.resolver.ClassSigResolver;
 import twg2.parser.resolver.FieldSigResolver;
 import twg2.parser.resolver.MethodSigResolver;
@@ -25,7 +24,7 @@ import twg2.parser.workflow.CodeFileSrc;
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
-public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends ClassAst<? extends ClassSig, ? extends JsonWritableSig, T_BLOCK>, T_CODE_FILE extends CodeFileParsed<? extends T_ID, ? extends T_CLASS>> {
+public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends ClassAst<? extends ClassSig, T_BLOCK>, T_CODE_FILE extends CodeFileParsed<? extends T_ID, ? extends T_CLASS>> {
 	Map<String, T_CODE_FILE> compilationUnitsByFullyQualifyingName = new HashMap<>();
 	Map<String, List<T_CODE_FILE>> compilationUnitsByNamespaces = new HashMap<>();
 
@@ -49,7 +48,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 	public T_CLASS getCompilationUnit(List<String> fullyQualifyingName) {
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
-		return compilationUnitsByFullyQualifyingName.get(fullName).getParsedClass();
+		return compilationUnitsByFullyQualifyingName.get(fullName).parsedClass;
 	}
 
 
@@ -93,13 +92,13 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 			if(nsCompilationUnits != null) {
 				for(val nsCompilationUnit : nsCompilationUnits) {
-					val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
+					val compilationUnitSimpleName = nsCompilationUnit.parsedClass.getSignature().getSimpleName();
 					if(compilationUnitSimpleName.equals(simpleName)) {
 						if(matchingCompilationUnit != null) {
 							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "' in namespace '" + nsName + "'" +
-									", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.getParsedClass().getSignature() + "]");
+									", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.parsedClass.getSignature() + "]");
 						}
-						matchingCompilationUnit = nsCompilationUnit.getParsedClass();
+						matchingCompilationUnit = nsCompilationUnit.parsedClass;
 					}
 				}
 			}
@@ -125,13 +124,13 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 		if(nsCompilationUnits != null) {
 			for(val nsCompilationUnit : nsCompilationUnits) {
-				val compilationUnitSimpleName = nsCompilationUnit.getParsedClass().getSignature().getSimpleName();
+				val compilationUnitSimpleName = nsCompilationUnit.parsedClass.getSignature().getSimpleName();
 				if(compilationUnitSimpleName.equals(simpleName)) {
 					if(matchingCompilationUnit != null) {
 						throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "' in namespace '" + nsName + "'" +
-								", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.getParsedClass().getSignature() + "]");
+								", [" + matchingCompilationUnit.getSignature() + ", " + nsCompilationUnit.parsedClass.getSignature() + "]");
 					}
-					matchingCompilationUnit = nsCompilationUnit.getParsedClass();
+					matchingCompilationUnit = nsCompilationUnit.parsedClass;
 				}
 			}
 		}
@@ -146,7 +145,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 
 	public T_CLASS resolveSimpleNameToClass(String simpleName, ClassAst.SimpleImpl<? extends BlockType> classScope, Collection<List<String>> missingNamespacesDst) {
-		ClassSig.SimpleImpl classSig = classScope.getSignature();
+		ClassSigSimple classSig = classScope.getSignature();
 
 		// try resolve using the class' nested classes
 		T_CLASS resolvedClass = resolveSimpleNameToClassSingleNamespace(simpleName, classSig.getFullName(), missingNamespacesDst);
@@ -176,10 +175,10 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 
 
-	public static class Simple<T_ID, T_BLOCK extends BlockType> extends ProjectClassSet<T_ID, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Simple<T_ID, T_BLOCK>> {
+	public static class Simple<T_BLOCK extends BlockType> extends ProjectClassSet<String, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Simple<T_BLOCK>> {
 
 		@Override
-		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Simple<T_ID, T_BLOCK> classUnit) {
+		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Simple<T_BLOCK> classUnit) {
 			super.addCompilationUnit(fullyQualifyingName, classUnit);
 		}
 
@@ -188,10 +187,22 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 
 
-	public static class Resolved<T_ID, T_BLOCK extends BlockType> extends ProjectClassSet<T_ID, T_BLOCK, ClassAst.ResolvedImpl<T_BLOCK>, CodeFileParsed.Resolved<T_ID, T_BLOCK>> {
+	public static class Intermediate<T_BLOCK extends BlockType> extends ProjectClassSet<CodeFileSrc, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> {
 
 		@Override
-		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Resolved<T_ID, T_BLOCK> classUnit) {
+		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Intermediate<T_BLOCK> classUnit) {
+			super.addCompilationUnit(fullyQualifyingName, classUnit);
+		}
+
+	}
+
+
+
+
+	public static class Resolved<T_BLOCK extends BlockType> extends ProjectClassSet<CodeFileSrc, T_BLOCK, ClassAst.ResolvedImpl<T_BLOCK>, CodeFileParsed.Resolved<T_BLOCK>> {
+
+		@Override
+		public void addCompilationUnit(List<String> fullyQualifyingName, CodeFileParsed.Resolved<T_BLOCK> classUnit) {
 			super.addCompilationUnit(fullyQualifyingName, classUnit);
 		}
 
@@ -204,17 +215,17 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 	 * Some namespaces may not be found and some simple names may not be resolvable, these issues can be tracked and returned via optional destination parameters.
 	 * If these optional parameters are null, errors are thrown instead
 	 */
-	public static <_T_ID extends CodeFileSrc<? extends CodeLanguage>, _T_BLOCK extends BlockType> ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resolveClasses(ProjectClassSet.Simple<_T_ID, _T_BLOCK> projFiles,
+	public static <_T_BLOCK extends BlockType> ProjectClassSet.Resolved<_T_BLOCK> resolveClasses(ProjectClassSet.Intermediate<_T_BLOCK> projFiles,
 			_T_BLOCK defaultBlockType, Collection<List<String>> missingNamespacesDst) {
 
-		ProjectClassSet.Resolved<_T_ID, _T_BLOCK> resFiles = new ProjectClassSet.Resolved<>();
+		ProjectClassSet.Resolved<_T_BLOCK> resFiles = new ProjectClassSet.Resolved<>();
 
 		// TODO annotations and class names need type signature and generic type parsing
 
 		for(val fileEntry : projFiles.compilationUnitsByFullyQualifyingName.entrySet()) {
-			val file = fileEntry.getValue().getParsedClass();
+			val file = fileEntry.getValue().parsedClass;
 			val namespaces = file.getUsingStatements();
-			val lang = fileEntry.getValue().getId().getLanguage();
+			val lang = fileEntry.getValue().id.language;
 			val resSig = ClassSigResolver.resolveClassSigFrom(lang.getKeywordUtil(), file.getSignature(), file, projFiles, defaultBlockType, missingNamespacesDst);
 			val resMethods = ListUtil.map(file.getMethods(), (mthd) -> MethodSigResolver.resolveFrom(lang.getKeywordUtil(), mthd, file, projFiles, missingNamespacesDst));
 			val resFields = ListUtil.map(file.getFields(), (fld) -> FieldSigResolver.resolveFrom(fld, file, projFiles, missingNamespacesDst));
@@ -222,7 +233,7 @@ public class ProjectClassSet<T_ID, T_BLOCK extends BlockType, T_CLASS extends Cl
 
 			val resClass = new ClassAst.ResolvedImpl<_T_BLOCK>(resSig, namespaces, resFields, resMethods, resEnumMembers, file.getBlockType());
 
-			resFiles.addCompilationUnit(resSig.getFullName(), new CodeFileParsed.Resolved<_T_ID, _T_BLOCK>(fileEntry.getValue().getId(), resClass, fileEntry.getValue().getAstTree()));
+			resFiles.addCompilationUnit(resSig.getFullName(), new CodeFileParsed.Resolved<_T_BLOCK>(fileEntry.getValue().id, resClass, fileEntry.getValue().astTree));
 		}
 		return resFiles;
 	}

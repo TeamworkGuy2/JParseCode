@@ -19,10 +19,8 @@ import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.language.CodeLanguage;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
-import twg2.parser.workflow.CodeFileSrc;
 import twg2.parser.workflow.ParserWorkflow;
 import twg2.text.stringUtils.StringJoin;
 
@@ -33,7 +31,7 @@ import twg2.text.stringUtils.StringJoin;
 public class MainParser {
 
 	public static void parseAndValidProjectCsClasses(FileReadUtil fileReader) throws IOException, FileFormatException {
-		val fileSet = new ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, CsBlock>();
+		val fileSet = new ProjectClassSet.Intermediate<CsBlock>();
 		val files1 = SourceFiles.getFilesByExtension(Paths.get("server/Services"), 1, "cs");
 		val files2 = SourceFiles.getFilesByExtension(Paths.get("server/Entities"), 3, "cs");
 
@@ -56,8 +54,8 @@ public class MainParser {
 		// fill indices with null so we can random access any valid index
 		for(val classInfo : res) {
 			//String classFqName = NameUtil.joinFqName(classInfo.getValue().getSignature().getFullName());
-			resClasses.add(classInfo.getParsedClass());
-			resFiles.add(classInfo.getId().getSrcName());
+			resClasses.add(classInfo.parsedClass);
+			resFiles.add(classInfo.id.srcName);
 		}
 		resClasses.sort((c1, c2) -> NameUtil.joinFqName(c1.getSignature().getFullName()).compareTo(NameUtil.joinFqName(c2.getSignature().getFullName())));
 

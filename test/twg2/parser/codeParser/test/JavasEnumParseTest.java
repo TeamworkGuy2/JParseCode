@@ -54,10 +54,10 @@ public class JavasEnumParseTest {
 
 	@Test
 	public void simpleEnumCsParseTest() {
-		List<CodeFileParsed.Simple<String, JavaBlock>> blocks = simpleEnumJava.parsedBlocks;
+		List<CodeFileParsed.Simple<JavaBlock>> blocks = simpleEnumJava.parsedBlocks;
 		String fullClassName = simpleEnumJava.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).getParsedClass();
+		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).parsedClass;
 		List<FieldDef> enums = clas.getEnumMembers();
 		Assert.assertEquals(3, enums.size());
 

@@ -9,7 +9,7 @@ import twg2.parser.workflow.CodeFileSrc;
  * @since 2015-11-24
  */
 @FunctionalInterface
-public interface CodeTokenizer<T_LANG> {
+public interface CodeTokenizer {
 
 	/** Parse a source string using the parsers provided by the {@link CodeTokenizer}
 	 * @param src the source string
@@ -17,6 +17,6 @@ public interface CodeTokenizer<T_LANG> {
 	 * @param stepsDetails (optional) code parser stat tracker, if null, no stats are tracked
 	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
-	public CodeFileSrc<T_LANG> tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, TokenizeStepLogger stepsDetails);
+	public CodeFileSrc tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, TokenizeStepLogger stepsDetails);
 
 }

@@ -170,7 +170,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 
 			val accessMods = new ArrayList<>(accessModifiers);
 
-			fields.add(new FieldSig(fieldName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), fieldName), fieldTypeSig, accessMods, annotations, comments));
+			fields.add(new FieldSig(fieldName, NameUtil.newFqName(parentBlock.declaration.getFullName(), fieldName), fieldTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}

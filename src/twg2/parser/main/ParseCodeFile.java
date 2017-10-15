@@ -30,8 +30,8 @@ import twg2.text.stringUtils.StringSplit;
  */
 public class ParseCodeFile {
 
-	public static List<CodeFileSrc<CodeLanguage>> parseFiles(List<Path> files, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
-		val parsedFiles = new ArrayList<CodeFileSrc<CodeLanguage>>(files.size());
+	public static List<CodeFileSrc> parseFiles(List<Path> files, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
+		val parsedFiles = new ArrayList<CodeFileSrc>(files.size());
 
 		for(Path path : files) {
 			val file = path.toFile();
@@ -43,7 +43,7 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> parseFile(File file, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
+	public static CodeFileSrc parseFile(File file, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
 		val fileStr = file.toString();
 		val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
 		val stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
@@ -71,11 +71,10 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepLogger stepsTracker) {
+	public static CodeFileSrc parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepLogger stepsTracker) {
 		val parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
 		try {
-			@SuppressWarnings("unchecked")
-			CodeFileSrc<CodeLanguage> parsedFileInfo = (CodeFileSrc<CodeLanguage>)lang.getParser().apply(parseParams);
+			CodeFileSrc parsedFileInfo = lang.getParser().apply(parseParams);
 			return parsedFileInfo;
 		} catch(Exception e) {
 			throw new RuntimeException(parseParams.toString(), e);

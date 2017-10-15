@@ -1,5 +1,11 @@
 package twg2.parser.codeParser.test;
 
+import static twg2.parser.test.utils.AnnotationAssert.assertAnnotation;
+import static twg2.parser.test.utils.FieldAssert.assertField;
+import static twg2.parser.test.utils.MethodAssert.assertParameter;
+import static twg2.parser.test.utils.TypeAssert.assertType;
+import static twg2.parser.test.utils.TypeAssert.ls;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -13,8 +19,8 @@ import org.junit.runners.Parameterized.Parameter;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldSig;
-import twg2.ast.interm.method.MethodSig;
 import twg2.ast.interm.method.ParameterSig;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.csharp.CsBlock;
@@ -22,17 +28,12 @@ import twg2.parser.codeParser.csharp.CsBlockParser;
 import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
-import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.CodeFileAndAst;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.treeLike.simpleTree.SimpleTree;
-import static twg2.parser.test.utils.AnnotationAssert.*;
-import static twg2.parser.test.utils.FieldAssert.*;
-import static twg2.parser.test.utils.MethodAssert.*;
-import static twg2.parser.test.utils.TypeAssert.*;
 
 /**
  * @author TeamworkGuy2
@@ -108,7 +109,7 @@ public class CsClassParseTest {
 	private CodeFileAndAst<CsBlock> simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, srcLines);
 
 	@Parameter
-	private CodeFileSrc<CodeLanguage> file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
+	private CodeFileSrc file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
 
 
 	public CsClassParseTest() throws IOException {
@@ -117,7 +118,7 @@ public class CsClassParseTest {
 
 	@Test
 	public void parseBlocksTest() {
-		SimpleTree<CodeToken> tree = file.getDoc();
+		SimpleTree<CodeToken> tree = file.astTree;
 		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>>> blocks = new CsBlockParser().extractClassFieldsAndMethodSignatures(tree);
 
 		Assert.assertEquals(1, blocks.size());
@@ -130,10 +131,10 @@ public class CsClassParseTest {
 
 	@Test
 	public void simpleCsParseTest() {
-		List<CodeFileParsed.Simple<String, CsBlock>> blocks = simpleCs.parsedBlocks;
+		List<CodeFileParsed.Simple<CsBlock>> blocks = simpleCs.parsedBlocks;
 		String fullClassName = simpleCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
-		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).getParsedClass();
+		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).parsedClass;
 		Assert.assertEquals(8, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
@@ -170,29 +171,29 @@ public class CsClassParseTest {
 		Assert.assertEquals(2, clas.getMethods().size());
 
 		// AddName()
-		MethodSig.SimpleImpl m = clas.getMethods().get(0);
-		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.getFullName()));
-		List<ParameterSig> ps = m.getParamSigs();
+		MethodSigSimple m = clas.getMethods().get(0);
+		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.fullName));
+		List<ParameterSig> ps = m.paramSigs;
 		assertParameter(ps, 0, "name", "string", null, Arrays.asList(" <summary>Add name</summary>\n",
 				" <param name=\"name\">the name</param>\n",
 				" <returns>the names</returns>\n"));
 		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
-		assertAnnotation(m.getAnnotations(), 0, "OperationContract", new String[0], new String[0]);
+		assertAnnotation(m.annotations, 0, "OperationContract", new String[0], new String[0]);
 
 		//{"name": "WebInvoke", "arguments": { "ResponseFormat": "WebMessageFormat.Json", "Method": "POST", "UriTemplate": "/AddName?name={name}" } },
-		assertAnnotation(m.getAnnotations(), 1, "WebInvoke", new String[] { "ResponseFormat", "Method", "UriTemplate" }, new String[] { "WebMessageFormat.Json", "POST", "/AddName?name={name}" });
+		assertAnnotation(m.annotations, 1, "WebInvoke", new String[] { "ResponseFormat", "Method", "UriTemplate" }, new String[] { "WebMessageFormat.Json", "POST", "/AddName?name={name}" });
 
 		//{"name": "TransactionFlow", "arguments": { "value": "TransactionFlowOption.Allowed" } }
-		assertAnnotation(m.getAnnotations(), 2, "TransactionFlow", new String[] { "value" }, new String[] { "TransactionFlowOption.Allowed" });
+		assertAnnotation(m.annotations, 2, "TransactionFlow", new String[] { "value" }, new String[] { "TransactionFlowOption.Allowed" });
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		assertType(ls("Result", ls("IList", ls("String"))), m.getReturnType());
+		assertType(ls("Result", ls("IList", ls("String"))), m.returnType);
 
 		// SetNames()
 		m = clas.getMethods().get(1);
-		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.getFullName()));
-		List<ParameterSig> params = m.getParamSigs();
+		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.fullName));
+		List<ParameterSig> params = m.paramSigs;
 		assertParameter(params, 0, "inst", "SimpleCs", Arrays.asList(CsKeyword.THIS), null);
 		assertParameter(params, 1, "constraints", "Constraints", Arrays.asList(CsKeyword.REF), null);
 		assertParameter(params, 2, "names", "string[]", Arrays.asList(CsKeyword.PARAMS), null);

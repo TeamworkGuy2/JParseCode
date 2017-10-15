@@ -9,6 +9,8 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.classes.ClassSigResolved;
+import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.BlockType;
@@ -16,6 +18,7 @@ import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.workflow.CodeFileParsed;
 
 /**
  * @author TeamworkGuy2
@@ -23,10 +26,16 @@ import twg2.parser.project.ProjectClassSet;
  */
 public class ClassSigResolver {
 
-	/** Resolves the {@link twg2.ast.interm.classes.ClassSig.SimpleImpl#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
+	/** Resolves the {@link twg2.ast.interm.classes.ClassSigSimple#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static <T_ID, T_SIG extends ClassSig.SimpleImpl> ClassSig.ResolvedImpl resolveClassSigFrom(KeywordUtil<? extends AccessModifier> keywordUtil, T_SIG classSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
-			ProjectClassSet.Simple<T_ID, ? extends BlockType> projFiles, BlockType defaultBlockType, Collection<List<String>> missingNamespacesDst) {
+	public static <T_ID, T_SIG extends ClassSigSimple, T_BLOCK extends BlockType> ClassSigResolved resolveClassSigFrom(
+			KeywordUtil<? extends AccessModifier> keywordUtil,
+			T_SIG classSig,
+			ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
+			ProjectClassSet<?, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles,
+			BlockType defaultBlockType,
+			Collection<List<String>> missingNamespacesDst
+	) {
 		List<List<String>> resolvedParentNames = new ArrayList<>();
 		List<BlockType> resolvedParentBlockTypess = new ArrayList<>();
 		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();
@@ -89,7 +98,7 @@ public class ClassSigResolver {
 
 		val classFqName = classSig.getFullName();
 
-		val res = new ClassSig.ResolvedImpl(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getDeclarationType(),
+		val res = new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getDeclarationType(),
 				extendClassType, implementInterfaceTypes);
 		return res;
 	}

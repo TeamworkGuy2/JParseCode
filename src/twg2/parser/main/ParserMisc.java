@@ -7,24 +7,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 
 import lombok.val;
+import twg2.ast.interm.classes.ClassAst;
 import twg2.dataUtil.dataUtils.ParallelWork;
 import twg2.dataUtil.dataUtils.ParallelWork.WorkBlockPolicy;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
-import twg2.parser.language.CodeLanguage;
+import twg2.parser.codeParser.analytics.PerformanceTrackers;
+import twg2.parser.fragment.CodeToken;
 import twg2.parser.project.ProjectClassSet;
 import twg2.parser.tokenizers.CodeTreeToSource;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.TreeTraversalOrder;
+import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.treeLike.simpleTree.SimpleTreeUtil;
 
 /**
@@ -34,9 +37,9 @@ import twg2.treeLike.simpleTree.SimpleTreeUtil;
 public class ParserMisc {
 
 
-	public static void printParseFileInfo(String fileName, CodeFileSrc<CodeLanguage> parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
+	public static void printParseFileInfo(String fileName, CodeFileSrc parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
 			boolean printBlockSignatures, boolean printFieldSignatures, boolean printMethodSignatures) throws FileFormatException {
-		val tree = parsedFile.getDoc();
+		val tree = parsedFile.astTree;
 
 		System.out.println("\nFile: " + fileName);
 		if(printParsedTokens) {
@@ -47,12 +50,12 @@ public class ParserMisc {
 
 		if(printUnparsedSrcCode) {
 			// recreate the source, excluding the parsed elements
-			System.out.println("\n====\n" + CodeTreeToSource.toSource(tree, parsedFile.getSrc(), parsedFile.getSrcOff(), parsedFile.getSrcLen(), false));
+			System.out.println("\n====\n" + CodeTreeToSource.toSource(tree, parsedFile.src, parsedFile.srcOff, parsedFile.srcLen, false));
 		}
 
 		try {
 			@SuppressWarnings("unchecked")
-			val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+			List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
 
 			if(printBlockSignatures) {
 				System.out.println("\n==== Blocks: \n" + StringJoin.join(blockDeclarations, "\n"));
@@ -74,19 +77,19 @@ public class ParserMisc {
 				System.out.println("====\n");
 			}
 		} catch(Exception e) {
-			throw new FileFormatException(parsedFile.getSrcName(), null, e);
+			throw new FileFormatException(parsedFile.srcName, null, e);
 		}
 
 	}
 
 
-	public static <T_BLOCK extends BlockType> void parseFileSet(List<Path> paths, ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, T_BLOCK> dstFileSet,
+	public static <T_BLOCK extends BlockType> void parseFileSet(List<Path> paths, ProjectClassSet.Intermediate<T_BLOCK> dstFileSet,
 			ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		@SuppressWarnings("unchecked")
-		val dstFiles = (ProjectClassSet.Simple<CodeFileSrc<CodeLanguage>, BlockType>)dstFileSet;
+		val dstFiles = (ProjectClassSet.Intermediate<BlockType>)dstFileSet;
 
 		if(executor != null) {
-			val dst = Collections.synchronizedList(new ArrayList<CodeFileParsed.Simple<CodeFileSrc<CodeLanguage>, BlockType>>());
+			List<CodeFileParsed.Intermediate<BlockType>> dst = Collections.synchronizedList(new ArrayList<CodeFileParsed.Intermediate<BlockType>>());
 			val processedFiles = new HashSet<Path>();
 
 			// TODO should add a consumeBlocks or similar function, since we don't have a result to return
@@ -101,15 +104,15 @@ public class ParserMisc {
 					File file = path.toFile();
 					val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(file.toString()) : null;
 
-					CodeFileSrc<CodeLanguage> parsedFile = ParseCodeFile.parseFile(file, fileReader, perfTracking);
+					CodeFileSrc parsedFile = ParseCodeFile.parseFile(file, fileReader, perfTracking);
 
 					long start = 0;
 					if(perfTracking != null) { start = System.nanoTime(); }
 
-					val blockDeclarations = castParser(parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = castParser(parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
 
 					for(val block : blockDeclarations) {
-						val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+						val fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
 						dst.add(fileParsed);
 					}
 
@@ -125,25 +128,25 @@ public class ParserMisc {
 
 			for(int i = 0, size = dst.size(); i < size; i++) {
 				val res = dst.get(i);
-				dstFiles.addCompilationUnit(res.getParsedClass().getSignature().getFullName(), res);
+				dstFiles.addCompilationUnit(res.parsedClass.getSignature().getFullName(), res);
 			}
 		}
 		else {
-			val parsedFiles = ParseCodeFile.parseFiles(paths, fileReader, perfTracking);
+			List<CodeFileSrc> parsedFiles = ParseCodeFile.parseFiles(paths, fileReader, perfTracking);
 
 			for(int i = 0, sizeI = paths.size(); i < sizeI; i++) {
 				val parsedFile = parsedFiles.get(i);
-				val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(parsedFile.getSrcName()) : null;
+				val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(parsedFile.srcName) : null;
 
 				try {
 					long start = 0;
 					if(perfTracking != null) { start = System.nanoTime(); }
 
 					@SuppressWarnings("unchecked")
-					val blockDeclarations = ((AstExtractor<BlockType>)parsedFile.getLanguage().getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.getDoc());
+					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
 
 					for(val block : blockDeclarations) {
-						val fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
+						val fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
 						dstFiles.addCompilationUnit(block.getValue().getSignature().getFullName(), fileParsed);
 					}
 
@@ -151,7 +154,7 @@ public class ParserMisc {
 						perfTracker.log(TrackerAction.PARSE, System.nanoTime() - start);
 					}
 				} catch(Exception e) {
-					throw new FileFormatException(parsedFile.getSrcName(), null, e);
+					throw new FileFormatException(parsedFile.srcName, null, e);
 				}
 			}
 		}

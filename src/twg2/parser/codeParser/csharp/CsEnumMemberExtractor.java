@@ -58,16 +58,16 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 		this.state = State.INIT;
 
 		// determine the enum's base type
-		val enumExtends = parentBlock.getDeclaration().getExtendImplementSimpleNames();
+		val enumExtends = parentBlock.declaration.getExtendImplementSimpleNames();
 		if(enumExtends == null || enumExtends.isEmpty()) {
 			enumType = new TypeSig.TypeSigSimpleBase(CsKeyword.INT.toSrc(), 0, false, true);
 		}
 		else {
 			if(enumExtends.size() > 1) {
-				throw new RuntimeException("C# enums cannot extend/implement more than one class/interface, enum '" + NameUtil.joinFqName(parentBlock.getDeclaration().getFullName()) + "' extends " + enumExtends.get(0));
+				throw new RuntimeException("C# enums cannot extend/implement more than one class/interface, enum '" + NameUtil.joinFqName(parentBlock.declaration.getFullName()) + "' extends " + enumExtends.get(0));
 			}
 			if(ArrayUtil.indexOf(validEnumTypes, enumExtends.get(0)) < 0) {
-				throw new RuntimeException("C# enums must extend an integer based data type, enum '" + NameUtil.joinFqName(parentBlock.getDeclaration().getFullName()) + "' extends " + enumExtends.get(0));
+				throw new RuntimeException("C# enums must extend an integer based data type, enum '" + NameUtil.joinFqName(parentBlock.declaration.getFullName()) + "' extends " + enumExtends.get(0));
 			}
 			enumType = new TypeSig.TypeSigSimpleBase(enumExtends.get(0), 0, false, true);
 		}
@@ -173,7 +173,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
-		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.getDeclaration().getFullName(), memberName), enumType,
+		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.<AnnotationSig>emptyList(), comments, tokenNode);
 		nextMemberComments = null;
 		commentParser.recycle();

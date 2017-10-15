@@ -12,6 +12,7 @@ import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.field.FieldSigResolved;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.workflow.CodeFileParsed;
 
 /**
  * @author TeamworkGuy2
@@ -21,8 +22,8 @@ public class FieldSigResolver {
 
 	/** Resolves simple name fields from {@link FieldSig} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static <T_FIELD extends FieldSig> FieldSigResolved resolveFrom(T_FIELD intermField, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
-			ProjectClassSet.Simple<?, ? extends BlockType> projFiles, Collection<List<String>> missingNamespacesDst) {
+	public static <T_FIELD extends FieldSig, T_BLOCK extends BlockType> FieldSigResolved resolveFrom(T_FIELD intermField, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
+			ProjectClassSet<?, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		val resolvedFieldType = TypeSigResolver.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);
@@ -32,8 +33,8 @@ public class FieldSigResolver {
 
 	/** Resolves simple name fields from {@link FieldDef} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static <T_FIELD extends FieldDef> FieldDefResolved resolveFrom(T_FIELD intermField, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
-			ProjectClassSet.Simple<?, ? extends BlockType> projFiles, Collection<List<String>> missingNamespacesDst) {
+	public static <T_FIELD extends FieldDef, T_BLOCK extends BlockType> FieldDefResolved resolveFrom(T_FIELD intermField, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
+			ProjectClassSet<?, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		val resolvedFieldType = TypeSigResolver.resolveFrom(intermField.getFieldType(), namespaceClass, projFiles, missingNamespacesDst);

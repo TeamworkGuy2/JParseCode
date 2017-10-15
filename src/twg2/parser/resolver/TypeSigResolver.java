@@ -12,6 +12,7 @@ import twg2.ast.interm.type.TypeSig;
 import twg2.collections.builder.ListBuilder;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.project.ProjectClassSet;
+import twg2.parser.workflow.CodeFileParsed;
 
 /**
  * @author TeamworkGuy2
@@ -21,8 +22,8 @@ public class TypeSigResolver {
 
 	/** Resolves simple name fields from {@link twg2.ast.interm.type.TypeSig.TypeSigSimple} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
-	public static TypeSig.TypeSigResolved resolveFrom(TypeSig.TypeSigSimple intermSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
-			ProjectClassSet.Simple<?, ? extends BlockType> projFiles, Collection<List<String>> missingNamespacesDst) {
+	public static <T_BLOCK extends BlockType> TypeSig.TypeSigResolved resolveFrom(TypeSig.TypeSigSimple intermSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
+			ProjectClassSet<?, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles, Collection<List<String>> missingNamespacesDst) {
 		// TODO also resolve annotations
 
 		List<TypeSig.TypeSigResolved> childSigs = Collections.emptyList();

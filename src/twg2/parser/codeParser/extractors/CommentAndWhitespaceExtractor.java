@@ -31,14 +31,14 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class CommentAndWhitespaceExtractor {
 
-	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, char[] src, int srcOff, int srcLen) throws IOException {
+	public static CodeFileSrc buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, char[] src, int srcOff, int srcLen) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
 		return buildCommentsAndWhitespaceTree(commentStyle, srcName, src, srcOff, srcLen);
 	}
 
 
-	public static CodeFileSrc<CodeLanguage> buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String srcName, char[] src, int srcOff, int srcLen) throws IOException {
+	public static CodeFileSrc buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String srcName, char[] src, int srcOff, int srcLen) throws IOException {
 		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 

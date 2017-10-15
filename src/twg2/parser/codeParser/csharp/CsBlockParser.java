@@ -9,10 +9,10 @@ import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
-import twg2.ast.interm.classes.ClassSig;
+import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.extractors.AccessModifierExtractor;
@@ -81,7 +81,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 
 	@Override
-	public AstParser<List<MethodSig.SimpleImpl>> createMethodParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
+	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.C_SHARP;
 		val typeParser = new DataTypeExtractor(lang, true);
 		return new MethodExtractor(lang.displayName(), CsKeyword.check, block, typeParser, annotationParser, commentParser);
@@ -140,7 +140,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 						val accessModifiers = AccessModifierExtractor.readAccessModifiers(keywordUtil, childIter);
 						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
-						val access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.getBlockType() : null);
+						val access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.blockType : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
@@ -148,7 +148,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
-						blocks.add(new BlockAst<>(new ClassSig.SimpleImpl(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);

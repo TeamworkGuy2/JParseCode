@@ -14,6 +14,7 @@ import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.fragment.TextToken;
+import twg2.parser.language.CodeLanguage;
 import twg2.parser.textFragment.TextConsumer;
 import twg2.parser.textFragment.TextFragmentRefImpl;
 import twg2.parser.textFragment.TextFragmentRefImplMut;
@@ -32,7 +33,7 @@ import twg2.tuple.Tuples;
  * @author TeamworkGuy2
  * @since 2015-11-24
  */
-public class CodeTokenizerBuilder<T_LANG> {
+public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	private PairList<CharParserFactory, TextTransformer<CodeTokenType>> parsers;
 	private T_LANG language;
 
@@ -68,7 +69,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 	/** Build a document parser from the parsers added via {@link #addParser(CharParserFactory, TextTransformer)}
 	 * and {@link #addParser(CharParserFactory, CodeTokenType)}
 	 */
-	public CodeTokenizer<T_LANG> build() {
+	public CodeTokenizer build() {
 		// TODO should fix at some point, calling addParser() changes the behavior of CodeTokenizers returned by previous calls to build()
 		return (src, srcOff, srcLen, srcName, stepDetails) -> tokenizeCodeFile(parsers, src, srcOff, srcLen, language, srcName, stepDetails);
 	}
@@ -78,7 +79,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 	 * @param parserConstructor
 	 * @return a parser that takes {@link ParseInput}, tokenizes it (optionally timing and tracking stats about the operation) and returns a {@link CodeFileSrc}
 	 */
-	public static <_T_LANG> Function<ParseInput, CodeFileSrc<_T_LANG>> createTokenizerWithTimer(Supplier<CodeTokenizer<_T_LANG>> parserConstructor) {
+	public static <_T_LANG> Function<ParseInput, CodeFileSrc> createTokenizerWithTimer(Supplier<CodeTokenizer> parserConstructor) {
 		return (params) -> {
 			try {
 				long start = 0;
@@ -113,7 +114,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 	 * @param srcName optional
 	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
-	public static <_T_LANG> CodeFileSrc<_T_LANG> tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
+	public static <_T_LANG extends CodeLanguage> CodeFileSrc tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
 			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepLogger stepsDetails) {
 
 		val input = TextCharsParser.of(src, srcOff, srcLen, true, true, true);
@@ -129,7 +130,7 @@ public class CodeTokenizerBuilder<T_LANG> {
 		docTextFragment.setLineEnd(input.getLineNumber() - 1);
 		docTextFragment.setColumnEnd(input.getColumnNumber() - 1);
 
-		return new CodeFileSrc<>(docTree, srcName, src, srcOff, srcLen, input.getLineNumbers().getRawCompletedLineOffsets(), lang);
+		return new CodeFileSrc(docTree, srcName, src, srcOff, srcLen, input.getLineNumbers().getRawCompletedLineOffsets(), lang);
 	}
 
 

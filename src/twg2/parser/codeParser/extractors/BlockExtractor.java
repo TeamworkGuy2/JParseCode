@@ -8,7 +8,7 @@ import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
-import twg2.ast.interm.method.MethodSig;
+import twg2.ast.interm.method.MethodSigSimple;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.fragment.CodeToken;
@@ -44,8 +44,8 @@ public class BlockExtractor {
 		val usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
 
 		for(val block : blocks) {
-			val blockTree = block.getBlockTree();
-			val blockType = block.getBlockType();
+			val blockTree = block.blockTree;
+			val blockType = block.blockType;
 
 			usingStatementExtractor.recycle();
 			runParsers(blockTree, usingStatementExtractor);
@@ -69,7 +69,7 @@ public class BlockExtractor {
 
 			List<FieldSig> fields = null;
 			List<FieldDef> enumMembers = null;
-			List<MethodSig.SimpleImpl> intfMethods = null;
+			List<MethodSigSimple> intfMethods = null;
 
 			if(blockType.isEnum()) {
 				enumMembers = enumMemberExtractor.getParserResult();
@@ -82,7 +82,7 @@ public class BlockExtractor {
 			}
 
 			if(blockType.canContainFields() && blockType.canContainMethods()) {
-				resBlocks.add(Tuples.of(blockTree, new ClassAst.SimpleImpl<>(block.getDeclaration(), usingStatements, fields, intfMethods, enumMembers, blockType)));
+				resBlocks.add(Tuples.of(blockTree, new ClassAst.SimpleImpl<>(block.declaration, usingStatements, fields, intfMethods, enumMembers, blockType)));
 			}
 		}
 
