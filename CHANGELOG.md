@@ -4,7 +4,14 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.0](N/A) - 2017-10-15
+### [0.15.1](N/A) - 2017-11-11
+#### Changed
+* Update dependency jtext-parser@0.13.0
+* Add some test cases
+
+
+--------
+### [0.15.0](https://github.com/TeamworkGuy2/JParseCode/commit/db38f7ec5d369b60ef8e79480d981d3bcdf3006c) - 2017-10-15
 #### Changed
 Simplified class names and generic type signatures:
 * Changed `AnnotationSig`, `BlockAst`, `MethodSig`, `CodeFileSrc`, and `CodeFileParsed` to have `public final` properties and remove getters

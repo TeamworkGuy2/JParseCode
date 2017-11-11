@@ -117,7 +117,7 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	public static <_T_LANG extends CodeLanguage> CodeFileSrc tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
 			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepLogger stepsDetails) {
 
-		val input = TextCharsParser.of(src, srcOff, srcLen, true, true, true);
+		val input = TextCharsParser.of(src, srcOff, srcLen);
 
 		val docTextFragment = new TextFragmentRefImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
 		val docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
