@@ -4,7 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.1](N/A) - 2017-11-11
+### [0.15.2](N/A) - 2017-12-22
+#### Changed
+* Upgrade to Java 9
+* Upgrade to JUnit 5
+
+#### Fixed
+* Fix a minor compile issue found by Java 9 upgrade
+
+
+--------
+### [0.15.1](https://github.com/TeamworkGuy2/JParseCode/commit/6136531b49a776590a9d8b23ab2cd27c40d4be10) - 2017-11-11
 #### Changed
 * Update dependency jtext-parser@0.13.0
 * Add some test cases

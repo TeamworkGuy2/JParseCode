@@ -4,6 +4,7 @@ import java.util.Enumeration;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
+import javax.swing.tree.TreeNode;
 
 import twg2.parser.textFragment.TextFragmentRef;
 
@@ -68,7 +69,7 @@ public class TextBlockElement extends AbstractDocument.AbstractElement {
 
 
 	@Override
-	public Enumeration<?> children() {
+	public Enumeration<TreeNode> children() {
 		return null;
 	}
 
