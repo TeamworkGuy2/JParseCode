@@ -29,9 +29,9 @@ import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.stringify.JsonStringify;
-import twg2.logging.Logging;
-import twg2.logging.LoggingImpl;
-import twg2.logging.LoggingPrefixFormat;
+import twg2.logging.LogPrefixFormat;
+import twg2.logging.LogService;
+import twg2.logging.LogServiceImpl;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.csharp.CsBlock;
@@ -63,7 +63,7 @@ public class ParserWorkflow {
 
 	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		Logging log = this.logFile != null ? new LoggingImpl(logLevel, new PrintStream(this.logFile.toFile()), LoggingPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
+		LogServiceImpl log = this.logFile != null ? new LogServiceImpl(logLevel, new PrintStream(this.logFile.toFile()), LogPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
 		val loadRes = SourceFiles.load(this.sources);
 		if(log != null) {
@@ -146,8 +146,8 @@ public class ParserWorkflow {
 		}
 
 
-		public void log(Logging log, Level level, boolean includeHeader) {
-			if(Logging.wouldLog(log, level)) {
+		public void log(LogService log, Level level, boolean includeHeader) {
+			if(LogService.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
 				val fileSets = new HashMap<CodeFileSrc, List<ClassAst.SimpleImpl<BlockType>>>();
 				for(val file : files) {
@@ -206,8 +206,8 @@ public class ParserWorkflow {
 		}
 
 
-		public void log(Logging log, Level level, boolean includeHeader) {
-			if(Logging.wouldLog(log, level)) {
+		public void log(LogService log, Level level, boolean includeHeader) {
+			if(LogService.wouldLog(log, level)) {
 				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
 				val fileSets = new HashMap<CodeFileSrc, List<ClassAst.ResolvedImpl<BlockType>>>();
 				for(val file : files) {
@@ -267,8 +267,8 @@ public class ParserWorkflow {
 		}
 
 
-		public void log(Logging log, Level level, boolean includeHeader) {
-			if(Logging.wouldLog(log, level)) {
+		public void log(LogService log, Level level, boolean includeHeader) {
+			if(LogService.wouldLog(log, level)) {
 				val sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);

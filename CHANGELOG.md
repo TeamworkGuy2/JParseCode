@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.2](N/A) - 2017-12-22
+### [0.15.3](N/A) - 2017-12-30
+#### Changed
+* Update dependency `jtwg2-logging@0.3.0`
+
+
+--------
+### [0.15.2](https://github.com/TeamworkGuy2/JParseCode/commit/6d8af0544a624f451828f8dde70bc7f78f281ea8) - 2017-12-22
 #### Changed
 * Upgrade to Java 9
 * Upgrade to JUnit 5
@@ -16,7 +22,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 --------
 ### [0.15.1](https://github.com/TeamworkGuy2/JParseCode/commit/6136531b49a776590a9d8b23ab2cd27c40d4be10) - 2017-11-11
 #### Changed
-* Update dependency jtext-parser@0.13.0
+* Update dependency `jtext-parser@0.13.0`
 * Add some test cases
 
 
@@ -37,8 +43,8 @@ Simplified class names and generic type signatures:
 ### [0.14.5](https://github.com/TeamworkGuy2/JParseCode/commit/283d487a7e04d7355451f2fe641cacff2e026cc3) - 2017-08-20
 #### Changed
 * Update dependencies:
-  * jfunc@0.3.0 (Predicates.Char -> CharPredicate)
-  * jtext-parser@0.12.0 (CharParserPredicate interface instead of BiPredicates.CharObject<TextParser>)
+  * `jfunc@0.3.0` (`Predicates.Char` -> `CharPredicate`)
+  * `jtext-parser@0.12.0` (`CharParserPredicate` interface instead of `BiPredicates.CharObject<TextParser>`)
 
 
 --------
@@ -73,9 +79,9 @@ Simplified class names and generic type signatures:
 ### [0.14.1](https://github.com/TeamworkGuy2/JParseCode/commit/53806a53d3b8152b35e3166a81dbe9a81a49f354) - 2016-12-03
 #### Changed
 * Updated dependencies:
-  * jtext-parser@0.11.0
-  * jtext-tokenizer@0.2.0
-  * jparser-primitive@0.2.0
+  * `jtext-parser@0.11.0`
+  * `jtext-tokenizer@0.2.0`
+  * `jparser-primitive@0.2.0`
 * This includes a new parsing strategy which tries to parse non-compound tokens from start to finish using one parser at a time without passing the characters to compound parser, this improves performance and simplifies some of the compound parsers, but makes some compound parsers more difficult, such as ending conditions that try to keep track of characters between the start and end of the compound parser segment 
 * `GenericTypeTokenizer` and `IdentifierTokenizer` changes to properly parse nullable generic parameters
 
