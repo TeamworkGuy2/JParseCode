@@ -125,6 +125,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
 			int depth, SimpleTree<CodeToken> parentNode, BlockAst<JavaBlock> parentScope, List<BlockAst<JavaBlock>> blocks) {
 		val lang = CodeLanguageOptions.JAVA;
+		val keywords = lang.getKeywordUtil();
 		val children = blockTree.getChildren();
 
 		val childIterable = new TokenListIterable(children);
@@ -144,18 +145,18 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 					val prevNode = childIter.hasPrevious() ? childIter.previous() : null;
 
 					// if a block keyword ("class", "interface", etc.) and an identifier were found, then this is probably a valid block declaration
-					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && keywords.blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
 						val blockTypeStr = prevNode.getData().getText();
-						val blockType = lang.getBlockUtil().tryParseKeyword(lang.getKeywordUtil().tryToKeyword(blockTypeStr));
-						val accessModifiers = AccessModifierExtractor.readAccessModifiers(lang.getKeywordUtil(), childIter);
+						val blockType = lang.getBlockUtil().tryParseKeyword(keywords.tryToKeyword(blockTypeStr));
+						val accessModifiers = AccessModifierExtractor.readAccessModifiers(keywords, childIter);
 						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
 						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
 						val access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.blockType : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						val blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), lang.getKeywordUtil());
+						val blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), keywords);
 						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 
@@ -205,7 +206,6 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		if(iter.hasPrevious()) { prevCount++; }
 		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
-		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
 		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData()) && !lang.getKeywordUtil().isInheritanceKeyword(prevNode.getData().getText())) {
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;

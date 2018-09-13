@@ -9,6 +9,7 @@ import static twg2.parser.test.utils.TypeAssert.ls;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -78,14 +79,15 @@ public class JavaClassParseTest {
 		"    @WebInvoke(Method = \"POST\", UriTemplate = \"/AddName?name={name}\",",
 		"        ResponseFormat = WebMessageFormat.Json)",
 		"    @TransactionFlow(TransactionFlowOption.Allowed)",
-		"    Result<List<String>> AddName(String name) {",
-		"        content of block;",
+		"    Result<List<String>> AddName(@NotNull String name, int zest = 0) {",
+		"        content = block ? yes : no;",
 		"    }",
 		"",
 		"    @WebInvoke(Method = \"PUT\", UriTemplate = \"/SetNames?names={names}\",",
 		"        ResponseFormat = WebMessageFormat.Json)",
 		"    List<Integer> SetNames(final String[] names) {",
-		"        content of SetNames;",
+		"        new { data = SetNames };",
+		"        : new Dictionary<string, object> { content = value } : new { content = object };",
 		"    }",
 		"",
 		"}"
@@ -156,15 +158,17 @@ public class JavaClassParseTest {
 		// methods:
 		Assert.assertEquals(2, clas.getMethods().size());
 
-		// AddName()
+		// AddName(...)
 		MethodSigSimple m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.fullName));
-		List<ParameterSig> ps = m.paramSigs;
-		assertParameter(ps, 0, "name", "String", null, null);
 		Assert.assertEquals(Arrays.asList(" Add name\n" +
 		        "     * @param name the name\n" +
 		        "     * @return the names\n" +
 		        "     "), m.comments);
+		List<ParameterSig> ps = m.paramSigs;
+		Assert.assertEquals(2, ps.size());
+		assertParameter(ps, 0, "name", "String", null, Arrays.asList(new AnnotationSig("NotNull", NameUtil.splitFqName("NotNull"), Collections.emptyMap())));
+		assertParameter(ps, 1, "zest", "int", null, null);
 		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
 		assertAnnotation(m.annotations, 0, "OperationContract", new String[0], new String[0]);
@@ -176,7 +180,7 @@ public class JavaClassParseTest {
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
 		assertType(ls("Result", ls("List", ls("String"))), m.returnType);
 
-		// SetNames()
+		// SetNames(...)
 		m = clas.getMethods().get(1);
 		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.fullName));
 		ps = m.paramSigs;

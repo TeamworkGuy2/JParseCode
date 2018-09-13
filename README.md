@@ -1,8 +1,8 @@
 JParseCode
 ==============
-version: 0.15.3
+version: 0.15.4
 
-In progress C#/Java/TypeScript parser tools built atop [JTextParser] (https://github.com/TeamworkGuy2/JTextParser), [Jackson] (https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
+In progress C#/Java/TypeScript parser tools built atop [JTextParser](https://github.com/TeamworkGuy2/JTextParser), [Jackson](https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 
 ### Goals:
 * A source code parser that can turn C#, Java, or JavaScript/TypeScript code into a simple AST like structure ('competent' meaning this project aims to support common use cases, not every syntatic feature of the supported languages). 
@@ -18,60 +18,60 @@ Example:
 
 Source Code (SimpleCs.cs):
 ```C#
-	namespace ParserExamples.Samples {
+namespace ParserExamples.Samples {
 
-		/// <summary>
-		/// A simple class to test parsing.
-		/// </summary>
-		public class SimpleCs {
+	/// <summary>
+	/// A simple class to test parsing.
+	/// </summary>
+	public class SimpleCs {
 
-			/// <value>The modification count.</value>
-			private int mod;
+		/// <value>The modification count.</value>
+		private int mod;
 
-			/// <value>The name.</value>
-			private string _name;
+		/// <value>The name.</value>
+		private string _name;
 
-			/// <value>The names.</value>
-			public IList<string> Names { get; }
+		/// <value>The names.</value>
+		public IList<string> Names { get; }
 
-			/// <value>The number of names.</value>
-			public int Count { set; }
+		/// <value>The number of names.</value>
+		public int Count { set; }
 
-			/// <value>The access timestamps.</value>
-			public DateTime[] accesses { set { this.mod++; this.accesses = value; } }
+		/// <value>The access timestamps.</value>
+		public DateTime[] accesses { set { this.mod++; this.accesses = value; } }
 
-			/// <value>The access timestamps.</value>
-			public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }
+		/// <value>The access timestamps.</value>
+		public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }
 
-			/// <summary>Add name</summary>
-			/// <param name="name">the name</param>
-			/// <returns>the names</returns>
-			[OperationContract]
-			[WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
-					ResponseFormat = WebMessageFormat.Json)]
-			[TransactionFlow(TransactionFlowOption.Allowed)]
-			Result<IList<String>> AddName(string name) {
-				content of block;
-			}
-
+		/// <summary>Add name</summary>
+		/// <param name="name">the name</param>
+		/// <returns>the names</returns>
+		[OperationContract]
+		[WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
+				ResponseFormat = WebMessageFormat.Json)]
+		[TransactionFlow(TransactionFlowOption.Allowed)]
+		Result<IList<String>> AddName(string name) {
+			content of block;
 		}
 
 	}
+
+}
 ```
 
 
 Java code to parser SimpleCs.cs (simple_cs_source_string is a string containing the contents of SimpleCs.cs):
 ```Java
-	CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode("SimpleCs.cs", CodeLanguageOptions.C_SHARP, simple_cs_source_string);
-	WriteSettings ws = new WriteSettings(true, true, true, true);
-	
-	for(Map.Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
-		CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
-	
-		StringBuilder sb = new StringBuilder();
-		fileParsed.getParsedClass().toJson(sb, ws);
-		System.out.println(sb.toString()); // Print the parsed AST to System.out
-	}
+CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode("SimpleCs.cs", CodeLanguageOptions.C_SHARP, simple_cs_source_string);
+WriteSettings ws = new WriteSettings(true, true, true, true);
+
+for(Map.Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
+	CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
+
+	StringBuilder sb = new StringBuilder();
+	fileParsed.getParsedClass().toJson(sb, ws);
+	System.out.println(sb.toString()); // Print the parsed AST to System.out
+}
 ```
 
 
@@ -190,10 +190,10 @@ path/to/java -jar path/to/jparse-code.jar
  -log './output/parser.log'
 ```
 Where ./src/java/Server/** is where source files are kept
-And the files in ./src/java/Server/Services belong to the C# namespace 'App.Services' and ./src/java/Server/Models/ belong to the C# namespace 'App.Entities'
+And the files in ./src/java/Server/Services belong to the C# namespace `App.Services` and ./src/java/Server/Models/ belong to the C# namespace `App.Entities`
 
 
-###Sources
+#### Sources
 A semicolon separated list of paths set equal to a directory depth followed by a comma and a comma separated, brackets wrapped, list of file extensions. 
 The path, child directory depth, and file extensions are used to create a file system filter and all matching files are parsed.
 The following formats are valid:
@@ -202,10 +202,10 @@ The following formats are valid:
 'path'
 
 Example: ```/project/myApp/Models=3,[java,json]```
-Note: the brackets around '[fileExt]' are literal.
+Note: the brackets around the '[java,json]' file extension list are literal.
 
 
-###Destinations
+#### Destinations
 A semicolon separated list of output file names associated with lists of namespaces.  Each parsed file who's namespace falls into one of these lists is written to that file. 
 The following format is valid:
 'path=[namespace,namespace,...]'
@@ -213,7 +213,7 @@ The following format is valid:
 Example: ```/project/output/models.json=[MyApp.Models]```
 
 
-####Log
+#### Log
 An optional log file name to write parser information to, in the format:
 'path'
 

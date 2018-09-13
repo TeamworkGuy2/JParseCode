@@ -1,5 +1,8 @@
 package twg2.parser.codeParser.test;
 
+import static twg2.parser.test.utils.TypeAssert.assertType;
+import static twg2.parser.test.utils.TypeAssert.ls;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,7 +75,17 @@ public class CsParseFilesTest {
 
 
 	@Test
-	public void checkResolvedNames() {
+	public void checkResolvedClasses() {
+		// TrackInfo : ISerializable, IComparable<TrackInfo>
+		Assert.assertArrayEquals(ls("ParserExamples", "Models", "TrackInfo"), trackInfoDef.getSignature().getFullName().toArray());
+		assertType(ls("ISerializable"), trackInfoDef.getSignature().getExtendClass());
+		Assert.assertEquals(1, trackInfoDef.getSignature().getImplementInterfaces().size());
+		assertType(ls("IComparable", ls("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(0));
+	}
+
+
+	@Test
+	public void checkResolvedMethodNames() {
 		// SearchResult<TrackInfo> Search(TrackSearchCriteria criteria)
 		TypeSigResolved mthd1Ret = trackSearchServiceDef.getMethods().get(0).returnType;
 		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd1Ret.getParams().get(0).getFullName()));

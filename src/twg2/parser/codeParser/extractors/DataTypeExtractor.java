@@ -5,7 +5,6 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.type.TypeSig;
-import twg2.collections.builder.ListBuilder;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.AstFragType;
@@ -160,7 +159,11 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	}
 
 
-	// TODO create a proper, full parser for generic types
+	/** Parse a generic type signature (i.e. {@code Map<String, String>}) to a {@link TypeSig.TypeSigSimple}.
+	 * @param typeSig the type signature to parse (i.e. {@code Tuple<List<String>, Map<String, List<Integer>>>})
+	 * @param keywordUtil the {@link KeywordUtil} instance for the type of language being parsed
+	 * @return A list of simple types parsed from the generic parameters of the signature
+	 */
 	public static TypeSig.TypeSigSimple extractGenericTypes(String typeSig, KeywordUtil<? extends AccessModifier> keywordUtil) {
 		String genericMark = "#";
 
@@ -194,7 +197,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
 		if(rootMarker > -1) {
-			val sigChilds = expandGenericParamSet(keywordUtil, root, rootMarker, genericParamSets);
+			val sigChilds = expandGenericParamSet(keywordUtil, rootMarker, genericParamSets);
 			sig = new TypeSig.TypeSigSimpleGeneric(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));
 		}
 		else {
@@ -205,11 +208,21 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	}
 
 
-	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, TypeSig.TypeSigSimpleBase parent, int parentParamMarker, List<String> remainingParamSets) {
-		String paramSetStr = remainingParamSets.get(parentParamMarker);
-		remainingParamSets.remove(parentParamMarker);
-		val paramSigs = new ArrayList<TypeSig.TypeSigSimple>();
-		val params = ListBuilder.mutable(paramSetStr.split(", "));
+	/** Recursively convert a generic type signature (i.e. {@code Tuple<List<String>, List<String>>}) to a list of nested {@link TypeSig.TypeSigSimple}.
+	 * 'remainingParamSets' contains the parameter sets split up by '<>' pairs.
+	 * Example: {@code Tuple<String, String>} has one parameter set {@code <String, String>}.
+	 * Whereas {@code Tuple<String, Map<String, List<Integer>>>} has two parameter sets {@code <String, Map<String, List<Integer>>>} and {@code <String, List<Integer>>}.<br>
+	 * Each parameter set is marked by a number and this method looks up those numbers as indexes into 'remainingParamSets' and recursively splits
+	 * each parameter set string at ',' and converts the resulting identifiers/data types to a list of nested {@link TypeSig.TypeSigSimple}.
+	 * @param keywordUtil the {@link KeywordUtil} instance for the type of language being parsed
+	 * @param parentParamMarker the 'remainingParamSets' marker index being expanded by this recursive call
+	 * @param paramSets a inner-nested-to-outer-nested left-to-right list of generics extracted from the original type signature
+	 * @return A list of simple types parsed from the generic parameters of the signature
+	 */
+	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, int parentParamMarker, List<String> paramSets) {
+		String paramSetStr = paramSets.get(parentParamMarker);
+		val params = paramSetStr.split(", ");
+		val paramSigs = new ArrayList<TypeSig.TypeSigSimple>(params.length);
 
 		for(String param : params) {
 			// Split the generic parameter name and possible marker indicating further nested generic type
@@ -225,7 +238,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 			// if this generic parameter has a marker, parse it's sub parameters and add them to a new compound generic type signature
 			int paramMarker = !StringCheck.isNullOrEmpty(paramNameAndMarker.getValue()) ? Integer.parseInt(paramNameAndMarker.getValue()) : -1;
 			if(paramMarker > -1) {
-				val childParams = expandGenericParamSet(keywordUtil, paramSigInit, paramMarker, remainingParamSets);
+				val childParams = expandGenericParamSet(keywordUtil, paramMarker, paramSets);
 				paramSig = new TypeSig.TypeSigSimpleGeneric(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable(), keywordUtil.isPrimitive(paramSigInit.getTypeName()));
 			}
 			// else just use the generic parameter's basic signature (no nested generic types)

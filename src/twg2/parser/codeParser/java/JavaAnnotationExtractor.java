@@ -38,7 +38,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		val lang = CodeLanguageOptions.JAVA;
 
-		if((state == State.COMPLETE || state == State.FAILED || state == State.FOUND_NAME) && AstFragType.isSeparator(tokenNode.getData(), "@")) {
+		if(state != State.FOUND_ANNOTATION_MARK && AstFragType.isSeparator(tokenNode.getData(), "@")) {
 			if(state == State.FOUND_NAME) {
 				val annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
 				annotations.add(annot);

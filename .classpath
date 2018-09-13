@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="plugins"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre-9.0.1">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
 			<attribute name="limit-modules" value="java.se,java.xml.ws.annotation"/>
@@ -14,7 +14,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Lombok"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TemplateUtil"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TestChecks"/>
-	<classpathentry kind="output" path="bin"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/jar/jackson-annotations-2.5.0.jar" sourcepath="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/src/jackson-annotations-2.5.0-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/C:/Users/TeamworkGuy2/Documents/Java/Libraries/jackson/doc/jackson-annotations-2.5.0-javadoc.jar!/"/>
@@ -55,4 +54,5 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtree-walker/bin/jtree_walker.jar" sourcepath="/JTreeWalker"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtuples/bin/jtuples.jar" sourcepath="/JTuples"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jtwg2-logging/bin/jtwg2_logging.jar" sourcepath="/JTwg2Logging"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

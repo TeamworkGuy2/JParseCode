@@ -65,7 +65,7 @@ public class ParserWorkflow {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 		LogServiceImpl log = this.logFile != null ? new LogServiceImpl(logLevel, new PrintStream(this.logFile.toFile()), LogPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
 
-		val loadRes = SourceFiles.load(this.sources);
+		SourceFiles loadRes = SourceFiles.load(this.sources);
 		if(log != null) {
 			loadRes.log(log, logLevel, true);
 		}
@@ -73,7 +73,7 @@ public class ParserWorkflow {
 		// TODO debugging
 		long start = System.nanoTime();
 
-		val parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
+		ParsedResult parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
 
 		// TODO debugging
 		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
@@ -82,12 +82,12 @@ public class ParserWorkflow {
 			parseRes.log(log, logLevel, true);
 		}
 
-		val resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
+		ResolvedResult resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
 		if(log != null) {
 			resolvedRes.log(log, logLevel, true);
 		}
 
-		val filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
+		FilterResult filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
 		if(log != null) {
 			filterRes.log(log, logLevel, true);
 		}
@@ -369,7 +369,7 @@ public class ParserWorkflow {
 
 
 	public static ParserWorkflow parseArgs(String[] args) {
-		if(Arrays.asList("-help", "--help", "-h").contains(args[0])) {
+		if(Arrays.asList("-help", "--help", "-h").contains(args[0]) || args.length == 0) {
 			System.out.println("An in-progress suite of parsing tools for C#, Java, and TypeScript source code.\n" +
 				"Used to create basic ASTs containing class signatures, fields, and methods. (source: https://github.com/TeamworkGuy2/JParserTools)\n" +
 				"example command:\n" +

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.AccessModifier;
@@ -23,6 +24,7 @@ public class ParameterSigResolved implements JsonWritableSig {
 	final @Getter String name;
 	final @Getter TypeSig.TypeSigResolved type;
 	final @Getter List<AccessModifier> parameterModifiers;
+	final @Getter List<AnnotationSig> annotations;
 	final @Getter boolean optional;
 	final @Getter String defaultValue;
 
@@ -40,6 +42,11 @@ public class ParameterSigResolved implements JsonWritableSig {
 
 		json.comma(dst).propName("parameterModifiers", dst)
 			.toStringArray(parameterModifiers, dst, (acs) -> acs.toSrc());
+
+		if(annotations != null) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		}
 
 		if(optional) {
 			json.comma(dst).toProp("optional", optional, dst);

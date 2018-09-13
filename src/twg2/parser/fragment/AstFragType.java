@@ -28,7 +28,7 @@ public class AstFragType {
 	}
 
 
-	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2 type3}
+	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2 OR type3}
 	 */
 	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1, CodeTokenType type2, CodeTokenType type3) {
 		return node != null && (node.getTokenType() == type1 || node.getTokenType() == type2 || node.getTokenType() == type3);

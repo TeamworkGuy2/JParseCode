@@ -170,7 +170,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
-		val lang = CodeLanguageOptions.C_SHARP;
+		val keywords = CodeLanguageOptions.C_SHARP.getKeywordUtil();
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		val names = new ArrayList<String>();
@@ -180,8 +180,11 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		if(iter.hasPrevious()) { prevCount++; }
 		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
-		// TODO should read ', ' between each name, currently only works with 1 extend/implement class name
-		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData()) && !lang.getKeywordUtil().isInheritanceKeyword(prevNode.getData().getText())) {
+		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywords.blockModifiers().is(prevNode.getData()) && !keywords.isInheritanceKeyword(prevNode.getData().getText())) {
+			// found an object initializer in the form 'new [Abc] {', not a class/interface definition so return nothing
+			if(names.size() < 2 && CsKeyword.NEW.toSrc().equals(prevNode.getData().getText())) {
+				break;
+			}
 			names.add(prevNode.getData().getText());
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
@@ -191,7 +194,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		if(prevNode != null && prevNode.getData().getText().equals(":")) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !lang.getKeywordUtil().blockModifiers().is(prevNode.getData())) {
+			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywords.blockModifiers().is(prevNode.getData())) {
 				Collections.reverse(names);
 				val extendImplementNames = names;
 				val className = prevNode.getData().getText();

@@ -4,7 +4,26 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.3](N/A) - 2017-12-30
+### [0.15.4](N/A) - 2018-09-13
+#### Added
+* Annotations to parameter signatures (with basic parameter annotation parsing added to `MethodParametersParser.extractParamsFromSignature()`)
+* Documented DataTypeExtractor methods
+* Added/Improved test cases for:
+  * Class signatures (generics, multiple extend/implement types)
+  * Generic types with multiple parameters
+  * Annotations on method parameters
+  * TODO: fix failing test for default parameters
+
+#### Removed
+* Old code from MainParser
+
+#### Fixed
+* `CsBlockParser.readClassIdentifierAndExtends()` was incorrectly trying to parse `new {` object initializer blocks as class declarations
+* DataTypeExtractor was reversing the parameter order of multi-paremeter generic types
+
+
+--------
+### [0.15.3](https://github.com/TeamworkGuy2/JParseCode/commit/7704ebf8f49e2841dc9e362fef1752252e283b71) - 2017-12-30
 #### Changed
 * Update dependency `jtwg2-logging@0.3.0`
 

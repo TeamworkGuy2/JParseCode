@@ -23,7 +23,7 @@ namespace ParserExamples.Services
         [WebInvoke(Method = "POST", UriTemplate = "/TrackSearch",
             RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         [TransactionFlow(TransactionFlowOption.Allowed)]
-        SearchResult<TrackInfo> Search(TrackSearchCriteria criteria) { ; }
+        SearchResult<TrackInfo<string>, AlbumInfo<string>> Search(TrackSearchCriteria criteria) { ; }
 
         /// <summary>
         /// Searches tracks that have past due date.

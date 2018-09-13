@@ -37,7 +37,7 @@ public class MethodSigResolver {
 			val genericParamType = DataTypeExtractor.extractGenericTypes(paramSig.getTypeSimpleName(), keywordUtil);
 			val resolvedParamType = TypeSigResolver.resolveFrom(genericParamType, namespaceClass, projFiles, missingNamespacesDst);
 
-			val newParamSig = new ParameterSigResolved(paramSig.getName(), resolvedParamType, paramSig.getParameterModifiers(), paramSig.isOptional(), paramSig.getDefaultValue());
+			val newParamSig = new ParameterSigResolved(paramSig.getName(), resolvedParamType, paramSig.getParameterModifiers(), paramSig.getAnnotations(), paramSig.isOptional(), paramSig.getDefaultValue());
 			resolvedParamSigs.add(newParamSig);
 		}
 

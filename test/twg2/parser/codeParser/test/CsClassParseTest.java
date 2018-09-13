@@ -9,6 +9,7 @@ import static twg2.parser.test.utils.TypeAssert.ls;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -77,7 +78,7 @@ public class CsClassParseTest {
 		"    public DateTime[] accesses { set { this.mod++; this.accesses = value; } }",
 		"",
 		"    /// <value>The access timestamps.</value>",
-		"    public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }",
+		"    public string name { get { this.mod++; return this.name != null ? this._name : \"\"; } set { this.mod++; this._name = value; } }",
 		"",
 		"    /// <summary>Add name</summary>",
 		"    /// <param name=\"name\">the name</param>",
@@ -86,8 +87,8 @@ public class CsClassParseTest {
 		"    [WebInvoke(Method = \"POST\", UriTemplate = \"/AddName?name={name}\",",
 		"        ResponseFormat = WebMessageFormat.Json)]",
 		"    [TransactionFlow(TransactionFlowOption.Allowed)]",
-		"    Result<IList<String>> AddName(string name) {",
-		"        content of block;",
+		"    Result<IList<String>> AddName([NotNull]string name, int zest = 0) {",
+		"        content = block ? yes : no;",
 		"    }",
 		"",
 		"    /// <summary>Set names</summary>",
@@ -97,7 +98,8 @@ public class CsClassParseTest {
 		"    [WebInvoke(Method = \"PUT\", UriTemplate = \"/SetNames?names={names}\",",
 		"        ResponseFormat = WebMessageFormat.Json)]",
 		"    IList<int?> SetNames(this SimpleCs inst, ref Constraints constraints, params string[] names) {",
-		"        content of SetNames;",
+		"        new { data = SetNames };",
+		"        : new Dictionary<string, object> { content = value } : new { content = object };",
 		"    }",
 		"",
 		"  }",
@@ -170,13 +172,16 @@ public class CsClassParseTest {
 		// methods:
 		Assert.assertEquals(2, clas.getMethods().size());
 
-		// AddName()
+		// AddName(...)
 		MethodSigSimple m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.fullName));
-		List<ParameterSig> ps = m.paramSigs;
-		assertParameter(ps, 0, "name", "string", null, Arrays.asList(" <summary>Add name</summary>\n",
+		Assert.assertEquals(Arrays.asList(" <summary>Add name</summary>\n",
 				" <param name=\"name\">the name</param>\n",
-				" <returns>the names</returns>\n"));
+				" <returns>the names</returns>\n"), m.comments);
+		List<ParameterSig> ps = m.paramSigs;
+		Assert.assertEquals(2, ps.size());
+		assertParameter(ps, 0, "name", "string", null, Arrays.asList(new AnnotationSig("NotNull", NameUtil.splitFqName("NotNull"), Collections.emptyMap())));
+		assertParameter(ps, 1, "zest", "int", null, null);
 		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
 		assertAnnotation(m.annotations, 0, "OperationContract", new String[0], new String[0]);
@@ -190,7 +195,7 @@ public class CsClassParseTest {
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
 		assertType(ls("Result", ls("IList", ls("String"))), m.returnType);
 
-		// SetNames()
+		// SetNames(...)
 		m = clas.getMethods().get(1);
 		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.fullName));
 		List<ParameterSig> params = m.paramSigs;
