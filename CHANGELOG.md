@@ -4,7 +4,16 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.4](N/A) - 2018-09-13
+### [0.15.5](N/A) - 2018-09-14
+#### Changed
+* `ParserWorkFlow` returns the `-help` message if no arguments are given when run
+
+#### Fixed
+* `bin/jparse_code.jar` wasn't properly compiled as a runnable jar
+
+
+--------
+### [0.15.4](https://github.com/TeamworkGuy2/JParseCode/commit/bb9f2d6d58967c622505453a97933a7c895b2630) - 2018-09-13
 #### Added
 * Annotations to parameter signatures (with basic parameter annotation parsing added to `MethodParametersParser.extractParamsFromSignature()`)
 * Documented DataTypeExtractor methods
@@ -19,7 +28,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 #### Fixed
 * `CsBlockParser.readClassIdentifierAndExtends()` was incorrectly trying to parse `new {` object initializer blocks as class declarations
-* DataTypeExtractor was reversing the parameter order of multi-paremeter generic types
+* `DataTypeExtractor` was reversing the parameter order of multi-paremeter generic types
 
 
 --------

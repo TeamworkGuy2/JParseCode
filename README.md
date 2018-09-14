@@ -1,6 +1,6 @@
 JParseCode
 ==============
-version: 0.15.4
+version: 0.15.5
 
 In progress C#/Java/TypeScript parser tools built atop [JTextParser](https://github.com/TeamworkGuy2/JTextParser), [Jackson](https://github.com/FasterXML/jackson-core/) (core, databind, annotations) and half a dozen other utility libraries. 
 

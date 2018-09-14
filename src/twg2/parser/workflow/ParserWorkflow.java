@@ -369,7 +369,7 @@ public class ParserWorkflow {
 
 
 	public static ParserWorkflow parseArgs(String[] args) {
-		if(Arrays.asList("-help", "--help", "-h").contains(args[0]) || args.length == 0) {
+		if(args.length == 0 || Arrays.asList("-help", "--help", "-h").contains(args[0])) {
 			System.out.println("An in-progress suite of parsing tools for C#, Java, and TypeScript source code.\n" +
 				"Used to create basic ASTs containing class signatures, fields, and methods. (source: https://github.com/TeamworkGuy2/JParserTools)\n" +
 				"example command:\n" +
