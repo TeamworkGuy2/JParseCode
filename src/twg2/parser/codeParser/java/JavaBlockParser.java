@@ -83,7 +83,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.JAVA;
 		val typeParser = new DataTypeExtractor(lang, true);
-		return new MethodExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser);
+		return new MethodExtractor(lang.displayName(), JavaKeyword.check, lang.getOperatorUtil(), block, typeParser, annotationParser, commentParser);
 	}
 
 

@@ -129,8 +129,13 @@ public class TypeAssert {
 	}
 
 
-	public static Object[] ls(Object... s) {
+	public static Object[] ary(Object... s) {
 		return s;
 	}
 
+
+	@SafeVarargs
+	public static <T> List<T> ls(T... s) {
+		return Arrays.asList(s);
+	}
 }

@@ -84,7 +84,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		val lang = CodeLanguageOptions.C_SHARP;
 		val typeParser = new DataTypeExtractor(lang, true);
-		return new MethodExtractor(lang.displayName(), CsKeyword.check, block, typeParser, annotationParser, commentParser);
+		return new MethodExtractor(lang.displayName(), CsKeyword.check, lang.getOperatorUtil(), block, typeParser, annotationParser, commentParser);
 	}
 
 

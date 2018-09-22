@@ -11,6 +11,8 @@ import twg2.ast.interm.type.TypeSig;
 import twg2.parser.codeParser.AccessModifier;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
+import twg2.parser.codeParser.Operator;
+import twg2.parser.codeParser.OperatorUtil;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.CodeToken;
@@ -37,6 +39,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	KeywordUtil<? extends AccessModifier> keywordUtil;
+	OperatorUtil<? extends Operator> operatorUtil;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.TypeSigSimple> typeParser;
@@ -51,10 +54,11 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
 	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
 	 */
-	public MethodExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock,
+	public MethodExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, OperatorUtil<? extends Operator> operatorUtil, BlockAst<? extends BlockType> parentBlock,
 			AstParser<TypeSig.TypeSigSimple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		super(langName, "method signature", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
+		this.operatorUtil = operatorUtil;
 		this.methods = new ArrayList<>();
 		this.typeParser = typeParser;
 		this.annotationParser = annotationParser;
@@ -170,7 +174,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 			val comments = new ArrayList<>(commentParser.getParserResult());
 			commentParser.recycle();
 
-			val params = MethodParametersParser.extractParamsFromSignature(keywordUtil, annotationParser, tokenNode);
+			val params = MethodParametersParser.extractParamsFromSignature(keywordUtil, operatorUtil, annotationParser, tokenNode);
 			val accessMods = new ArrayList<>(accessModifiers);
 			annotationParser.recycle();
 
@@ -199,7 +203,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 	@Override
 	public MethodExtractor copy() {
-		val copy = new MethodExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
+		val copy = new MethodExtractor(this.langName, this.keywordUtil, this.operatorUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
 		return copy;
 	}
 

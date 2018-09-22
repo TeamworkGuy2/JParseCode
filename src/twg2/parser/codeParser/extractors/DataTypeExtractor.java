@@ -129,17 +129,24 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	}
 
 
-	/** Check if a tree node is a boolean literal
+	/** Check if a {@link CodeToken} is a boolean literal
 	 */
 	public static boolean isBooleanLiteral(CodeToken node) {
 		return node.getTokenType() == CodeTokenType.KEYWORD && ("true".equals(node.getText()) || "false".equals(node.getText()));
 	}
 
 
-	/** Check if a tree node is a null literal
+	/** Check if a {@link CodeToken} is a null literal
 	 */
 	public static boolean isNullLiteral(CodeToken node) {
 		return node.getTokenType() == CodeTokenType.KEYWORD && "null".equals(node.getText());
+	}
+
+
+	/** Check if a {@link CodeToken} is a numeric literal, a boolean literal, or a null literal
+	 */
+	public static boolean isDefaultValueLiteral(CodeToken node) {
+		return (node.getTokenType() == CodeTokenType.NUMBER || DataTypeExtractor.isBooleanLiteral(node) || DataTypeExtractor.isNullLiteral(node));
 	}
 
 

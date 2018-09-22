@@ -73,7 +73,7 @@ public class FieldDef extends FieldSig {
 		boolean isNumOrBoolOrNull = false;
 		if(astNode != null && !astNode.hasChildren() && (data = astNode.getData()) != null &&
 				(data.getTokenType() == CodeTokenType.STRING ||
-				(isNumOrBoolOrNull = (data.getTokenType() == CodeTokenType.NUMBER || DataTypeExtractor.isBooleanLiteral(data) || DataTypeExtractor.isNullLiteral(data))))) {
+				(isNumOrBoolOrNull = DataTypeExtractor.isDefaultValueLiteral(data)))) {
 			if(preClosingComma) {
 				dst.append(", ");
 			}

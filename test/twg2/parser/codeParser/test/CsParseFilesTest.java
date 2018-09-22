@@ -1,12 +1,12 @@
 package twg2.parser.codeParser.test;
 
 import static twg2.parser.test.utils.TypeAssert.assertType;
+import static twg2.parser.test.utils.TypeAssert.ary;
 import static twg2.parser.test.utils.TypeAssert.ls;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -49,10 +49,10 @@ public class CsParseFilesTest {
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		ParserMisc.parseFileSet(Arrays.asList(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader, null);
+		ParserMisc.parseFileSet(ls(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader, null);
 		ProjectClassSet.Resolved<CsBlock> resFileSet = ProjectClassSet.resolveClasses(projFiles, CsBlock.CLASS, missingNamespaces);
 
-		List<CodeFileParsed.Resolved<CsBlock>> res = resFileSet.getCompilationUnitsStartWith(Arrays.asList(""));
+		List<CodeFileParsed.Resolved<CsBlock>> res = resFileSet.getCompilationUnitsStartWith(ls(""));
 
 		// get a subset of all the parsed files
 		for(CodeFileParsed.Resolved<CsBlock> classInfo : res) {
@@ -77,10 +77,10 @@ public class CsParseFilesTest {
 	@Test
 	public void checkResolvedClasses() {
 		// TrackInfo : ISerializable, IComparable<TrackInfo>
-		Assert.assertArrayEquals(ls("ParserExamples", "Models", "TrackInfo"), trackInfoDef.getSignature().getFullName().toArray());
-		assertType(ls("ISerializable"), trackInfoDef.getSignature().getExtendClass());
+		Assert.assertArrayEquals(ary("ParserExamples", "Models", "TrackInfo"), trackInfoDef.getSignature().getFullName().toArray());
+		assertType(ary("ISerializable"), trackInfoDef.getSignature().getExtendClass());
 		Assert.assertEquals(1, trackInfoDef.getSignature().getImplementInterfaces().size());
-		assertType(ls("IComparable", ls("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(0));
+		assertType(ary("IComparable", ary("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(0));
 	}
 
 
@@ -97,7 +97,6 @@ public class CsParseFilesTest {
 		Assert.assertEquals("ParserExamples.Models.AlbumInfo", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(0).getFullName()));
 		Assert.assertEquals("IList", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(1).getFullName()));
 		Assert.assertEquals("ParserExamples.Models.TrackInfo", NameUtil.joinFqName(mthd2Ret.getParams().get(0).getParams().get(1).getParams().get(0).getFullName()));
-
 	}
 
 }

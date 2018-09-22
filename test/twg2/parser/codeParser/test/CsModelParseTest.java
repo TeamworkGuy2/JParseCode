@@ -2,9 +2,9 @@ package twg2.parser.codeParser.test;
 
 import static twg2.parser.test.utils.AnnotationAssert.assertAnnotation;
 import static twg2.parser.test.utils.MethodAssert.assertParameter;
+import static twg2.parser.test.utils.TypeAssert.ls;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -30,7 +30,7 @@ import static twg2.parser.test.utils.TypeAssert.*;
  * @since 2016-1-1
  */
 public class CsModelParseTest {
-	private static List<String> srcLines = Arrays.asList(
+	private static List<String> srcLines = ls(
 		"namespace ParserExamples.Samples {",
 		"",
 		"  /// <summary>",
@@ -88,13 +88,13 @@ public class CsModelParseTest {
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 
 		assertField(fs, 0, fullClassName + ".mod", "int");
-		Assert.assertEquals(Arrays.asList(" <value>The modification count.</value>\n"), fs.get(0).getComments());
+		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fs.get(0).getComments());
 		// annotations: [MultiLineAnnotation(Alpha = "alpha-1", Beta = Double.TYPE, Charlie = 3)]
 		assertAnnotation(fs.get(0).getAnnotations(), 0, "MultiLineAnnotation", new String[] { "Alpha", "Beta", "Charlie" }, "alpha-1", "Double.TYPE", "3");
 
 		assertField(fs, 1, fullClassName + "._name", "string");
-		assertField(fs, 2, fullClassName + ".Props", ls("IDictionary", ls("int", "string")));
-		assertField(fs, 3, fullClassName + ".hiddenField", ls("IList", ls("string")));
+		assertField(fs, 2, fullClassName + ".Props", ary("IDictionary", ary("int", "string")));
+		assertField(fs, 3, fullClassName + ".hiddenField", ary("IList", ary("string")));
 
 		// methods:
 		Assert.assertEquals(1, clas.getMethods().size());
@@ -102,19 +102,19 @@ public class CsModelParseTest {
 		// SetProps()
 		MethodSigSimple m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".SetProps", NameUtil.joinFqName(m.fullName));
-		Assert.assertEquals(Arrays.asList(" <summary>Set properties</summary>\n",
+		Assert.assertEquals(ls(" <summary>Set properties</summary>\n",
 				" <param name=\"props\">the properties</param>\n",
 				" <returns>the properties</returns>\n"), m.comments);
 		List<ParameterSig> ps = m.paramSigs;
-		assertParameter(ps, 0, "inst", "SimpleCs", Arrays.asList(CsKeyword.THIS), null);
-		assertParameter(ps, 1, "constraints", "Constraints", Arrays.asList(CsKeyword.REF), null);
-		assertParameter(ps, 2, "props", "List<string>[]", Arrays.asList(CsKeyword.PARAMS), null);
+		assertParameter(ps, 0, "inst", "SimpleCs", null, ls(CsKeyword.THIS), null);
+		assertParameter(ps, 1, "constraints", "Constraints", null, ls(CsKeyword.REF), null);
+		assertParameter(ps, 2, "props", "List<string>[]", null, ls(CsKeyword.PARAMS), null);
 		// annotations:
 		// [SetterAnnotation(Prop = "Props", UriTemplate = "/SetProps?props={props}", ResponseFormat = WebMessageFormat.Json)]
 		assertAnnotation(m.annotations, 0, "SetterAnnotation", new String[] { "Prop", "UriTemplate", "ResponseFormat" }, new String[] { "Props", "/SetProps?props={props}", "WebMessageFormat.Json" });
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		assertType(ls("IList", ls("int")), m.returnType);
+		assertType(ary("IList", ary("int")), m.returnType);
 	}
 
 }

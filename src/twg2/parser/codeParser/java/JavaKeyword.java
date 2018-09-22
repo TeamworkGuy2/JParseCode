@@ -70,7 +70,7 @@ public enum JavaKeyword implements AccessModifier {
 	WHILE("while");
 
 
-	public static final Inst check = new JavaKeyword.Inst();
+	public static final JavaKeywordUtil check = new JavaKeyword.JavaKeywordUtil();
 
 	public final String srcName;
 	public final boolean isType;
@@ -118,7 +118,7 @@ public enum JavaKeyword implements AccessModifier {
 
 
 	@Accessors(fluent = true)
-	public static class Inst implements KeywordUtil<JavaKeyword> {
+	public static class JavaKeywordUtil implements KeywordUtil<JavaKeyword> {
 		public final String[] keywords;
 		private final JavaKeyword[] values;
 		private final String[] primitives;

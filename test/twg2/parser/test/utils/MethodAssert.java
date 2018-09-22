@@ -14,10 +14,11 @@ import twg2.parser.codeParser.AccessModifier;
  */
 public class MethodAssert {
 
-	public static void assertParameter(List<ParameterSig> params, int idx, String name, String type, List<? extends AccessModifier> accessMods, List<? extends AnnotationSig> annotations) {
+	public static void assertParameter(List<ParameterSig> params, int idx, String name, String type, String defaultValue, List<? extends AccessModifier> accessMods, List<? extends AnnotationSig> annotations) {
 		ParameterSig p = params.get(idx);
 		Assert.assertEquals(name, p.getName());
 		Assert.assertEquals(type, p.getTypeSimpleName());
+		Assert.assertEquals(defaultValue, p.getDefaultValue());
 		if(accessMods != null) {
 			Assert.assertEquals(accessMods, p.getParameterModifiers());
 		}

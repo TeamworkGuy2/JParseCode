@@ -94,7 +94,7 @@ public enum CsKeyword implements AccessModifier {
 	WHILE("while");
 
 
-	public static final CsKeyword.Inst check = new CsKeyword.Inst();
+	public static final CsKeyword.CsKeywordUtil check = new CsKeyword.CsKeywordUtil();
 
 	public final String srcName;
 	public final boolean isType;
@@ -146,7 +146,7 @@ public enum CsKeyword implements AccessModifier {
 	 * @since 2016-1-14
 	 */
 	@Accessors(fluent = true)
-	public static class Inst implements KeywordUtil<CsKeyword> {
+	public static class CsKeywordUtil implements KeywordUtil<CsKeyword> {
 		public final String[] keywords;
 		private final CsKeyword[] values;
 		private final String[] primitives;

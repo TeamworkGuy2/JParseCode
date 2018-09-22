@@ -4,7 +4,19 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.5](N/A) - 2018-09-14
+### [0.15.6](N/A) - 2018-09-22
+#### Added
+* Parameter default value parsing support added to `MethodParametersParser`
+* Added `DataTypeExtractor.isDefaultValueLiteral()` to check for field/parameter default values
+
+#### Changed
+* Renamed `CsKeyword.Inst` -> `CsKeyword.CsKeywordUtil`
+* Renamed `JavaKeyword.Inst` -> `JavaKeyword.JavaKeywordUtil`
+* Unit tests changed to use static imports of `TypeAssert.ary()` instead of `new Object[] {...}` and `TypeAssert.ls()` instead of `Arrays.asList()`
+
+
+--------
+### [0.15.5](https://github.com/TeamworkGuy2/JParseCode/commit/cac4e10c769b47ec3b73e2e716befc19ab1876f4) - 2018-09-14
 #### Changed
 * `ParserWorkFlow` returns the `-help` message if no arguments are given when run
 

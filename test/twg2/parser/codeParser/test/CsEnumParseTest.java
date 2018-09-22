@@ -1,6 +1,7 @@
 package twg2.parser.codeParser.test;
 
-import java.util.Arrays;
+import static twg2.parser.test.utils.TypeAssert.ls;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -21,7 +22,7 @@ import twg2.parser.workflow.CodeFileParsed;
  * @since 2016-1-1
  */
 public class CsEnumParseTest {
-	private static final CodeFileAndAst<CsBlock> simpleEnumCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleEnumCs.cs", "ParserExamples.Samples.SimpleEnumCs", true, Arrays.asList(
+	private static final CodeFileAndAst<CsBlock> simpleEnumCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleEnumCs.cs", "ParserExamples.Samples.SimpleEnumCs", true, ls(
 		"namespace ParserExamples.Samples {",
 		"",
 		"  /// <summary>",
@@ -55,7 +56,7 @@ public class CsEnumParseTest {
 		FieldSig f = enums.get(0);
 		Assert.assertEquals(fullClassName + ".Fields", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("short", f.getFieldType().getTypeName());
-		Assert.assertEquals(Arrays.asList(" <value>The fields enum</value>\n"), f.getComments());
+		Assert.assertEquals(ls(" <value>The fields enum</value>\n"), f.getComments());
 
 		f = enums.get(1);
 		Assert.assertEquals(fullClassName + ".Methods", NameUtil.joinFqName(f.getFullName()));
@@ -64,7 +65,7 @@ public class CsEnumParseTest {
 		f = enums.get(2);
 		Assert.assertEquals(fullClassName + ".Classes", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals("short", f.getFieldType().getTypeName());
-		Assert.assertEquals(Arrays.asList(" <value>The classes enum</value>\n"), f.getComments());
+		Assert.assertEquals(ls(" <value>The classes enum</value>\n"), f.getComments());
 	}
 
 }

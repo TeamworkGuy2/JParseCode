@@ -4,11 +4,11 @@ import static twg2.parser.test.utils.AnnotationAssert.assertAnnotation;
 import static twg2.parser.test.utils.FieldAssert.assertField;
 import static twg2.parser.test.utils.MethodAssert.assertParameter;
 import static twg2.parser.test.utils.TypeAssert.assertType;
+import static twg2.parser.test.utils.TypeAssert.ary;
 import static twg2.parser.test.utils.TypeAssert.ls;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,7 +41,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2016-1-1
  */
 public class CsClassParseTest {
-	private static List<String> srcLines = Arrays.asList(
+	private static List<String> srcLines = ls(
 		"namespace ParserExamples.Samples {",
 		"",
 		"  /// <summary>",
@@ -111,7 +111,7 @@ public class CsClassParseTest {
 	private CodeFileAndAst<CsBlock> simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, srcLines);
 
 	@Parameter
-	private CodeFileSrc file = ParseCodeFile.parseFiles(Arrays.asList(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
+	private CodeFileSrc file = ParseCodeFile.parseFiles(ls(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
 
 
 	public CsClassParseTest() throws IOException {
@@ -128,6 +128,8 @@ public class CsClassParseTest {
 		ClassAst.SimpleImpl<CsBlock> trackInfoBlock = blocks.get(0).getValue();
 		Assert.assertEquals(CsBlock.CLASS, trackInfoBlock.getBlockType());
 		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
+
+		Assert.assertEquals(ls("ISerializable", "IComparable<TrackInfo>"), trackInfoBlock.getSignature().getExtendImplementSimpleNames());
 	}
 
 
@@ -145,9 +147,9 @@ public class CsClassParseTest {
 
 		List<FieldSig> fs = clas.getFields();
 		assertField(fs, 0, fullClassName + ".mod", "int");
-		Assert.assertEquals(Arrays.asList(" <value>The modification count.</value>\n"), fs.get(0).getComments());
-		// annotation: EmptyAnnotation()
+		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fs.get(0).getComments());
 		List<AnnotationSig> as = fs.get(0).getAnnotations();
+		// annotation: EmptyAnnotation()
 		assertAnnotation(as, 0, "EmptyAnnotation", new String[0], new String[0]);
 		// annotation: IntAnnotation(-1)
 		assertAnnotation(as, 1, "IntAnnotation", new String[] { "value" }, "-1");
@@ -163,7 +165,7 @@ public class CsClassParseTest {
 		assertAnnotation(as, 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
 		assertField(fs, 1, fullClassName + "._name", "string");
-		assertField(fs, 2, fullClassName + ".Names", ls("IList", ls("string")));
+		assertField(fs, 2, fullClassName + ".Names", ary("IList", ary("string")));
 		assertField(fs, 3, fullClassName + ".Count", "int");
 		assertField(fs, 4, fullClassName + ".C2", "float");
 		assertField(fs, 5, fullClassName + ".C3", "decimal");
@@ -175,13 +177,13 @@ public class CsClassParseTest {
 		// AddName(...)
 		MethodSigSimple m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".AddName", NameUtil.joinFqName(m.fullName));
-		Assert.assertEquals(Arrays.asList(" <summary>Add name</summary>\n",
+		Assert.assertEquals(ls(" <summary>Add name</summary>\n",
 				" <param name=\"name\">the name</param>\n",
 				" <returns>the names</returns>\n"), m.comments);
 		List<ParameterSig> ps = m.paramSigs;
 		Assert.assertEquals(2, ps.size());
-		assertParameter(ps, 0, "name", "string", null, Arrays.asList(new AnnotationSig("NotNull", NameUtil.splitFqName("NotNull"), Collections.emptyMap())));
-		assertParameter(ps, 1, "zest", "int", null, null);
+		assertParameter(ps, 0, "name", "string", null, null, ls(new AnnotationSig("NotNull", NameUtil.splitFqName("NotNull"), Collections.emptyMap())));
+		assertParameter(ps, 1, "zest", "int", "0", null, null);
 		// annotations:
 		//{"name": "OperationContract", "arguments": {  } },
 		assertAnnotation(m.annotations, 0, "OperationContract", new String[0], new String[0]);
@@ -193,15 +195,15 @@ public class CsClassParseTest {
 		assertAnnotation(m.annotations, 2, "TransactionFlow", new String[] { "value" }, new String[] { "TransactionFlowOption.Allowed" });
 
 		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		assertType(ls("Result", ls("IList", ls("String"))), m.returnType);
+		assertType(ary("Result", ary("IList", ary("String"))), m.returnType);
 
 		// SetNames(...)
 		m = clas.getMethods().get(1);
 		Assert.assertEquals(fullClassName + ".SetNames", NameUtil.joinFqName(m.fullName));
-		List<ParameterSig> params = m.paramSigs;
-		assertParameter(params, 0, "inst", "SimpleCs", Arrays.asList(CsKeyword.THIS), null);
-		assertParameter(params, 1, "constraints", "Constraints", Arrays.asList(CsKeyword.REF), null);
-		assertParameter(params, 2, "names", "string[]", Arrays.asList(CsKeyword.PARAMS), null);
+		ps = m.paramSigs;
+		assertParameter(ps, 0, "inst", "SimpleCs", null, ls(CsKeyword.THIS), null);
+		assertParameter(ps, 1, "constraints", "Constraints", null, ls(CsKeyword.REF), null);
+		assertParameter(ps, 2, "names", "string[]", null, ls(CsKeyword.PARAMS), null);
 	}
 
 }

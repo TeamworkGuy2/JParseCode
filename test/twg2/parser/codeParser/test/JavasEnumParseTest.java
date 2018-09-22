@@ -1,6 +1,7 @@
 package twg2.parser.codeParser.test;
 
-import java.util.Arrays;
+import static twg2.parser.test.utils.TypeAssert.ls;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -21,7 +22,7 @@ import twg2.parser.workflow.CodeFileParsed;
  * @since 2016-1-1
  */
 public class JavasEnumParseTest {
-	private static final CodeFileAndAst<JavaBlock> simpleEnumJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleEnumJava.java", "ParserExamples.Samples.SimpleEnumJava", true, Arrays.asList(
+	private static final CodeFileAndAst<JavaBlock> simpleEnumJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleEnumJava.java", "ParserExamples.Samples.SimpleEnumJava", true, ls(
 		"package ParserExamples.Samples;",
 		"",
 		"/** A simple enum to test parsing.",
@@ -67,14 +68,14 @@ public class JavasEnumParseTest {
 
 		FieldSig f = enums.get(0);
 		Assert.assertEquals(fullClassName + ".Fields", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals(Arrays.asList(" The fields enum\n"), f.getComments());
+		Assert.assertEquals(ls(" The fields enum\n"), f.getComments());
 
 		f = enums.get(1);
 		Assert.assertEquals(fullClassName + ".Methods", NameUtil.joinFqName(f.getFullName()));
 
 		f = enums.get(2);
 		Assert.assertEquals(fullClassName + ".Classes", NameUtil.joinFqName(f.getFullName()));
-		Assert.assertEquals(Arrays.asList(" The classes enum "), f.getComments());
+		Assert.assertEquals(ls(" The classes enum "), f.getComments());
 	}
 
 }
