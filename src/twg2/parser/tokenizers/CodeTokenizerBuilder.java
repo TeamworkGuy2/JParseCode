@@ -215,8 +215,8 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	 */
 	public static <D extends TextToken<S, T>, S, T> void removeChildren(SimpleTreeImpl<D> tree, List<SimpleTreeImpl<D>> children) {
 		for(int i = 0, size = children.size(); i < size; i++) {
-			SimpleTree<D> child = children.get(i);
-			boolean res = tree.removeChild(child);
+			SimpleTreeImpl<D> child = children.get(i);
+			boolean res = tree.removeChildRef(child);
 			if(res == false) {
 				throw new IllegalStateException("could not remove child '" + child + "' from tree '" + tree + "'");
 			}

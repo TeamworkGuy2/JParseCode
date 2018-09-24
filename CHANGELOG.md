@@ -4,7 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.6](N/A) - 2018-09-22
+### [0.15.7](N/A) - 2018-09-23
+#### Changed
+* Updated `CodeTokenizerBuilder.removeChildren()` to use `SimpleTreeImpl.removeChildRef()` instead of `removeChild()` for improved performance
+* Updated dependencies:
+  * jcollection-interfaces@0.3.0
+  * jcollection-util@0.7.5
+  * jtree-walker@0.2.0
+
+
+--------
+### [0.15.6](https://github.com/TeamworkGuy2/JParseCode/commit/1dfac7f27c9a2ae962a0f070083c48ef69405bd1) - 2018-09-22
 #### Added
 * Parameter default value parsing support added to `MethodParametersParser`
 * Added `DataTypeExtractor.isDefaultValueLiteral()` to check for field/parameter default values

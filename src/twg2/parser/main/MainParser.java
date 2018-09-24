@@ -25,7 +25,7 @@ public class MainParser {
 		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		// TODO for VisualVM pause
-		//Scanner in = new Scanner(System.in);
+		//java.util.Scanner in = new java.util.Scanner(System.in);
 		//System.out.print("press enter to continue: ");
 		//in.nextLine();
 

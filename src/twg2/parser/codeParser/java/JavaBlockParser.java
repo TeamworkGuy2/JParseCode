@@ -14,6 +14,7 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
+import twg2.collections.interfaces.ListReadOnly;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.extractors.AccessModifierExtractor;
 import twg2.parser.codeParser.extractors.BlockExtractor;
@@ -179,7 +180,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 	private static String parsePackageDeclaration(SimpleTree<CodeToken> astTree) {
 		val lang = CodeLanguageOptions.JAVA;
-		List<SimpleTree<CodeToken>> childs = null;
+		ListReadOnly<SimpleTree<CodeToken>> childs = null;
 		if(astTree.hasChildren() && (childs = astTree.getChildren()).size() > 1) {
 			if(lang.getAstUtil().isKeyword(childs.get(0).getData(), JavaKeyword.PACKAGE) &&
 					AstFragType.isIdentifier(childs.get(1).getData())) {
