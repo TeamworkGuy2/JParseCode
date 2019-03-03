@@ -4,7 +4,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.7](N/A) - 2018-09-23
+### [0.15.7](https://github.com/TeamworkGuy2/JParseCode/commit/b36432e04ec4757a2e58102e88e4fe55c65965c4) - 2018-09-23
 #### Changed
 * Updated `CodeTokenizerBuilder.removeChildren()` to use `SimpleTreeImpl.removeChildRef()` instead of `removeChild()` for improved performance
 * Updated dependencies:
@@ -14,7 +14,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.6](https://github.com/TeamworkGuy2/JParseCode/commit/1dfac7f27c9a2ae962a0f070083c48ef69405bd1) - 2018-09-22
+### [0.15.6](https://github.com/TeamworkGuy2/JParseCode/commit/d14366d6e4ad70ac7102c505d6d8fe900693f6b0) - 2018-09-22
 #### Added
 * Parameter default value parsing support added to `MethodParametersParser`
 * Added `DataTypeExtractor.isDefaultValueLiteral()` to check for field/parameter default values
@@ -26,7 +26,7 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.15.5](https://github.com/TeamworkGuy2/JParseCode/commit/cac4e10c769b47ec3b73e2e716befc19ab1876f4) - 2018-09-14
+### [0.15.5](https://github.com/TeamworkGuy2/JParseCode/commit/b1176a9f80f4d8eecb79831af4289224189a57df) - 2018-09-14
 #### Changed
 * `ParserWorkFlow` returns the `-help` message if no arguments are given when run
 
