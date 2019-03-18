@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.16.0](N/A) - 2019-03-17
+### [0.16.1](N/A) - 2019-03-17
+#### Fixed
+* Accidentally deleted compiled *.jar files in 0.16.0 release
+
+
+--------
+### [0.16.0](https://github.com/TeamworkGuy2/JParseCode/commit/21510d6f793b960193bb1b76f0276ecf09d62739) - 2019-03-17
 #### Added
 * Class signature annotation parsing (in `BlockExtractor`, `CsBlockParser`, and `JavaBlockParser`)
 
