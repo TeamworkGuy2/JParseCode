@@ -1,7 +1,6 @@
 package twg2.parser.resolver;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +11,8 @@ import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.classes.ClassSigResolved;
 import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.collections.builder.ListBuilder;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.extractors.DataTypeExtractor;
@@ -29,16 +29,17 @@ public class ClassSigResolver {
 	/** Resolves the {@link twg2.ast.interm.classes.ClassSigSimple#getExtendImplementSimpleNames()} into fully qualifying names and creates a new {@link ClassSig} with all other fields the same
 	 */
 	public static <T_ID, T_SIG extends ClassSigSimple, T_BLOCK extends BlockType> ClassSigResolved resolveClassSigFrom(
-			KeywordUtil<? extends AccessModifier> keywordUtil,
+			KeywordUtil<? extends Keyword> keywordUtil,
 			T_SIG classSig,
 			ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
-			ProjectClassSet<?, T_BLOCK, ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles,
+			ProjectClassSet<ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles,
 			BlockType defaultBlockType,
 			Collection<List<String>> missingNamespacesDst
 	) {
-		List<List<String>> resolvedParentNames = new ArrayList<>();
-		List<BlockType> resolvedParentBlockTypess = new ArrayList<>();
 		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();
+		int nameCnt = classExtendImplementNames.size();
+		List<List<String>> resolvedParentNames = new ArrayList<>(nameCnt);
+		List<BlockType> resolvedParentBlockTypess = new ArrayList<>(nameCnt);
 
 		if(classExtendImplementNames != null) {
 			for(val simpleName : classExtendImplementNames) {
@@ -49,7 +50,7 @@ public class ClassSigResolver {
 				}
 				else {
 					resolvedParentBlockTypess.add(defaultBlockType);
-					resolvedParentNames.add(new ArrayList<>(Arrays.asList(simpleName)));
+					resolvedParentNames.add(ListBuilder.mutable(simpleName));
 				}
 			}
 		}
@@ -71,7 +72,7 @@ public class ClassSigResolver {
 			}
 			// Get the implements interface names
 			if(resolvedParentBlockTypess.size() > (extendsClass ? 1 : 0)) {
-				implementInterfaceTypes = new ArrayList<>();
+				implementInterfaceTypes = new ArrayList<>(resolvedParentBlockTypess.size() - (extendsClass ? 1 : 0));
 				for(int i = extendsClass ? 1 : 0, size = resolvedParentBlockTypess.size(); i < size; i++) {
 					// if the extend/implement type is not a recognized interface and the name is resolved (resolved names are longer than 1 part, since all classes should come from a namespace)
 					// assume that unresolved names could be interfaces and don't count them against the 1 extend class limit
@@ -98,8 +99,8 @@ public class ClassSigResolver {
 
 		val classFqName = classSig.getFullName();
 
-		val res = new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getDeclarationType(),
-				extendClassType, implementInterfaceTypes);
+		val res = new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getAnnotations(),
+				classSig.getDeclarationType(), extendClassType, implementInterfaceTypes);
 		return res;
 	}
 

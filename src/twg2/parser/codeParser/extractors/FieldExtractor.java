@@ -8,7 +8,7 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -38,18 +38,18 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	}
 
 
-	KeywordUtil<? extends AccessModifier> keywordUtil;
+	KeywordUtil<? extends Keyword> keywordUtil;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.TypeSigSimple> typeParser;
-	List<AccessModifier> accessModifiers = new ArrayList<>();
+	List<Keyword> accessModifiers = new ArrayList<>();
 	List<FieldSig> fields = new ArrayList<>();
 	TypeSig.TypeSigSimple fieldTypeSig;
 	String fieldName;
 	AstTypeChecker<?> typeChecker;
 
 
-	public FieldExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock,
+	public FieldExtractor(String langName, KeywordUtil<? extends Keyword> keywordUtil, BlockAst<? extends BlockType> parentBlock,
 			AstParser<TypeSig.TypeSigSimple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser, AstTypeChecker<?> typeChecker) {
 		super(langName, "field", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
@@ -119,7 +119,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 
 
 	private Consume findingAccessModifiers(SimpleTree<CodeToken> tokenNode) {
-		AccessModifier accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
+		Keyword accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
 			return Consume.ACCEPTED;

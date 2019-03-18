@@ -4,6 +4,27 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
+### [0.16.0](N/A) - 2019-03-17
+#### Added
+* Class signature annotation parsing (in `BlockExtractor`, `CsBlockParser`, and `JavaBlockParser`)
+
+#### Changed
+* Simplified `ProjectClassSet` (removed two unnecessary generic parameters, renamed private fields):
+  * Renamed `resolveSimpleNameToClass()` -> `resolveClassNameAgainstNamespaces()`
+  * Renamed `resolveSimpleNameToClassSingleNamespace()` -> `resolveClassNameAgainstNamespace()`
+* Performance improvements to collection allocations in `NameUtil` and `ClassSigResolver`
+* Renamed `AccessModifier` interface to `Keyword`
+* `PerformanceTrackers.getTopParseTimes()` and `getTopParseStepDetails()` switched first parameter from `javax.swing.SortOrder` to `boolean`
+
+#### Removed
+* Unused `AstNodeConsumer` and `AstNodePredicate` interfaces
+* Removed lombok.val usage/dependency from several classes and packages in favor of Java 10 `var` or actual type.
+
+#### Fixed
+* Bug in TokenizeStepLogger trying to `StringCase.toCamelCase()` action names
+
+
+--------
 ### [0.15.7](https://github.com/TeamworkGuy2/JParseCode/commit/b36432e04ec4757a2e58102e88e4fe55c65965c4) - 2018-09-23
 #### Changed
 * Updated `CodeTokenizerBuilder.removeChildren()` to use `SimpleTreeImpl.removeChildRef()` instead of `removeChild()` for improved performance
@@ -118,7 +139,7 @@ Simplified class names and generic type signatures:
 --------
 ### [0.14.2](https://github.com/TeamworkGuy2/JParseCode/commit/c9ff08c26752a18e8f38e4365181876d81461190) - 2017-02-06
 #### Changed
-* Removed lombok.val usage/dependency from from test classes.
+* Removed lombok.val usage/dependency from test classes.
 
 #### Fixed
 * Fixed parsing C# classes that extend/implement multiple types, unrecognized types are assumed to possibly be interfaces.

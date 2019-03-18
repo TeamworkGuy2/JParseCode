@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import lombok.Getter;
-import lombok.val;
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.io.files.FileUtil;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringPad;
-
 
 /**
  * @author TeamworkGuy2
@@ -101,7 +99,7 @@ public class ParseTimes implements JsonWritableSig {
 	public static final void toJsons(Map<String, ParseTimes> fileParseTimes, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
 		JsonStringify.inst.joinConsume(fileParseTimes.entrySet(), ",\n", dst, (entry) -> {
-			val stat = entry.getValue();
+			var stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);
 		});
@@ -111,10 +109,10 @@ public class ParseTimes implements JsonWritableSig {
 
 	public static final String toStrings(Map<String, ParseTimes> fileParseTimes) {
 		long total = 0;
-		val sb = new StringBuilder();
+		var sb = new StringBuilder();
 
-		for(val entry : fileParseTimes.entrySet()) {
-			val stat = entry.getValue();
+		for(var entry : fileParseTimes.entrySet()) {
+			var stat = entry.getValue();
 			long subtotal = stat.setupNs + stat.loadNs + stat.tokenizeNs + stat.parseNs;
 			total += subtotal;
 

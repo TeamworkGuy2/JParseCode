@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.method.ParameterSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.Operator;
 import twg2.parser.codeParser.OperatorUtil;
@@ -23,7 +23,7 @@ import twg2.treeLike.simpleTree.SimpleTree;
 public class MethodParametersParser {
 
 	// TODO does not support default parameters
-	public static List<ParameterSig> extractParamsFromSignature(KeywordUtil<? extends AccessModifier> keywordUtil, OperatorUtil<? extends Operator> operatorUtil,
+	public static List<ParameterSig> extractParamsFromSignature(KeywordUtil<? extends Keyword> keywordUtil, OperatorUtil<? extends Operator> operatorUtil,
 			AstParser<List<AnnotationSig>> annotationParser, SimpleTree<CodeToken> sigNode) {
 		val childs = sigNode.getChildren();
 		int size = childs.size();
@@ -49,7 +49,7 @@ public class MethodParametersParser {
 			CodeToken token = childs.get(i + 0).getData();
 
 			// read parameter modifiers
-			List<AccessModifier> paramMods = new ArrayList<>(1);
+			List<Keyword> paramMods = new ArrayList<>(1);
 			if(token.getTokenType() == CodeTokenType.KEYWORD && keywordUtil.isParameterModifier(token.getText(), params.size())) {
 				paramMods.add(keywordUtil.toKeyword(token.getText()));
 				i++;

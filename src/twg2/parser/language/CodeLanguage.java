@@ -3,7 +3,7 @@ package twg2.parser.language;
 import java.util.List;
 import java.util.function.Function;
 
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.codeParser.BlockType;
@@ -21,7 +21,7 @@ public interface CodeLanguage {
 
 	public AstUtil<? extends BlockType, ?> getAstUtil();
 
-	public KeywordUtil<? extends AccessModifier> getKeywordUtil();
+	public KeywordUtil<? extends Keyword> getKeywordUtil();
 
 	public OperatorUtil<? extends Operator> getOperatorUtil();
 

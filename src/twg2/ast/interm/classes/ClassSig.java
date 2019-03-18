@@ -2,7 +2,7 @@ package twg2.ast.interm.classes;
 
 import java.util.List;
 
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.output.JsonWritableSig;
 
 /**
@@ -11,7 +11,7 @@ import twg2.parser.output.JsonWritableSig;
  */
 public interface ClassSig extends JsonWritableSig {
 
-	public AccessModifier getAccessModifier();
+	public Keyword getAccessModifier();
 
 	public List<String> getFullName();
 

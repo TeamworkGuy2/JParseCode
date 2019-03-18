@@ -9,6 +9,7 @@ import lombok.val;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
+import twg2.parser.output.WriteSettings;
 import twg2.parser.workflow.ParserWorkflow;
 
 /**
@@ -39,18 +40,19 @@ public class MainParser {
 		//ParseCodeFile.parseAndPrintCSharpFileInfo();
 		//ParseCodeFile.parseAndPrintFileStats();
 
-		/*
-		String perfData = null;
-		System.out.println();
-		perfData = PerformanceTrackers.toString(perfTracking.getTopParseTimes(SortOrder.ASCENDING, -10).iterator());
-		System.out.println(perfData);
-		System.out.println("====\n");
-		perfData = PerformanceTrackers.toString(perfTracking.getTopParseStepDetails(SortOrder.ASCENDING, -10).iterator());
-		System.out.println(perfData);
-		*/
+		if(logPerformance) {
+			System.out.println("\n==== Parse Timings (millis) ====");
+			var perfData = perfTracking.getTopParseTimes(true, -10);
+			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
 
-		//val writeSettings = new WriteSettings(true, false, false, true);
-		//perfTracker.toJson(System.out, writeSettings);
+			System.out.println("\n==== Parse Step Details (millis) ====");
+			perfData = perfTracking.getTopParseStepDetails(true, -10);
+			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
+
+			//System.out.println("\n==== All Performance Data ====\n");
+			//var writeSettings = new WriteSettings(true, false, false, true);
+			//perfTracking.toJson(System.out, writeSettings);
+		}
 
 		if(executor != null) {
 			executor.shutdown();

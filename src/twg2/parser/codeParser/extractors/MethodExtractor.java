@@ -8,7 +8,7 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.Operator;
@@ -38,12 +38,12 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	KeywordUtil<? extends AccessModifier> keywordUtil;
+	KeywordUtil<? extends Keyword> keywordUtil;
 	OperatorUtil<? extends Operator> operatorUtil;
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.TypeSigSimple> typeParser;
-	List<AccessModifier> accessModifiers = new ArrayList<>();
+	List<Keyword> accessModifiers = new ArrayList<>();
 	String methodName;
 	TypeSig.TypeSigSimple returnTypeSig;
 	List<MethodSigSimple> methods = new ArrayList<>();
@@ -54,7 +54,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	 * @param annotationParser this annotation parser should be being run external from this instance.  When this instance finds a method signature,
 	 * the annotation parser should already contain results (i.e. {@link AstParser#getParserResult()}) for the method's annotations
 	 */
-	public MethodExtractor(String langName, KeywordUtil<? extends AccessModifier> keywordUtil, OperatorUtil<? extends Operator> operatorUtil, BlockAst<? extends BlockType> parentBlock,
+	public MethodExtractor(String langName, KeywordUtil<? extends Keyword> keywordUtil, OperatorUtil<? extends Operator> operatorUtil, BlockAst<? extends BlockType> parentBlock,
 			AstParser<TypeSig.TypeSigSimple> typeParser, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		super(langName, "method signature", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;

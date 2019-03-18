@@ -31,6 +31,7 @@ import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
+import twg2.parser.test.utils.AnnotationAssert;
 import twg2.parser.test.utils.CodeFileAndAst;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
@@ -47,6 +48,7 @@ public class CsClassParseTest {
 		"  /// <summary>",
 		"  /// A simple class to test parsing.",
 		"  /// </summary>",
+		"  [StringAnnotation(\"-SimpleCs-\")]",
 		"  public class SimpleCs {",
 		"",
 		"    /// <value>The modification count.</value>",
@@ -144,6 +146,7 @@ public class CsClassParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "StringAnnotation", new String[] { "value" }, "-SimpleCs-");
 
 		List<FieldSig> fs = clas.getFields();
 		assertField(fs, 0, fullClassName + ".mod", "int");

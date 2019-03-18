@@ -7,7 +7,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import lombok.val;
 import twg2.collections.dataStructures.PairList;
 import twg2.parser.codeParser.analytics.TokenizeStepLogger;
 import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
@@ -85,13 +84,13 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 				long start = 0;
 				if(params.parseTimes() != null) { start = System.nanoTime(); }
 
-				val parser = parserConstructor.get();
+				var parser = parserConstructor.get();
 
 				long setupDone = 0;
 				if(params.parseTimes() != null) { setupDone = System.nanoTime(); }
 
-				val fileName = params.fileName();
-				val res = parser.tokenizeDocument(params.src(), params.srcOff(), params.srcLen(), fileName, params.parserStepsTracker());
+				var fileName = params.fileName();
+				var res = parser.tokenizeDocument(params.src(), params.srcOff(), params.srcLen(), fileName, params.parserStepsTracker());
 
 				if(params.parseTimes() != null) {
 					params.parseTimes().log(TrackerAction.SETUP, setupDone - start);
@@ -117,10 +116,10 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	public static <_T_LANG extends CodeLanguage> CodeFileSrc tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
 			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepLogger stepsDetails) {
 
-		val input = TextCharsParser.of(src, srcOff, srcLen);
+		var input = TextCharsParser.of(src, srcOff, srcLen);
 
-		val docTextFragment = new TextFragmentRefImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
-		val docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
+		var docTextFragment = new TextFragmentRefImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
+		var docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
 
 		SimpleTree<CodeToken> docTree = tokenizeDocument(srcName, input, stepsDetails, tokenizers, docRoot,
 				(type, frag) -> new CodeToken(type, frag, frag.getText(src, srcOff, srcLen).toString()),
@@ -177,7 +176,7 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 			}));
 		}
 
-		val parser = new CharMultiConditionParser(stepsDetails, conditions);
+		var parser = new CharMultiConditionParser(stepsDetails, conditions);
 
 		while(input.hasNext()) {
 			char ch = input.nextChar();

@@ -6,7 +6,7 @@ import twg2.parser.language.CodeLanguage;
  * @author TeamworkGuy2
  * @since 2015-12-5
  */
-public interface AccessModifierParser<T_ACCESS_MODIFIER extends AccessModifier, T_BLOCK extends BlockType> {
+public interface AccessModifierParser<T_ACCESS_MODIFIER extends Keyword, T_BLOCK extends BlockType> {
 
 	public CodeLanguage getLanguage();
 

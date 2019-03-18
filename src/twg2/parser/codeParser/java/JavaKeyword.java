@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
 import twg2.parser.codeParser.tools.EnumSplitter;
@@ -16,7 +16,7 @@ import twg2.parser.fragment.CodeTokenType;
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public enum JavaKeyword implements AccessModifier {
+public enum JavaKeyword implements Keyword {
 	// NOTE: these must be in alphabetical order for Inst array binary searches to work
 	ABSTRACT("abstract", Flag.METHOD_MOD | Flag.CLASS_MOD),
 	ASSERT("assert"),

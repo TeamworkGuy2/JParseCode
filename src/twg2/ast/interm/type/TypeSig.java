@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.Getter;
-import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -135,7 +134,7 @@ public interface TypeSig {
 
 		public TypeSigSimpleGeneric(String typeName, List<? extends TypeSigSimple> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
-			val genericParamsCast = (List<TypeSigSimple>)genericParams;
+			var genericParamsCast = (List<TypeSigSimple>)genericParams;
 
 			this.typeName = typeName;
 			this.params = genericParamsCast;
@@ -159,7 +158,7 @@ public interface TypeSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			val json = JsonStringify.inst;
+			var json = JsonStringify.inst;
 
 			dst.append("{ ");
 			json.toProp("typeName", typeName, dst).comma(dst)
@@ -312,7 +311,7 @@ public interface TypeSig {
 
 		public TypeSigResolvedGeneric(List<String> fullyQualifyingName, List<? extends TypeSigResolved> genericParams, int arrayDimensions, boolean nullable, boolean primitive) {
 			@SuppressWarnings("unchecked")
-			val genericParamsCast = (List<TypeSigResolved>)genericParams;
+			var genericParamsCast = (List<TypeSigResolved>)genericParams;
 
 			this.simpleName = fullyQualifyingName.get(fullyQualifyingName.size() - 1);
 			this.fullName = fullyQualifyingName;
@@ -337,7 +336,7 @@ public interface TypeSig {
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			val json = JsonStringify.inst;
+			var json = JsonStringify.inst;
 
 			dst.append("{ ");
 			json.toProp("typeName", NameUtil.joinFqName(fullName), dst).comma(dst)

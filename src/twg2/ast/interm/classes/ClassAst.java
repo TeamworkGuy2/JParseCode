@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.Getter;
-import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldDefResolved;
@@ -51,11 +50,11 @@ public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> ext
 
 		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods, List<? extends T_ENUM> enums, T_BLOCK blockType) {
 			@SuppressWarnings("unchecked")
-			val fieldsCast = (List<T_FIELD>)fields;
+			var fieldsCast = (List<T_FIELD>)fields;
 			@SuppressWarnings("unchecked")
-			val methodsCast = (List<T_METHOD>)methods;
+			var methodsCast = (List<T_METHOD>)methods;
 			@SuppressWarnings("unchecked")
-			val enumsCast = (List<T_ENUM>)enums;
+			var enumsCast = (List<T_ENUM>)enums;
 
 			this.signature = signature;
 			this.usingStatements = usingStatements;
@@ -68,7 +67,7 @@ public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> ext
 
 		@Override
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			val json = JsonStringify.inst;
+			var json = JsonStringify.inst;
 
 			dst.append("{\n");
 

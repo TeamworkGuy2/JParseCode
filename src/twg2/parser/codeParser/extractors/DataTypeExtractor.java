@@ -5,7 +5,7 @@ import java.util.List;
 
 import lombok.val;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.CodeToken;
@@ -116,14 +116,14 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 	/** Check if a string is possibly a simple data type (just a type name, no generics)
 	 */
-	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, String typeName, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends Keyword> keywordUtil, String typeName, boolean allowVoid) {
 		return !StringCheck.isNullOrWhitespace(typeName) && (!keywordUtil.isKeyword(typeName) || keywordUtil.isDataTypeKeyword(typeName)) || (allowVoid ? "void".equalsIgnoreCase(typeName) : false);
 	}
 
 
 	/** Check if a tree node is possibly a data type (just a type name, no generics)
 	 */
-	public static <T> boolean isPossiblyType(KeywordUtil<? extends AccessModifier> keywordUtil, SimpleTree<CodeToken> node, boolean allowVoid) {
+	public static <T> boolean isPossiblyType(KeywordUtil<? extends Keyword> keywordUtil, SimpleTree<CodeToken> node, boolean allowVoid) {
 		val nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordUtil.isKeyword(nodeData.getText()) || keywordUtil.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
@@ -171,7 +171,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	 * @param keywordUtil the {@link KeywordUtil} instance for the type of language being parsed
 	 * @return A list of simple types parsed from the generic parameters of the signature
 	 */
-	public static TypeSig.TypeSigSimple extractGenericTypes(String typeSig, KeywordUtil<? extends AccessModifier> keywordUtil) {
+	public static TypeSig.TypeSigSimple extractGenericTypes(String typeSig, KeywordUtil<? extends Keyword> keywordUtil) {
 		String genericMark = "#";
 
 		if(typeSig.contains(genericMark)) {
@@ -226,7 +226,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	 * @param paramSets a inner-nested-to-outer-nested left-to-right list of generics extracted from the original type signature
 	 * @return A list of simple types parsed from the generic parameters of the signature
 	 */
-	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends AccessModifier> keywordUtil, int parentParamMarker, List<String> paramSets) {
+	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends Keyword> keywordUtil, int parentParamMarker, List<String> paramSets) {
 		String paramSetStr = paramSets.get(parentParamMarker);
 		val params = paramSetStr.split(", ");
 		val paramSigs = new ArrayList<TypeSig.TypeSigSimple>(params.length);

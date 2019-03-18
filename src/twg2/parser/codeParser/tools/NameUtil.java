@@ -12,6 +12,9 @@ import twg2.text.stringUtils.StringSplit;
  * @since 2015-12-6
  */
 public class NameUtil {
+	/** size hint passed to {@link ArrayList} constructor since default of 10 doesn't well fit the the number of name segments in most fully qualifying names */
+	public static int estimatedFqPartsCount = 5;
+
 
 	public static List<String> newFqName(List<String> names, String appendName) {
 		List<String> list = new ArrayList<>(names);
@@ -21,8 +24,9 @@ public class NameUtil {
 
 
 	public static List<String> splitFqName(String name) {
-		List<String> names = StringSplit.split(name, '.');
-		return names;
+		List<String> dst = new ArrayList<>(estimatedFqPartsCount);
+		StringSplit.split(name, '.', 0, dst);
+		return dst;
 	}
 
 
@@ -38,8 +42,9 @@ public class NameUtil {
 
 
 	public static List<String> allExceptLastFqName(List<String> names) {
-		val resNames = new ArrayList<String>();
-		for(int i = 0, size = names.size() - 1; i < size; i++) {
+		int size = names.size() - 1;
+		val resNames = new ArrayList<String>(size);
+		for(int i = 0; i < size; i++) {
 			resNames.add(names.get(i));
 		}
 		return resNames;

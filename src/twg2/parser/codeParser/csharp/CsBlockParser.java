@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
@@ -48,7 +47,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 	@Override
 	public AstParser<TypeSig.TypeSigSimple> createTypeParser() {
-		val lang = CodeLanguageOptions.C_SHARP;
+		var lang = CodeLanguageOptions.C_SHARP;
 		return new DataTypeExtractor(lang, true);
 	}
 
@@ -67,38 +66,38 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 
 	@Override
 	public AstParser<List<String>> createCommentParser(BlockAst<CsBlock> block) {
-		val lang = CodeLanguageOptions.C_SHARP;
+		var lang = CodeLanguageOptions.C_SHARP;
 		return new CommentBlockExtractor(lang.displayName(), block);
 	}
 
 
 	@Override
 	public AstParser<List<FieldSig>> createFieldParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
-		val lang = CodeLanguageOptions.C_SHARP;
-		val typeParser = new DataTypeExtractor(lang, false);
+		var lang = CodeLanguageOptions.C_SHARP;
+		var typeParser = new DataTypeExtractor(lang, false);
 		return new FieldExtractor(lang.displayName(), CsKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
 
 	@Override
 	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<CsBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
-		val lang = CodeLanguageOptions.C_SHARP;
-		val typeParser = new DataTypeExtractor(lang, true);
+		var lang = CodeLanguageOptions.C_SHARP;
+		var typeParser = new DataTypeExtractor(lang, true);
 		return new MethodExtractor(lang.displayName(), CsKeyword.check, lang.getOperatorUtil(), block, typeParser, annotationParser, commentParser);
 	}
 
 
 	@Override
 	public List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>>> extractClassFieldsAndMethodSignatures(SimpleTree<CodeToken> astTree) {
-		val blocks = BlockExtractor.extractBlockFieldsAndInterfaceMethods(this, astTree);
-		return blocks;
+		return BlockExtractor.extractBlockFieldsAndInterfaceMethods(this, astTree);
 	}
 
 
 	@Override
 	public List<BlockAst<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<CsBlock> parentScope) {
 		List<BlockAst<CsBlock>> blocks = new ArrayList<>();
-		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, blocks);
+		var annotationExtractor = new CsAnnotationExtractor();
+		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, blocks);
 		return blocks;
 	}
 
@@ -110,16 +109,18 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
 	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
-			int depth, SimpleTree<CodeToken> parentNode, BlockAst<CsBlock> parentScope, List<BlockAst<CsBlock>> blocks) {
-		val lang = CodeLanguageOptions.C_SHARP;
-		val keywordUtil = lang.getKeywordUtil();
-		val children = blockTree.getChildren();
+			int depth, SimpleTree<CodeToken> parentNode, BlockAst<CsBlock> parentScope, CsAnnotationExtractor annotationExtractor, List<BlockAst<CsBlock>> blocks) {
+		var lang = CodeLanguageOptions.C_SHARP;
+		var keywordUtil = lang.getKeywordUtil();
+		var children = blockTree.getChildren();
 
-		val childIterable = new TokenListIterable(children);
+		var childIterable = new TokenListIterable(children);
+		var childIter = childIterable.iterator();
+		for(var child : childIterable) {
+			var token = child.getData();
 
-		val childIter = childIterable.iterator();
-		for(val child : childIterable) {
-			val token = child.getData();
+			boolean annotAccepted = annotationExtractor.acceptNext(child);
+
 			int addBlockCount = 0;
 
 			// if this token is an opening block, then this is probably a valid block declaration
@@ -129,33 +130,39 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 					int mark = childIter.mark();
 					// since the current token is the opening '{', step back to the class signature
 					childIter.previous();
-					val nameCompoundRes = readClassIdentifierAndExtends(childIter);
-					val prevNode = childIter.hasPrevious() ? childIter.previous() : null;
+					var nameCompoundRes = readClassIdentifierAndExtends(childIter);
+					var prevNode = childIter.hasPrevious() ? childIter.previous() : null;
 
 					// if a block keyword ("class", "interface", etc.) and an identifier were found, then this is probably a valid block declaration
 					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && keywordUtil.blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
-						val blockTypeStr = prevNode.getData().getText();
-						val blockType = lang.getBlockUtil().tryParseKeyword(keywordUtil.tryToKeyword(blockTypeStr));
-						val accessModifiers = AccessModifierExtractor.readAccessModifiers(keywordUtil, childIter);
+						var blockTypeStr = prevNode.getData().getText();
+						var blockType = lang.getBlockUtil().tryParseKeyword(keywordUtil.tryToKeyword(blockTypeStr));
+						var accessModifiers = AccessModifierExtractor.readAccessModifiers(keywordUtil, childIter);
 						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
-						val accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
-						val access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.blockType : null);
+						var accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
+						var access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.blockType : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						val blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), keywordUtil);
-						val blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
-						val blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
+						var blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), keywordUtil);
+						var blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
+						var blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
+						var annotations = new ArrayList<>(annotationExtractor.getParserResult());
 
-						blocks.add(new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						blocks.add(new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
 					}
 
 					childIter.reset(mark);
 				}
 			}
 
-			_extractBlocksFromTree(nameScope, child, depth + 1, blockTree, parentScope, blocks);
+			// a valid block must have 2 or more children: a 'name' and a '{...}' block
+			// create a separate annotation extractor when extracting blocks within an annotation (not sure if this could ever happen)
+			if(child.size() > 1) {
+				_extractBlocksFromTree(nameScope, child, depth + 1, blockTree, parentScope, (annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle()), blocks);
+				if(!annotAccepted) { annotationExtractor.recycle(); }
+			}
 
 			while(addBlockCount > 0) {
 				nameScope.remove(nameScope.size() - 1);
@@ -170,17 +177,17 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @return {@code <className, extendImplementNames>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
-		val keywords = CodeLanguageOptions.C_SHARP.getKeywordUtil();
+		var keywordUtil = CodeLanguageOptions.C_SHARP.getKeywordUtil();
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
-		val names = new ArrayList<String>();
+		var names = new ArrayList<String>();
 		Entry<String, List<String>> nameCompoundRes = null;
 
 		// get the first element and begin checking
 		if(iter.hasPrevious()) { prevCount++; }
 		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
-		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywords.blockModifiers().is(prevNode.getData()) && !keywords.isInheritanceKeyword(prevNode.getData().getText())) {
+		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywordUtil.blockModifiers().is(prevNode.getData()) && !keywordUtil.isInheritanceKeyword(prevNode.getData().getText())) {
 			// found an object initializer in the form 'new [Abc] {', not a class/interface definition so return nothing
 			if(names.size() < 2 && CsKeyword.NEW.toSrc().equals(prevNode.getData().getText())) {
 				break;
@@ -194,10 +201,10 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		if(prevNode != null && prevNode.getData().getText().equals(":")) {
 			prevNode = iter.hasPrevious() ? iter.previous() : null;
 			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywords.blockModifiers().is(prevNode.getData())) {
+			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywordUtil.blockModifiers().is(prevNode.getData())) {
 				Collections.reverse(names);
-				val extendImplementNames = names;
-				val className = prevNode.getData().getText();
+				var extendImplementNames = names;
+				String className = prevNode.getData().getText();
 				nameCompoundRes = Tuples.of(className, extendImplementNames);
 			}
 			else {
@@ -206,7 +213,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 		}
 		// else, we should have only read one name with the loop and it is the class name
 		else if(names.size() == 1) {
-			val className = names.get(0);
+			String className = names.get(0);
 			nameCompoundRes = Tuples.of(className, new ArrayList<>());
 			// move iterator forward since the while loop doesn't use the last value (i.e. reads one element past the valid elements it wants to consume)
 			if(prevCount > 0) {

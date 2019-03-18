@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
-import lombok.val;
 import twg2.io.files.FileUtil;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
-import twg2.text.stringUtils.StringCase;
 import twg2.text.stringUtils.StringPad;
 import twg2.text.tokenizer.analytics.ParserAction;
 import twg2.text.tokenizer.analytics.TypedLogger;
@@ -36,7 +34,7 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 
 		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			val json = JsonStringify.inst;
+			var json = JsonStringify.inst;
 
 			json.append("{ ", dst);
 
@@ -72,19 +70,19 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 
 	public String getLogMsg(ParserAction action) {
-		val res = this.actions.get(action);
+		var res = this.actions.get(action);
 		return res != null ? res.msg : null;
 	}
 
 
 	public long getLogCount(ParserAction action) {
-		val res = this.actions.get(action);
+		var res = this.actions.get(action);
 		return res != null ? res.count : 0;
 	}
 
 
 	public double getLogDuration(ParserAction action) {
-		val res = this.actions.get(action);
+		var res = this.actions.get(action);
 		return res != null ? res.durationMilliseconds : 0;
 	}
 
@@ -124,10 +122,10 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 		boolean first = true;
 		for(ParserAction action : ParserAction.values()) {
-			val data = this.actions.get(action);
+			var data = this.actions.get(action);
 			if(data != null) {
 				if(!first || srcName != null) { dst.append(",\n"); }
-				val name = StringCase.toCamelCase(action.name());
+				String name = action.name();
 				dst.append("\t\"").append(name).append("\": ");
 				data.toJson(dst, st);
 				first = false;
@@ -146,7 +144,7 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 	@Override
 	public String toString(String srcName, boolean includeClassName) {
-		val dst = new StringBuilder();
+		var dst = new StringBuilder();
 		if(includeClassName) {
 			dst.append("parserSteps: {\n");
 		}
@@ -156,10 +154,10 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 		boolean first = true;
 		for(ParserAction action : ParserAction.values()) {
-			val data = this.actions.get(action);
+			var data = this.actions.get(action);
 			if(data != null) {
-				if(!first || srcName != null) { dst.append(",\n"); }
-				val name = StringCase.toCamelCase(action.name());
+				if(!first || srcName != null) { dst.append(", "); }
+				String name = action.name();
 				dst.append("\"").append(name).append("\": ").append(data.toString());
 				first = false;
 			}
@@ -171,10 +169,20 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
+	private TypedAction getTypedAction(ParserAction action) {
+		TypedAction data = actions.get(action);
+		if(data == null) {
+			data = new TypedAction();
+			actions.put(action, data);
+		}
+		return data;
+	}
+
+
 	public static void toJsons(Map<String, TokenizeStepLogger> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
 		JsonStringify.inst.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
-			val stat = entry.getValue();
+			var stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);
 		});
@@ -183,28 +191,18 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 
 
 	public static String toStrings(Map<String, TokenizeStepLogger> fileParserDetails) {
-		val sb = new StringBuilder();
+		var sb = new StringBuilder();
 
-		for(val entry : fileParserDetails.entrySet()) {
-			val stat = entry.getValue();
+		for(var entry : fileParserDetails.entrySet()) {
+			var stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			fileName = '"' + fileName.substring(0, Math.min(30, fileName.length())) + '"';
 			fileName = StringPad.padRight(fileName, 32, ' ');
 
-			sb.append(stat.toString(fileName, true) + "\n");
+			sb.append(stat.toString(fileName, true)).append("\n");
 		}
 
 		return sb.toString();
-	}
-
-
-	private TypedAction getTypedAction(ParserAction action) {
-		TypedAction data = actions.get(action);
-		if(data == null) {
-			data = new TypedAction();
-			actions.put(action, data);
-		}
-		return data;
 	}
 
 }

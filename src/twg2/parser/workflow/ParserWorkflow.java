@@ -19,7 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.collections.builder.MapBuilder;
 import twg2.collections.dataStructures.PairList;
@@ -62,10 +61,13 @@ public class ParserWorkflow {
 
 
 	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
-		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		LogServiceImpl log = this.logFile != null ? new LogServiceImpl(logLevel, new PrintStream(this.logFile.toFile()), LogPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
+		// TODO educated guess at average namespace name parts
+		NameUtil.estimatedFqPartsCount = 5;
 
-		SourceFiles loadRes = SourceFiles.load(this.sources);
+		var missingNamespaces = new HashSet<List<String>>();
+		var log = this.logFile != null ? new LogServiceImpl(logLevel, new PrintStream(this.logFile.toFile()), LogPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
+
+		var loadRes = SourceFiles.load(this.sources);
 		if(log != null) {
 			loadRes.log(log, logLevel, true);
 		}
@@ -82,12 +84,12 @@ public class ParserWorkflow {
 			parseRes.log(log, logLevel, true);
 		}
 
-		ResolvedResult resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
+		var resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
 		if(log != null) {
 			resolvedRes.log(log, logLevel, true);
 		}
 
-		FilterResult filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
+		var filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
 		if(log != null) {
 			filterRes.log(log, logLevel, true);
 		}
@@ -110,13 +112,13 @@ public class ParserWorkflow {
 
 
 		public static DestinationInfo parse(String str, String argName) {
-			val values = StringSplit.split(str, "=", 2);
+			String[] values = StringSplit.split(str, "=", 2);
 
 			if(values[0] == null) {
 				throw new IllegalArgumentException("argument '" + argName + "' should contain an argument value");
 			}
 
-			val dstInfo = new DestinationInfo();
+			var dstInfo = new DestinationInfo();
 			dstInfo.namespaces = Collections.emptyList();
 			dstInfo.path = values[0];
 
@@ -124,7 +126,7 @@ public class ParserWorkflow {
 				if(!values[1].startsWith("[") || !values[1].endsWith("]")) {
 					throw new IllegalArgumentException("'" + argName + "' value should be a '[namespace_string,..]'");
 				}
-				val namespaces = StringSplit.split(values[1].substring(1, values[1].length() - 1), ',');
+				List<String> namespaces = StringSplit.split(values[1].substring(1, values[1].length() - 1), ',');
 				dstInfo.namespaces = namespaces;
 			}
 			return dstInfo;
@@ -148,9 +150,9 @@ public class ParserWorkflow {
 
 		public void log(LogService log, Level level, boolean includeHeader) {
 			if(LogService.wouldLog(log, level)) {
-				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc, List<ClassAst.SimpleImpl<BlockType>>>();
-				for(val file : files) {
+				var files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
+				var fileSets = new HashMap<CodeFileSrc, List<ClassAst.SimpleImpl<BlockType>>>();
+				for(var file : files) {
 					List<ClassAst.SimpleImpl<BlockType>> fileSet = fileSets.get(file.id);
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
@@ -159,13 +161,13 @@ public class ParserWorkflow {
 					fileSet.add(file.parsedClass);
 				}
 
-				val sb = new StringBuilder();
+				var sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);
 					sb.append("Classes/interfaces by file:");
 					sb.append(newline);
 				}
-				for(val fileSet : fileSets.entrySet()) {
+				for(var fileSet : fileSets.entrySet()) {
 					JsonStringify.inst
 						.propName(fileSet.getKey().srcName, sb)
 						.toArray(fileSet.getValue(), sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()))
@@ -179,9 +181,9 @@ public class ParserWorkflow {
 
 		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor,
 				FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
-			val fileSet = new ProjectClassSet.Intermediate<BlockType>();
+			var fileSet = new ProjectClassSet.Intermediate<BlockType>();
 
-			for(val filesWithSrc : files) {
+			for(var filesWithSrc : files) {
 				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader, perfTracking);
 			}
 
@@ -208,9 +210,9 @@ public class ParserWorkflow {
 
 		public void log(LogService log, Level level, boolean includeHeader) {
 			if(LogService.wouldLog(log, level)) {
-				val files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
-				val fileSets = new HashMap<CodeFileSrc, List<ClassAst.ResolvedImpl<BlockType>>>();
-				for(val file : files) {
+				var files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
+				var fileSets = new HashMap<CodeFileSrc, List<ClassAst.ResolvedImpl<BlockType>>>();
+				for(var file : files) {
 					List<ClassAst.ResolvedImpl<BlockType>> fileSet = fileSets.get(file.id);
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
@@ -219,7 +221,7 @@ public class ParserWorkflow {
 					fileSet.add(file.parsedClass);
 				}
 
-				val sb = new StringBuilder();
+				var sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);
 					sb.append("Resolved classes/interfaces by file:");
@@ -232,7 +234,7 @@ public class ParserWorkflow {
 					sb.append(newline);
 				}
 
-				for(val fileSet : fileSets.entrySet()) {
+				for(var fileSet : fileSets.entrySet()) {
 					JsonStringify.inst
 						.propNameUnquoted(fileSet.getKey().srcName, sb)
 						.toArray(fileSet.getValue(), sb, (f) -> NameUtil.joinFqName(f.getSignature().getFullName()))
@@ -246,7 +248,7 @@ public class ParserWorkflow {
 
 		public static ResolvedResult resolve(ProjectClassSet.Intermediate<BlockType> simpleFileSet, HashSet<List<String>> missingNamespaces) throws IOException {
 			// TODO shouldn't be using CsBlock, should use language block type
-			val resFileSet = ProjectClassSet.resolveClasses(simpleFileSet, CsBlock.CLASS, missingNamespaces);
+			var resFileSet = ProjectClassSet.resolveClasses(simpleFileSet, CsBlock.CLASS, missingNamespaces);
 
 			return new ResolvedResult(resFileSet, missingNamespaces);
 		}
@@ -269,14 +271,14 @@ public class ParserWorkflow {
 
 		public void log(LogService log, Level level, boolean includeHeader) {
 			if(LogService.wouldLog(log, level)) {
-				val sb = new StringBuilder();
+				var sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);
 					sb.append("destination sets:");
 					sb.append(newline);
 				}
 
-				for(val entry : filterSets.entrySet()) {
+				for(var entry : filterSets.entrySet()) {
 					sb.append(newline);
 					sb.append(entry.getKey());
 					sb.append(newline);
@@ -290,10 +292,10 @@ public class ParserWorkflow {
 
 		public static FilterResult filter(ProjectClassSet.Resolved<BlockType> resFileSet, List<DestinationInfo> destinations) throws IOException {
 			Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>> resSets = new HashMap<>();
-			for(val dstInfo : destinations) {
+			for(var dstInfo : destinations) {
 				List<CodeFileParsed.Resolved<BlockType>> matchingNamespaces = new ArrayList<>();
-				for(val namespace : dstInfo.namespaces) {
-					val fileSet = resFileSet.getCompilationUnitsStartWith(StringSplit.split(namespace, '.'));
+				for(var namespace : dstInfo.namespaces) {
+					var fileSet = resFileSet.getCompilationUnitsStartWith(StringSplit.split(namespace, '.'));
 					matchingNamespaces.addAll(fileSet);
 				}
 				resSets.put(dstInfo, matchingNamespaces);
@@ -310,16 +312,16 @@ public class ParserWorkflow {
 	public static class WriteResult {
 
 		public static void write(Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>> resSets, Collection<List<String>> missingNamespaces) throws IOException {
-			val writeSettings = new WriteSettings(true, false, false, true);
+			var writeSettings = new WriteSettings(true, false, false, true);
 			// associates file paths with how many times each has been written to (so we can append on subsequent writes)
-			val definitionsByOutputFile = new HashMap<String, PairList<String, char[]>>();
+			var definitionsByOutputFile = new HashMap<String, PairList<String, char[]>>();
 
-			val tmpSb = new StringBuilder(2048);
+			var tmpSb = new StringBuilder(2048);
 
 			// write class definitions to JSON strings and group by output file
-			for(val dstSet : resSets.entrySet()) {
-				val dst = dstSet.getKey();
-				val classes = dstSet.getValue();
+			for(var dstSet : resSets.entrySet()) {
+				var dst = dstSet.getKey();
+				var classes = dstSet.getValue();
 				
 				PairList<String, char[]> definitionStrs = definitionsByOutputFile.get(dst.path);
 				if(definitionStrs == null) {
@@ -327,26 +329,26 @@ public class ParserWorkflow {
 					definitionsByOutputFile.put(dst.path, definitionStrs);
 				}
 
-				for(val classInfo : classes) {
+				for(var classInfo : classes) {
 					tmpSb.setLength(0);
-					val classNameFq = NameUtil.joinFqName(classInfo.parsedClass.getSignature().getFullName());
+					String classNameFq = NameUtil.joinFqName(classInfo.parsedClass.getSignature().getFullName());
 					tmpSb.append("\"" + classNameFq + "\": ");
 					classInfo.parsedClass.toJson(tmpSb, writeSettings);
-					val dstChars = new char[tmpSb.length()];
+					char[] dstChars = new char[tmpSb.length()];
 					tmpSb.getChars(0, tmpSb.length(), dstChars, 0);
 					definitionStrs.add(classNameFq, dstChars);
 				}
 			}
 
-			for(val dstData : definitionsByOutputFile.entrySet()) {
+			for(var dstData : definitionsByOutputFile.entrySet()) {
 				List<Entry<String, char[]>> defs = new ArrayList<>(MapBuilder.mutable(dstData.getValue().keyList(), dstData.getValue().valueList(), true).entrySet());
 				Collections.sort(defs, (c1, c2) -> c1.getKey().compareTo(c2.getKey()));
 
-				try(val output = Files.newBufferedWriter(Paths.get(dstData.getKey()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+				try(var output = Files.newBufferedWriter(Paths.get(dstData.getKey()), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 					boolean first = true;
 					output.write("{\n\"files\": {");
 
-					for(val def : defs) {
+					for(var def : defs) {
 						if(!first) {
 							output.append(",\n");
 						}
@@ -397,25 +399,25 @@ public class ParserWorkflow {
 		System.out.println();
 
 		for(int i = 0, size = args.length; i < size; i += 2) {
-			val name = StringTrim.trimLeading(args[i], '-');
-			val desc = argNames.get(name);
+			String name = StringTrim.trimLeading(args[i], '-');
+			String desc = argNames.get(name);
 			if(desc != null) {
 				if(i + 1 >= args.length) {
 					throw new IllegalArgumentException("'" + name + "' is a valid argument name, should contain an argument");
 				}
 
-				val values = StringSplit.split(args[i + 1], ';');
+				List<String> values = StringSplit.split(args[i + 1], ';');
 
 				if("sources".equals(name)) {
-					for(val valueStr : values) {
-						val value = DirectorySearchInfo.parseFromArgs(valueStr, "sources");
+					for(var valueStr : values) {
+						var value = DirectorySearchInfo.parseFromArgs(valueStr, "sources");
 						srcs.add(value);
 					}
 				}
 
 				if("destinations".equals(name)) {
-					for(val valueStr : values) {
-						val value = DestinationInfo.parse(valueStr, "destination");
+					for(var valueStr : values) {
+						var value = DestinationInfo.parse(valueStr, "destination");
 						dsts.add(value);
 					}
 				}

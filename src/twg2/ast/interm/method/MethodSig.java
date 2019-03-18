@@ -3,11 +3,10 @@ package twg2.ast.interm.method;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.io.json.stringify.JsonStringify;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
@@ -24,19 +23,19 @@ public class MethodSig<T_PARAM extends JsonWritableSig, T_RET extends JsonWritab
 	public final List<String> fullName;
 	public final List<T_PARAM> paramSigs;
 	public final T_RET returnType;
-	public final List<AccessModifier> accessModifiers;
+	public final List<Keyword> accessModifiers;
 	public final List<AnnotationSig> annotations;
 	public final List<String> comments;
 
 
 	public MethodSig(String name, List<String> fullName, List<? extends T_PARAM> paramSigs,
-			T_RET returnType, List<? extends AccessModifier> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
+			T_RET returnType, List<? extends Keyword> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
 		@SuppressWarnings("unchecked")
-		val paramSigsCast = (List<T_PARAM>)paramSigs;
+		var paramSigsCast = (List<T_PARAM>)paramSigs;
 		@SuppressWarnings("unchecked")
-		val accessModifiersCast = (List<AccessModifier>)accessModifiers;
+		var accessModifiersCast = (List<Keyword>)accessModifiers;
 		@SuppressWarnings("unchecked")
-		val annotationsCast = (List<AnnotationSig>)annotations;
+		var annotationsCast = (List<AnnotationSig>)annotations;
 
 		this.name = name;
 		this.fullName = fullName;
@@ -50,7 +49,7 @@ public class MethodSig<T_PARAM extends JsonWritableSig, T_RET extends JsonWritab
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
-		val json = JsonStringify.inst;
+		var json = JsonStringify.inst;
 
 		dst.append("{ ");
 		json.toProp("name", (st.fullMethodName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)), dst);

@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.val;
 import twg2.collections.builder.ListUtil;
 import twg2.io.files.FileReadUtil;
 import twg2.io.files.FileVisitorUtil;
@@ -57,7 +56,7 @@ public class ParseDirectoryCodeFiles {
 	public ParseDirectoryCodeFiles(Path relativePath, List<ParsedFileStats> fileStats) {
 		this.relativePath = relativePath;
 		this.fileStats = fileStats;
-		val categorizedStats = categorizeFileStats(fileStats);
+		var categorizedStats = categorizeFileStats(fileStats);
 		this.statsPerCategory = categorizedStats.getKey();
 		this.uncategorizedFilesStats = new UncategorizedFilesStats(reduceFileStats("uncategorizedFiles", categorizedStats.getValue()), ListUtil.map(categorizedStats.getValue(), (s) -> s.getSrcId()));
 	}
@@ -84,7 +83,7 @@ public class ParseDirectoryCodeFiles {
 
 		Map<CodeLanguage, ParsedCategoryStats> categoryStats = new HashMap<>();
 		for(Entry<CodeLanguage, List<ParsedFileStats>> filesCategory : filesPerCategory.entrySet()) {
-			val combinedStats = reduceFileStats(filesCategory.getKey().toString(), filesCategory.getValue());
+			var combinedStats = reduceFileStats(filesCategory.getKey().toString(), filesCategory.getValue());
 			categoryStats.put(filesCategory.getKey(), combinedStats);
 		}
 
@@ -110,7 +109,7 @@ public class ParseDirectoryCodeFiles {
 
 
 	public static FileVisitorUtil.Cache createFilter(String... allowedFileExtensions) {
-		val visitorBldr = new FileVisitorUtil.Builder();
+		var visitorBldr = new FileVisitorUtil.Builder();
 		visitorBldr.getPreVisitDirectoryFilter().addDirectoryNameFilters(false, "/bin", "/appcache", "/i/", "/debug", "/Properties", "/obj", "/tasks",
 				"/i18next-1.7.3", "/Excel", "/jspdf", "/pdfjs", "/zip", "/react", "/tsDefinitions", "/dest", "/tests",
 				"/node_modules", "/modules/legacy", "/scripts/vendor", "/scripts/handsontable", "/scripts/lib" // specific to the new project
@@ -123,8 +122,8 @@ public class ParseDirectoryCodeFiles {
 
 
 	public static List<Path> loadFiles(Path projectDir, String... allowedFileExtensions) throws IOException {
-		val visitorCache = createFilter(allowedFileExtensions);
-		val visitor = visitorCache.getFileVisitor();
+		var visitorCache = createFilter(allowedFileExtensions);
+		var visitor = visitorCache.getFileVisitor();
 
 		Files.walkFileTree(projectDir, visitor);
 
@@ -144,12 +143,12 @@ public class ParseDirectoryCodeFiles {
 			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");
 			if("json".equals(fileNameExt.getValue())) {
 				int lineCount = StringSplit.countMatches(src, srcOff, srcLen, new char[] { '\n' }, 0, 1);
-				val parsedStats = new ParsedFileStats(file.toString(), srcLen, 0, 0, lineCount);
+				var parsedStats = new ParsedFileStats(file.toString(), srcLen, 0, 0, lineCount);
 				filesStats.add(parsedStats);
 			}
 			else {
-				val parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), src, srcOff, srcLen);
-				val parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.lineStartOffsets, parsedFileInfo.astTree);
+				var parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), src, srcOff, srcLen);
+				var parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.lineStartOffsets, parsedFileInfo.astTree);
 				filesStats.add(parsedStats);
 			}
 		}

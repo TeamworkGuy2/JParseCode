@@ -9,7 +9,7 @@ import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.csharp.CsKeyword;
@@ -39,7 +39,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	}
 
 
-	KeywordUtil<? extends AccessModifier> keywordUtil;
+	KeywordUtil<? extends Keyword> keywordUtil;
 	AstParser<List<String>> commentParser;
 	List<FieldDef> enumMembers = new ArrayList<>();
 	TypeSig.TypeSigSimple enumType; // the enum's base type, can be any of 'validEnumTypes', default: int
@@ -48,7 +48,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 	boolean lastNodeWasAnnotationStart = false;
 
 
-	public JavaEnumMemberExtractor(KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock, AstParser<List<String>> commentParser) {
+	public JavaEnumMemberExtractor(KeywordUtil<? extends Keyword> keywordUtil, BlockAst<? extends BlockType> parentBlock, AstParser<List<String>> commentParser) {
 		super(CodeLanguageOptions.C_SHARP.displayName(), "enum member", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
 		this.commentParser = commentParser;

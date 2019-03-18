@@ -6,7 +6,7 @@ import twg2.parser.language.CodeLanguage;
  * @author TeamworkGuy2
  * @since 2015-12-5
  */
-public enum AccessModifierEnum implements AccessModifier {
+public enum AccessModifierEnum implements Keyword {
 	PUBLIC,
 	NAMESPACE_LOCAL,
 	INHERITANCE_LOCAL,
@@ -20,8 +20,8 @@ public enum AccessModifierEnum implements AccessModifier {
 	}
 
 
-	public static final AccessModifier parseFromSrc(String src, CodeLanguage lang) {
-		AccessModifier access = tryParseFromSrc(src, lang);
+	public static final Keyword parseFromSrc(String src, CodeLanguage lang) {
+		Keyword access = tryParseFromSrc(src, lang);
 		if(access == null) {
 			throw new IllegalArgumentException("'" + src + "' is not recognized as a " + lang.displayName() + " access modifier");
 		}
@@ -29,7 +29,7 @@ public enum AccessModifierEnum implements AccessModifier {
 	}
 
 
-	public static final AccessModifier tryParseFromSrc(String src, CodeLanguage lang) {
+	public static final Keyword tryParseFromSrc(String src, CodeLanguage lang) {
 		return lang.getAstUtil().getAccessModifierParser().tryParseFromSrc(src);
 	}
 

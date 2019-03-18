@@ -6,7 +6,7 @@ import twg2.parser.codeParser.tools.CodeTokenEnumSubSet;
  * @author TeamworkGuy2
  * @since 2016-1-14
  */
-public interface KeywordUtil<T_KEYWORD extends AccessModifier> {
+public interface KeywordUtil<T_KEYWORD extends Keyword> {
 
 	/** Given a possible keyword string, return the keyword or throw an error
 	 * @param str the string to convert to a keyword

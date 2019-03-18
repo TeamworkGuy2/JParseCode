@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
-import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
@@ -28,7 +27,7 @@ public class AnnotationSig implements JsonWritableSig {
 			dst.append(", ");
 			dst.append("\"arguments\": { ");
 			boolean notFirst = false;
-			for(val argumentEntry : arguments.entrySet()) {
+			for(Map.Entry<String, String> argumentEntry : arguments.entrySet()) {
 				// TODO Csv style escape
 				dst.append((notFirst ? ", " : "") + '"' + argumentEntry.getKey() + "\": \"" + argumentEntry.getValue().replace("\"", "\\\"") + '"');
 				notFirst = true;

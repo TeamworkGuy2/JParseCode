@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
@@ -31,40 +30,43 @@ public class BlockExtractor {
 	public static <_T_BLOCK extends BlockType> List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
 			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeToken> astTree) {
 
-		val nameScope = new ArrayList<String>();
+		var nameScope = new ArrayList<String>();
 
-		val blocks = extractor.extractBlocks(nameScope, astTree, null);
+		var blocks = extractor.extractBlocks(nameScope, astTree, null);
 
-		val resBlocks = new ArrayList<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>>();
+		var resBlocks = new ArrayList<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>>();
 
-		val usingStatementExtractor = extractor.createImportStatementParser();
+		var usingStatementExtractor = extractor.createImportStatementParser();
 
 		runParsers(astTree, usingStatementExtractor);
 
-		val usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
+		var usingStatements = new ArrayList<>(usingStatementExtractor.getParserResult());
 
-		for(val block : blocks) {
-			val blockTree = block.blockTree;
-			val blockType = block.blockType;
+		for(var block : blocks) {
+			var blockTree = block.blockTree;
+			var blockType = block.blockType;
 
 			usingStatementExtractor.recycle();
 			runParsers(blockTree, usingStatementExtractor);
 
-			val tmpUsingStatements = usingStatementExtractor.getParserResult();
+			var tmpUsingStatements = usingStatementExtractor.getParserResult();
 			usingStatements.addAll(tmpUsingStatements);
 
-			val annotationExtractor = extractor.createAnnotationParser(block);
-			val commentExtractor = extractor.createCommentParser(block);
-			val fieldExtractor = extractor.createFieldParser(block, annotationExtractor, commentExtractor);
-			val methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
+			var annotationExtractor = extractor.createAnnotationParser(block);
+			var commentExtractor = extractor.createCommentParser(block);
+			var fieldExtractor = extractor.createFieldParser(block, annotationExtractor, commentExtractor);
+			var methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
 			AstParser<List<FieldDef>> enumMemberExtractor = null;
 
 			if(blockType.isEnum()) {
 				enumMemberExtractor = extractor.createEnumParser(block, commentExtractor);
 				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor, enumMemberExtractor);
 			}
-			else {
+			else if(blockType.canContainFields() || blockType.canContainMethods()) {
 				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor);
+			}
+			else {
+				runParsers(blockTree, annotationExtractor, commentExtractor);
 			}
 
 			List<FieldSig> fields = null;
@@ -92,23 +94,23 @@ public class BlockExtractor {
 
 	@SafeVarargs
 	public static void runParsers(SimpleTree<CodeToken> tree, AstParser<?>... parsers) {
-		val children = tree.getChildren();
-		val parserCount = parsers.length;
+		var children = tree.getChildren();
+		int parserCount = parsers.length;
 
 		for(int i = 0, size = children.size(); i < size; i++) {
-			val child = children.get(i);
+			var child = children.get(i);
 
 			// loop over each parser and allow it to consume the block
 			for(int ii = 0; ii < parserCount; ii++) {
-				val parser = parsers[ii];
+				var parser = parsers[ii];
 				parser.acceptNext(child);
 
-				val complete = parser.isComplete();
-				val failed = parser.isFailed();
-				if(complete || failed) {
-					//val newParser = parser.copyOrReuse();
-					//parsers.set(ii, newParser);
-				}
+				//val complete = parser.isComplete();
+				//val failed = parser.isFailed();
+				//if(complete || failed) {
+				//	val newParser = parser.copyOrReuse();
+				//	parsers.set(ii, newParser);
+				//}
 			}
 		}
 	}

@@ -5,11 +5,11 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
 import twg2.annotations.Immutable;
+import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
 import twg2.io.json.stringify.JsonStringify;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.WriteSettings;
 
@@ -24,7 +24,9 @@ public class ClassSigResolved implements ClassSig {
 	/** This type's generic type parameters, if any */
 	private final @Getter List<TypeSig.TypeSigResolved> params;
 	/** The block's access (i.e. 'public', 'private', etc.) */
-	private final @Getter AccessModifier accessModifier;
+	private final @Getter Keyword accessModifier;
+	/** The block's annotations */
+	private final @Getter List<AnnotationSig> annotations;
 	/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 	private final @Getter String declarationType;
 	private final @Getter TypeSig.TypeSigResolved extendClass;
@@ -44,7 +46,7 @@ public class ClassSigResolved implements ClassSig {
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
-		val json = JsonStringify.inst;
+		var json = JsonStringify.inst;
 
 		dst.append("{ ");
 		json.toProp("access", accessModifier.toSrc(), dst).comma(dst)
@@ -64,6 +66,11 @@ public class ClassSigResolved implements ClassSig {
 		if(implementInterfaces.size() > 0) {
 			json.comma(dst).append("\"implementClassNames\": ", dst);
 			json.toArrayConsume(implementInterfaces, dst, (intfType) -> intfType.toJson(dst, st));
+		}
+
+		if(annotations.size() > 0) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (a) -> a.toJson(dst, st));
 		}
 
 		dst.append(" }");

@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import lombok.Getter;
 import lombok.val;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.AstUtil;
 import twg2.parser.codeParser.BlockType;
@@ -51,7 +51,7 @@ public enum CodeLanguageOptions {
 	 */
 	public static class CodeLanguageImpl<
 			T_BLOCK extends BlockType,
-			T_KEYWORD extends AccessModifier,
+			T_KEYWORD extends Keyword,
 			T_LANG extends CodeLanguage,
 			T_OP extends Operator,
 			T_AST_UTIL extends AstUtil<T_BLOCK, T_KEYWORD>,
@@ -70,16 +70,24 @@ public enum CodeLanguageOptions {
 
 		// package-private
 		@SuppressWarnings("unchecked")
-		CodeLanguageImpl(String displayName, BlockUtil<T_BLOCK, T_KEYWORD> blockUtil, AstUtil<? extends T_BLOCK, ? extends T_KEYWORD> astUtil, KeywordUtil<? extends T_KEYWORD> keywordUtil, T_OP_UTIL operatorUtil,
-				Function<ParseInput, CodeFileSrc> parser, T_AST_EXTRACTOR extractor, List<String> fileExtensions) {
+		CodeLanguageImpl(
+				String displayName,
+				BlockUtil<T_BLOCK, T_KEYWORD> blockUtil,
+				AstUtil<? extends T_BLOCK, ? extends T_KEYWORD> astUtil,
+				KeywordUtil<? extends T_KEYWORD> keywordUtil,
+				T_OP_UTIL operatorUtil,
+				Function<ParseInput, CodeFileSrc> parser,
+				T_AST_EXTRACTOR extractor,
+				List<String> fileExtensions
+		) {
 			this.displayName = displayName;
-			this.parser = parser;
-			this.fileExtensions = new ArrayList<>(fileExtensions);
 			this.blockUtil = blockUtil;
 			this.astUtil = (T_AST_UTIL)astUtil;
 			this.keywordUtil = (KeywordUtil<T_KEYWORD>)keywordUtil;
 			this.operatorUtil = operatorUtil;
+			this.parser = parser;
 			this.extractor = extractor;
+			this.fileExtensions = new ArrayList<>(fileExtensions);
 		}
 
 
@@ -117,7 +125,7 @@ public enum CodeLanguageOptions {
 	public static final Java JAVA = new Java("Java", new JavaBlockUtil(), new JavaAstUtil(), JavaKeyword.check, JavaOperator.check,
 			CodeTokenizerBuilder.createTokenizerWithTimer(() -> JavaFileTokenizer.createFileParser().build()), new JavaBlockParser(), Arrays.asList("java"));
 
-	public static final CodeLanguageImpl<BlockType, AccessModifier, CodeLanguage, Operator, AstUtil<BlockType, AccessModifier>, OperatorUtil<Operator>, AstExtractor<BlockType>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, null, null, Arrays.asList("js", "ts"));
+	public static final CodeLanguageImpl<BlockType, Keyword, CodeLanguage, Operator, AstUtil<BlockType, Keyword>, OperatorUtil<Operator>, AstExtractor<BlockType>> JAVASCRIPT = new CodeLanguageImpl<>("Javascript", null, null, null, null, null, null, Arrays.asList("js", "ts"));
 
 	private static CopyOnWriteArrayList<CodeLanguage> values;
 
@@ -149,7 +157,7 @@ public enum CodeLanguageOptions {
 	 */
 	public static <
 			_T_BLOCK extends BlockType,
-			_T_KEYWORD extends AccessModifier,
+			_T_KEYWORD extends Keyword,
 			_T_LANG extends CodeLanguage,
 			_T_OP extends Operator,
 			_T_AST_UTIL extends AstUtil<_T_BLOCK, _T_KEYWORD>,

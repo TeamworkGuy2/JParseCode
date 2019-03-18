@@ -31,6 +31,7 @@ import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
+import twg2.parser.test.utils.AnnotationAssert;
 import twg2.parser.test.utils.CodeFileAndAst;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
@@ -47,14 +48,15 @@ public class JavaClassParseTest {
 		"/** A simple class to test parsing.",
 		" * @since 2016-1-15",
 		" */",
+		"@StringAnnotation(\"-SimpleJava-\")",
 		"public class SimpleJava {",
 		"",
 		"    /** The modification count. */",
-		"    @EmptyAnnotation()]",
-		"    @IntAnnotation(-1)]",
-		"    @BoolAnnotation(true)]",
-		"    @IdentifierAnnotation(Integer.TYPE)]",
-		"    @StringAnnotation(Name = \"\")]",
+		"    @EmptyAnnotation()",
+		"    @IntAnnotation(-1)",
+		"    @BoolAnnotation(true)",
+		"    @IdentifierAnnotation(Integer.TYPE)",
+		"    @StringAnnotation(Name = \"\")",
 		"    @MultiArgAnnotation(\"abc\", false , 1.23)",
 		"    @MultiNamedArgAnnotation(num =1.23, flag=false ,value = \"abc\")",
 		"    private int mod;",
@@ -130,6 +132,7 @@ public class JavaClassParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "StringAnnotation", new String[] { "value" }, "-SimpleJava-");
 
 		List<FieldSig> fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int");

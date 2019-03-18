@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.Getter;
-import lombok.val;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.io.json.stringify.JsonStringify;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.output.WriteSettings;
@@ -24,7 +23,7 @@ public class FieldDefResolved extends FieldSigResolved {
 	private final @Getter SimpleTree<CodeToken> initializer;
 
 
-	public FieldDefResolved(String name, List<String> fullName, TypeSigResolved fieldType, List<AccessModifier> accessModifiers,
+	public FieldDefResolved(String name, List<String> fullName, TypeSigResolved fieldType, List<Keyword> accessModifiers,
 			List<AnnotationSig> annotations, List<String> comments, SimpleTree<CodeToken> initializer) {
 		super(name, fullName, fieldType, accessModifiers, annotations, comments);
 		this.initializer = initializer;
@@ -33,7 +32,7 @@ public class FieldDefResolved extends FieldSigResolved {
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
-		val json = JsonStringify.inst;
+		var json = JsonStringify.inst;
 
 		dst.append("{ ");
 		json.toProp("name", (st.fullFieldName ? NameUtil.joinFqName(fullName) : fullName.get(fullName.size() - 1)), dst);

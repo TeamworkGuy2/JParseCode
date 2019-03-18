@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 
-import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.dataUtil.dataUtils.ParallelWork;
 import twg2.dataUtil.dataUtils.ParallelWork.WorkBlockPolicy;
@@ -39,7 +38,7 @@ public class ParserMisc {
 
 	public static void printParseFileInfo(String fileName, CodeFileSrc parsedFile, boolean printParsedTokens, boolean printUnparsedSrcCode,
 			boolean printBlockSignatures, boolean printFieldSignatures, boolean printMethodSignatures) throws FileFormatException {
-		val tree = parsedFile.astTree;
+		var tree = parsedFile.astTree;
 
 		System.out.println("\nFile: " + fileName);
 		if(printParsedTokens) {
@@ -61,8 +60,8 @@ public class ParserMisc {
 				System.out.println("\n==== Blocks: \n" + StringJoin.join(blockDeclarations, "\n"));
 			}
 
-			for(val blockInfo : blockDeclarations) {
-				val block = blockInfo.getValue();
+			for(var blockInfo : blockDeclarations) {
+				var block = blockInfo.getValue();
 				System.out.println("\n==== Block: \n" + block.getSignature());
 				if(printFieldSignatures) {
 					if(block.getBlockType().canContainFields()) {
@@ -86,11 +85,11 @@ public class ParserMisc {
 	public static <T_BLOCK extends BlockType> void parseFileSet(List<Path> paths, ProjectClassSet.Intermediate<T_BLOCK> dstFileSet,
 			ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		@SuppressWarnings("unchecked")
-		val dstFiles = (ProjectClassSet.Intermediate<BlockType>)dstFileSet;
+		var dstFiles = (ProjectClassSet.Intermediate<BlockType>)dstFileSet;
 
 		if(executor != null) {
 			List<CodeFileParsed.Intermediate<BlockType>> dst = Collections.synchronizedList(new ArrayList<CodeFileParsed.Intermediate<BlockType>>());
-			val processedFiles = new HashSet<Path>();
+			var processedFiles = new HashSet<Path>();
 
 			// TODO should add a consumeBlocks or similar function, since we don't have a result to return
 			ParallelWork.transformBlocks(WorkBlockPolicy.newFixedBlockSize(40, executor), paths, (path) -> {
@@ -102,17 +101,18 @@ public class ParserMisc {
 				}
 				try {
 					File file = path.toFile();
-					val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(file.toString()) : null;
+					var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(file.toString()) : null;
 
 					CodeFileSrc parsedFile = ParseCodeFile.parseFile(file, fileReader, perfTracking);
 
 					long start = 0;
 					if(perfTracking != null) { start = System.nanoTime(); }
 
-					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = castParser(parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
+					@SuppressWarnings("unchecked")
+					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
 
-					for(val block : blockDeclarations) {
-						val fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
+					for(var block : blockDeclarations) {
+						var fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
 						dst.add(fileParsed);
 					}
 
@@ -127,7 +127,7 @@ public class ParserMisc {
 			});
 
 			for(int i = 0, size = dst.size(); i < size; i++) {
-				val res = dst.get(i);
+				var res = dst.get(i);
 				dstFiles.addCompilationUnit(res.parsedClass.getSignature().getFullName(), res);
 			}
 		}
@@ -135,8 +135,8 @@ public class ParserMisc {
 			List<CodeFileSrc> parsedFiles = ParseCodeFile.parseFiles(paths, fileReader, perfTracking);
 
 			for(int i = 0, sizeI = paths.size(); i < sizeI; i++) {
-				val parsedFile = parsedFiles.get(i);
-				val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(parsedFile.srcName) : null;
+				var parsedFile = parsedFiles.get(i);
+				var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(parsedFile.srcName) : null;
 
 				try {
 					long start = 0;
@@ -145,8 +145,8 @@ public class ParserMisc {
 					@SuppressWarnings("unchecked")
 					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
 
-					for(val block : blockDeclarations) {
-						val fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
+					for(var block : blockDeclarations) {
+						var fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
 						dstFiles.addCompilationUnit(block.getValue().getSignature().getFullName(), fileParsed);
 					}
 
@@ -158,12 +158,6 @@ public class ParserMisc {
 				}
 			}
 		}
-	}
-
-
-	@SuppressWarnings("unchecked")
-	private static AstExtractor<BlockType> castParser(AstExtractor<? extends BlockType> extractor) {
-		return (AstExtractor<BlockType>)extractor;
 	}
 
 }

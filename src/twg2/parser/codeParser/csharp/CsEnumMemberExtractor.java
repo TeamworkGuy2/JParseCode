@@ -11,7 +11,7 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.type.TypeSig;
-import twg2.parser.codeParser.AccessModifier;
+import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -43,7 +43,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 	private static final String[] validEnumTypes = new String[] { CsKeyword.BYTE.srcName, CsKeyword.SBYTE.srcName, CsKeyword.SHORT.srcName, CsKeyword.USHORT.srcName,
 			CsKeyword.INT.srcName, CsKeyword.UINT.srcName, CsKeyword.LONG.srcName, CsKeyword.ULONG.srcName };
 
-	KeywordUtil<? extends AccessModifier> keywordUtil;
+	KeywordUtil<? extends Keyword> keywordUtil;
 	AstParser<List<String>> commentParser;
 	List<FieldDef> enumMembers = new ArrayList<>();
 	TypeSig.TypeSigSimpleBase enumType; // the enum's base type, can be any of 'validEnumTypes', default: int
@@ -51,7 +51,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 	List<String> nextMemberComments = null;
 
 
-	public CsEnumMemberExtractor(KeywordUtil<? extends AccessModifier> keywordUtil, BlockAst<? extends BlockType> parentBlock, AstParser<List<String>> commentParser) {
+	public CsEnumMemberExtractor(KeywordUtil<? extends Keyword> keywordUtil, BlockAst<? extends BlockType> parentBlock, AstParser<List<String>> commentParser) {
 		super(CodeLanguageOptions.C_SHARP.displayName(), "enum member", parentBlock, State.COMPLETE, State.FAILED);
 		this.keywordUtil = keywordUtil;
 		this.commentParser = commentParser;
