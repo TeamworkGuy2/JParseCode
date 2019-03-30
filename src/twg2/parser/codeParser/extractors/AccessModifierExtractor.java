@@ -3,7 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.CodeToken;
@@ -28,7 +27,7 @@ public class AccessModifierExtractor {
 	 */
 	public static List<String> readAccessModifiers(KeywordUtil<? extends Keyword> keywordUtil, EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
 		int prevCount = 0;
-		val accessModifiers = new ArrayList<String>();
+		var accessModifiers = new ArrayList<String>();
 		SimpleTree<CodeToken> child = iter.hasPrevious() ? iter.previous() : null;
 
 		while(child != null && keywordUtil.classModifiers().is(child.getData())) {

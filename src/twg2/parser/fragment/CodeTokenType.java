@@ -1,7 +1,5 @@
 package twg2.parser.fragment;
 
-import lombok.Getter;
-
 /**
  * An enumeration of common source code tokens across supported languages
  * supported by this parsing library
@@ -28,11 +26,16 @@ public enum CodeTokenType {
 	/** chars surrounded by parenthesis, can contain nested blocks */
 	BLOCK(true);
 
-	@Getter
 	private final boolean compound;
+
 
 	private CodeTokenType(boolean compound) {
 		this.compound = compound;
+	}
+
+
+	public boolean isCompound() {
+		return compound;
 	}
 
 }

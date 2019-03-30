@@ -3,7 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.fragment.CodeToken;
@@ -122,8 +121,7 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 
 	@Override
 	public CommentBlockExtractor copy() {
-		val copy = new CommentBlockExtractor(this.langName, this.parentBlock);
-		return copy;
+		return new CommentBlockExtractor(this.langName, this.parentBlock);
 	}
 
 

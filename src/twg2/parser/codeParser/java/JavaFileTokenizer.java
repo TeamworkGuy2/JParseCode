@@ -1,6 +1,5 @@
 package twg2.parser.codeParser.java;
 
-import lombok.val;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
@@ -20,10 +19,10 @@ import twg2.text.tokenizer.StringParserBuilder;
 public class JavaFileTokenizer {
 
 	public static CodeTokenizerBuilder<CodeLanguageOptions.Java> createFileParser() {
-		val identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
-		val numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
+		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
-		val parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.JAVA)
+		var parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.JAVA)
 			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeTokenType.COMMENT)
 			.addParser(CodeStringTokenizer.createStringTokenizerForJava(), CodeTokenType.STRING)
 			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeTokenType.BLOCK)

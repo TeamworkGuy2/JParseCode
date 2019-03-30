@@ -3,7 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.method.MethodSigSimple;
@@ -125,14 +124,14 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	private Consume findingAccessModifiers(SimpleTree<CodeToken> tokenNode) {
-		val accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
+		var accessMod = AccessModifierExtractor.parseAccessModifier(keywordUtil, tokenNode);
 		if(accessMod != null) {
 			this.accessModifiers.add(accessMod);
 			return Consume.ACCEPTED;
 		}
 		else {
 			state = State.FINDING_RETURN_TYPE;
-			val res2 = findingReturnType(tokenNode);
+			var res2 = findingReturnType(tokenNode);
 			if(res2 == Consume.REJECTED) {
 				accessModifiers.clear();
 				state = State.FAILED;
@@ -143,10 +142,10 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	private Consume findingReturnType(SimpleTree<CodeToken> tokenNode) {
-		val res = updateAndCheckTypeParser(tokenNode);
+		var res = updateAndCheckTypeParser(tokenNode);
 		// TODO required because type parser has to look ahead
 		if(state == State.FINDING_NAME) {
-			val res2 = findingName(tokenNode);
+			var res2 = findingName(tokenNode);
 			if(res2.isAccept()) { return res2; }
 		}
 		return res;
@@ -168,14 +167,14 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	private Consume findingParams(SimpleTree<CodeToken> tokenNode) {
 		if(AstFragType.isBlock(tokenNode.getData(), "(")) {
 			state = State.COMPLETE;
-			val annotations = new ArrayList<>(annotationParser.getParserResult());
+			var annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
 
-			val comments = new ArrayList<>(commentParser.getParserResult());
+			var comments = new ArrayList<>(commentParser.getParserResult());
 			commentParser.recycle();
 
-			val params = MethodParametersParser.extractParamsFromSignature(keywordUtil, operatorUtil, annotationParser, tokenNode);
-			val accessMods = new ArrayList<>(accessModifiers);
+			var params = MethodParametersParser.extractParamsFromSignature(keywordUtil, operatorUtil, annotationParser, tokenNode);
+			var accessMods = new ArrayList<>(accessModifiers);
 			annotationParser.recycle();
 
 			methods.add(new MethodSigSimple(methodName, NameUtil.newFqName(parentBlock.declaration.getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
@@ -203,8 +202,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 	@Override
 	public MethodExtractor copy() {
-		val copy = new MethodExtractor(this.langName, this.keywordUtil, this.operatorUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
-		return copy;
+		return new MethodExtractor(this.langName, this.keywordUtil, this.operatorUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy());
 	}
 
 

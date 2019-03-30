@@ -1,5 +1,5 @@
 {
-	"version" : "0.16.1",
+	"version" : "0.17.0",
 	"name" : "jparse-code",
 	"description" : "An in-progress suite of parsing/transpilation tools for C#, Java, and TypeScript code.  Generates simple JSON ASTs.",
 	"homepage" : "https://github.com/TeamworkGuy2/JParseCode",

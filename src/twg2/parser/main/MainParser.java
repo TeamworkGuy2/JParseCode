@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
-import lombok.val;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
@@ -30,8 +29,10 @@ public class MainParser {
 		//System.out.print("press enter to continue: ");
 		//in.nextLine();
 
-		val parserWorkflow = ParserWorkflow.parseArgs(args);
+		var parserWorkflow = ParserWorkflow.parseArgs(args);
 		parserWorkflow.run(Level.INFO, executor, fileReader, perfTracking);
+
+		//System.out.println("FileTokenizer cnt=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
 
 		// TODO for VisualVM pause
 		//System.out.print("press enter to end: ");

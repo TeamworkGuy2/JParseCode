@@ -1,6 +1,5 @@
 package twg2.parser.codeParser.csharp;
 
-import lombok.val;
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.AccessModifierParser;
@@ -132,23 +131,23 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 	@Override
 	public boolean isFieldBlock(SimpleTree<CodeToken> block) {
 		if(block == null) { return true; }
-		val childs = block.getChildren();
+		var childs = block.getChildren();
 		// properties must have at-least one indexer (i.e. 'get' or 'set')
 		if(childs.size() == 0) { return false; }
 
-		val keywords = this.getLanguage().getKeywordUtil();
+		var keywords = this.getLanguage().getKeywordUtil();
 
 		boolean prevWasGetOrSet = false;
 		for(int i = 0, size = childs.size(); i < size; i++) {
-			val child = childs.get(i);
-			val nextChild = i < size - 1 ? childs.get(i + 1) : null;
-			val frag = child.getData();
-			val fragType = frag.getTokenType();
+			var child = childs.get(i);
+			var nextChild = i < size - 1 ? childs.get(i + 1) : null;
+			var frag = child.getData();
+			var fragType = frag.getTokenType();
 			if(fragType == CodeTokenType.COMMENT) {
 				continue;
 			}
-			val isGetOrSet = isGetOrSet(frag);
-			val isAccessMod = keywords.fieldModifiers().is(frag);
+			boolean isGetOrSet = isGetOrSet(frag);
+			boolean isAccessMod = keywords.fieldModifiers().is(frag);
 			if(isGetOrSet ||
 					(prevWasGetOrSet && (fragType == CodeTokenType.BLOCK || fragType == CodeTokenType.SEPARATOR)) ||
 					(isAccessMod && nextChild != null && isGetOrSet(nextChild.getData()))) {

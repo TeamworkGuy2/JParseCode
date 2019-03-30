@@ -3,7 +3,6 @@ package twg2.parser.codeParser.csharp;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.CodeToken;
@@ -43,7 +42,7 @@ public class CsUsingStatementExtractor extends AstParserReusableBase<CsUsingStat
 			}
 		}
 		else if(state == State.FOUND_USING) {
-			val data = tokenNode.getData();
+			var data = tokenNode.getData();
 			if(AstFragType.isIdentifier(data)) {
 				usingStatements.add(NameUtil.splitFqName(data.getText()));
 				state = State.COMPLETE;
@@ -72,8 +71,7 @@ public class CsUsingStatementExtractor extends AstParserReusableBase<CsUsingStat
 
 	@Override
 	public CsUsingStatementExtractor copy() {
-		val copy = new CsUsingStatementExtractor();
-		return copy;
+		return new CsUsingStatementExtractor();
 	}
 
 

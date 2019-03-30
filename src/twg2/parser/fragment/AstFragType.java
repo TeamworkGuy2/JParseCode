@@ -2,7 +2,6 @@ package twg2.parser.fragment;
 
 import java.util.function.BiPredicate;
 
-import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.Operator;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -94,13 +93,13 @@ public class AstFragType {
 		if(optionalAllows == null) {
 			optionalAllows = new CodeTokenType[0];
 		}
-		val childs = block.getChildren();
+		var childs = block.getChildren();
 		if(childs.size() == 0) {
 			return false;
 		}
 
-		for(val child : childs) {
-			val frag = child.getData();
+		for(SimpleTree<CodeToken> child : childs) {
+			var frag = child.getData();
 			if(ArrayUtil.indexOf(optionalAllows, frag.getTokenType()) < 0 && !cond.test(frag, frag.getTokenType())) {
 				return false;
 			}

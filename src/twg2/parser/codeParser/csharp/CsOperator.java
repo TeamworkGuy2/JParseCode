@@ -1,7 +1,6 @@
 package twg2.parser.codeParser.csharp;
 
 import lombok.Getter;
-import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.collections.primitiveCollections.IntArrayList;
@@ -140,7 +139,7 @@ public enum CsOperator implements Operator {
 
 		{
 			this.values = CsOperator.values();
-			val enumData = EnumSplitter.split(this.values, (e) -> e.srcSymbol,
+			var enumData = EnumSplitter.split(this.values, (e) -> e.srcSymbol,
 				(e) -> e.isArithmetic,
 				(e) -> e.isAssignment,
 				(e) -> e.isBitwise,
@@ -153,7 +152,7 @@ public enum CsOperator implements Operator {
 			this.keywords = enumData.getKey();
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.OPERATOR, es));
+			var enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.OPERATOR, es));
 			arithmeticOperators = enumSets[i++];
 			assignmentOperators = enumSets[i++];
 			bitwiseOperators = enumSets[i++];

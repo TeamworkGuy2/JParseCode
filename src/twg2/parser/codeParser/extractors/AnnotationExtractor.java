@@ -2,7 +2,6 @@ package twg2.parser.codeParser.extractors;
 
 import java.util.HashMap;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
@@ -25,17 +24,17 @@ public class AnnotationExtractor {
 	 * @return a parsed annotation
 	 */
 	public static AnnotationSig parseAnnotationBlock(CodeLanguage lang, CodeTokenType annotNameType, String annotName, SimpleTree<CodeToken> annotParamsNode) {
-		val paramChilds = annotParamsNode != null ? annotParamsNode.getChildren() : null;
-		val size = paramChilds != null ? paramChilds.size() : 0;
+		var paramChilds = annotParamsNode != null ? annotParamsNode.getChildren() : null;
+		int size = paramChilds != null ? paramChilds.size() : 0;
 
 		if(annotNameType != CodeTokenType.IDENTIFIER) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotName + "'"); }
 
-		val params = new HashMap<String, String>();
+		var params = new HashMap<String, String>();
 		boolean firstParamUnnamed = false;
 
 		// parse an annotation '(arguments, ...)'
 		if(size > 0) {
-			val annotParamsBlock = annotParamsNode.getData();
+			var annotParamsBlock = annotParamsNode.getData();
 			if(annotParamsBlock.getTokenType() != CodeTokenType.BLOCK) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotParamsBlock.getText() + "'"); }
 
 			// += 2, for the value and the separator
@@ -62,7 +61,7 @@ public class AnnotationExtractor {
 				// number: 'Annotation(1)' or 'Annotation(-15)'
 				int num;
 				if((num = DataTypeExtractor.isNumber(param, (i + 1 < size ? paramChilds.get(i + 1).getData() : null))) > 0) {
-					val paramValue = param.getText() + (i + 1 < size && num > 1 ? paramChilds.get(i + 1).getData().getText() : "");
+					String paramValue = param.getText() + (i + 1 < size && num > 1 ? paramChilds.get(i + 1).getData().getText() : "");
 					params.put(paramName, paramValue);
 					i += (num - 1);
 				}

@@ -3,7 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
@@ -101,8 +100,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 	@Override
 	public DataTypeExtractor copy() {
-		val copy = new DataTypeExtractor(this.lang, this.allowVoid);
-		return copy;
+		return new DataTypeExtractor(this.lang, this.allowVoid);
 	}
 
 
@@ -124,7 +122,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	/** Check if a tree node is possibly a data type (just a type name, no generics)
 	 */
 	public static <T> boolean isPossiblyType(KeywordUtil<? extends Keyword> keywordUtil, SimpleTree<CodeToken> node, boolean allowVoid) {
-		val nodeData = node.getData();
+		var nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordUtil.isKeyword(nodeData.getText()) || keywordUtil.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
 
@@ -178,33 +176,33 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 			throw new IllegalArgumentException("cannot parse a type signature containing '" + genericMark + "' (because this is a simple parser implementation)");
 		}
 
-		val sb = new StringBuilder(typeSig);
-		val genericParamSets = new ArrayList<String>();
+		var sb = new StringBuilder(typeSig);
+		var genericParamSets = new ArrayList<String>();
 		int i = 0;
 		while(true) {
-			val paramSet = extractFirstClosestPair(sb, "<", ">", genericMark + i);
+			var paramSet = extractFirstClosestPair(sb, "<", ">", genericMark + i);
 			if(paramSet == null) {
 				break;
 			}
 			if(!paramSet.startsWith("<") || !paramSet.endsWith(">")) {
 				throw new IllegalStateException("invalid generic type parameter list '" + paramSet + "'");
 			}
-			val paramSetStr = paramSet.substring(1, paramSet.length() - 1);
+			String paramSetStr = paramSet.substring(1, paramSet.length() - 1);
 			genericParamSets.add(paramSetStr);
 			i++;
 		}
 
 		// convert the generic parameters to TypeSig nested
-		val rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), "#");
-		val paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
-		val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
-		val isOptional = rootNameAndMarker.getKey().endsWith("?");
-		val root = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
+		var rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), "#");
+		String paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
+		var nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
+		boolean isOptional = rootNameAndMarker.getKey().endsWith("?");
+		var root = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
 		TypeSig.TypeSigSimple sig;
 
 		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
 		if(rootMarker > -1) {
-			val sigChilds = expandGenericParamSet(keywordUtil, rootMarker, genericParamSets);
+			var sigChilds = expandGenericParamSet(keywordUtil, rootMarker, genericParamSets);
 			sig = new TypeSig.TypeSigSimpleGeneric(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));
 		}
 		else {
@@ -228,24 +226,24 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	 */
 	public static List<TypeSig.TypeSigSimple> expandGenericParamSet(KeywordUtil<? extends Keyword> keywordUtil, int parentParamMarker, List<String> paramSets) {
 		String paramSetStr = paramSets.get(parentParamMarker);
-		val params = paramSetStr.split(", ");
-		val paramSigs = new ArrayList<TypeSig.TypeSigSimple>(params.length);
+		var params = paramSetStr.split(", ");
+		var paramSigs = new ArrayList<TypeSig.TypeSigSimple>(params.length);
 
 		for(String param : params) {
 			// Split the generic parameter name and possible marker indicating further nested generic type
-			val paramNameAndMarker = StringSplit.firstMatchParts(param, "#");
+			var paramNameAndMarker = StringSplit.firstMatchParts(param, "#");
 
 			// Create basic generic parameter using the name
-			val paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');
-			val nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
-			val isOptional = paramNameAndMarker.getKey().endsWith("?");
-			val paramSigInit = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
+			String paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');
+			var nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
+			boolean isOptional = paramNameAndMarker.getKey().endsWith("?");
+			var paramSigInit = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
 			TypeSig.TypeSigSimple paramSig;
 
 			// if this generic parameter has a marker, parse it's sub parameters and add them to a new compound generic type signature
 			int paramMarker = !StringCheck.isNullOrEmpty(paramNameAndMarker.getValue()) ? Integer.parseInt(paramNameAndMarker.getValue()) : -1;
 			if(paramMarker > -1) {
-				val childParams = expandGenericParamSet(keywordUtil, paramMarker, paramSets);
+				var childParams = expandGenericParamSet(keywordUtil, paramMarker, paramSets);
 				paramSig = new TypeSig.TypeSigSimpleGeneric(paramSigInit.getTypeName(), childParams, paramSigInit.getArrayDimensions(), paramSigInit.isNullable(), keywordUtil.isPrimitive(paramSigInit.getTypeName()));
 			}
 			// else just use the generic parameter's basic signature (no nested generic types)

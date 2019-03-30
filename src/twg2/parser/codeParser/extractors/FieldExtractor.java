@@ -3,7 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldSig;
@@ -126,7 +125,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 		}
 		else {
 			state = State.FINDING_DATA_TYPE;
-			val res2 = findingDataType(tokenNode);
+			var res2 = findingDataType(tokenNode);
 			if(res2 == Consume.REJECTED) {
 				accessModifiers.clear();
 				state = State.FAILED;
@@ -137,10 +136,10 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 
 
 	private Consume findingDataType(SimpleTree<CodeToken> tokenNode) {
-		val res = updateAndCheckTypeParser(tokenNode);
+		var res = updateAndCheckTypeParser(tokenNode);
 		// TODO because the type parser has to look ahead for now, but may not consume the look ahead token while also completing based on a look ahead
 		if(res == Consume.REJECTED && state == State.FINDING_NAME) {
-			val res2 = findingName(tokenNode);
+			var res2 = findingName(tokenNode);
 			if(res2.isAccept()) { return res2; }
 		}
 		return res;
@@ -162,13 +161,13 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 	private Consume foundNameCheck(SimpleTree<CodeToken> tokenNode) {
 		if((tokenNode == null || tokenNode.getData().getTokenType() != CodeTokenType.BLOCK || typeChecker.isFieldBlock(tokenNode))) {
 			state = State.COMPLETE;
-			val annotations = new ArrayList<>(annotationParser.getParserResult());
+			var annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
 
-			val comments = new ArrayList<>(commentParser.getParserResult());
+			var comments = new ArrayList<>(commentParser.getParserResult());
 			commentParser.recycle();
 
-			val accessMods = new ArrayList<>(accessModifiers);
+			var accessMods = new ArrayList<>(accessModifiers);
 
 			fields.add(new FieldSig(fieldName, NameUtil.newFqName(parentBlock.declaration.getFullName(), fieldName), fieldTypeSig, accessMods, annotations, comments));
 			accessModifiers.clear();
@@ -195,8 +194,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 
 	@Override
 	public FieldExtractor copy() {
-		val copy = new FieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy(), this.typeChecker);
-		return copy;
+		return new FieldExtractor(this.langName, this.keywordUtil, this.parentBlock, this.typeParser.copy(), this.annotationParser.copy(), this.commentParser.copy(), this.typeChecker);
 	}
 
 

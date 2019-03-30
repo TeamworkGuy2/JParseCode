@@ -1,7 +1,7 @@
 package twg2.parser.codeParser.codeStats;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -137,7 +137,7 @@ public class ParseDirectoryCodeFiles {
 		for(Path path : files) {
 			File file = path.toFile();
 			String fullFileName = file.getName();
-			char[] src = fileReader.readChars(new FileReader(file));
+			char[] src = fileReader.readChars(new FileInputStream(file));
 			int srcOff = 0;
 			int srcLen = src.length;
 			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");

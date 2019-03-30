@@ -4,7 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.16.1](N/A) - 2019-03-17
+### [0.17.0](N/A) - 2019-03-30
+Performance refactor, several libraries updated: JArrays, JCollectionUtil, JFileIo, JTextParser, and JTextTokenizer
+#### Changed
+* Changed to new `FileReadUtil.readChars(InputStream)` (`jfile-io@0.8.2`)
+* Switched lombok `val` usage to Java 9 `var`
+* Added `HashMap<String, *Keyword> keywordSet` field to `CsKeyword` and `JavaKeyword` for performance
+* Added some duplicate code in `IdentifierTokenizer` to work with optimized `CharConditions.ContainsFirstSpecial` constructor
+
+
+--------
+### [0.16.1](https://github.com/TeamworkGuy2/JParseCode/commit/4d9ae1065f328e0354e979ab90c21eee5ade2338) - 2019-03-17
 #### Fixed
 * Accidentally deleted compiled *.jar files in 0.16.0 release
 

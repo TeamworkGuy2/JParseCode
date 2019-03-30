@@ -3,7 +3,6 @@ package twg2.parser.tokenizers;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-import lombok.val;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
@@ -28,11 +27,11 @@ public class GenericTypeTokenizer {
 
 	public static CharParserMatchable _createGenericTypeTokenizer(int recursionDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
 		// the condition that parses identifiers nested inside the generic type definition
-		val nestedGenericTypeIdentifierCond = recursionDepth > 1 ? _createGenericTypeTokenizer(recursionDepth - 1, singleIdentifierParserConstructor) : singleIdentifierParserConstructor.get();
+		var nestedGenericTypeIdentifierCond = recursionDepth > 1 ? _createGenericTypeTokenizer(recursionDepth - 1, singleIdentifierParserConstructor) : singleIdentifierParserConstructor.get();
 
-		val typeIdentifierParser = Arrays.asList(singleIdentifierParserConstructor.get());
+		var typeIdentifierParser = Arrays.asList(singleIdentifierParserConstructor.get());
 		// TODO only matches generic types in the format '<a, b>', allow whitespace between '<'/'>' and after ','
-		val genericParamsParser = Arrays.asList(CharConditionPipe.createPipeOptionalSuffixesAny("generic type and array dimensions", Arrays.asList(
+		var genericParamsParser = Arrays.asList(CharConditionPipe.createPipeOptionalSuffixesAny("generic type and array dimensions", Arrays.asList(
 			CharConditionPipe.createPipeAllRequired("generic type signature", Arrays.asList(
 				new CharConditions.Literal("<", CharArrayList.of('<'), Inclusion.INCLUDE),
 				CharConditionPipe.createPipeRepeatableSeparator("generic type params",

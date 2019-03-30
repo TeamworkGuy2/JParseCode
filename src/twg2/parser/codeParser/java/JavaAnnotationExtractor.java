@@ -3,7 +3,6 @@ package twg2.parser.codeParser.java;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.parser.codeParser.extractors.AnnotationExtractor;
 import twg2.parser.fragment.AstFragType;
@@ -36,11 +35,11 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 
 	@Override
 	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
-		val lang = CodeLanguageOptions.JAVA;
+		var lang = CodeLanguageOptions.JAVA;
 
 		if(state != State.FOUND_ANNOTATION_MARK && AstFragType.isSeparator(tokenNode.getData(), "@")) {
 			if(state == State.FOUND_NAME) {
-				val annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
+				var annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
 				annotations.add(annot);
 				foundName = null;
 				foundNameType = null;
@@ -58,7 +57,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 			state = State.FAILED;
 		}
 		else if(state == State.FOUND_NAME) {
-			val annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
+			var annot = AnnotationExtractor.parseAnnotationBlock(lang, foundNameType, foundName, tokenNode);
 			annotations.add(annot);
 			foundName = null;
 			foundNameType = null;
@@ -86,8 +85,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 
 	@Override
 	public JavaAnnotationExtractor copy() {
-		val copy = new JavaAnnotationExtractor();
-		return copy;
+		return new JavaAnnotationExtractor();
 	}
 
 

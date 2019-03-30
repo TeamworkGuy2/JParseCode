@@ -1,9 +1,9 @@
 package twg2.parser.codeParser.java;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import lombok.Getter;
-import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.Keyword;
@@ -120,6 +120,7 @@ public enum JavaKeyword implements Keyword {
 	@Accessors(fluent = true)
 	public static class JavaKeywordUtil implements KeywordUtil<JavaKeyword> {
 		public final String[] keywords;
+		public final HashMap<String, JavaKeyword> keywordSet;
 		private final JavaKeyword[] values;
 		private final String[] primitives;
 		@Getter private final CodeTokenEnumSubSet<JavaKeyword> types;
@@ -134,7 +135,7 @@ public enum JavaKeyword implements Keyword {
 
 		{
 			this.values = JavaKeyword.values();
-			val enumData = EnumSplitter.split(this.values, (e) -> e.srcName,
+			var enumData = EnumSplitter.split(this.values, (e) -> e.srcName,
 					(e) -> e.isType,
 					(e) -> e.isClassModifier,
 					(e) -> e.isFieldModifier,
@@ -145,9 +146,15 @@ public enum JavaKeyword implements Keyword {
 					(e) -> e.isTypeLiteral
 			);
 			this.keywords = enumData.getKey();
+			this.keywordSet = new HashMap<>(this.keywords.length);
+			int k = 0;
+			for(String keyword : this.keywords) {
+				this.keywordSet.put(keyword, this.values[k]);
+				k++;
+			}
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
+			var enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
 			types = enumSets[i++];
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];
@@ -175,8 +182,9 @@ public enum JavaKeyword implements Keyword {
 
 		@Override
 		public JavaKeyword tryToKeyword(String str) {
-			int idx = Arrays.binarySearch(keywords, str);
-			return idx > -1 ? values[idx] : null;
+			//int idx = Arrays.binarySearch(keywords, str);
+			//return idx > -1 ? values[idx] : null;
+			return this.keywordSet.get(str);
 		}
 
 
@@ -188,7 +196,8 @@ public enum JavaKeyword implements Keyword {
 
 		@Override
 		public boolean isKeyword(String str) {
-			return Arrays.binarySearch(keywords, str) > -1;
+			//return Arrays.binarySearch(keywords, str) > -1;
+			return this.keywordSet.containsKey(str);
 		}
 
 

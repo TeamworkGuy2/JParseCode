@@ -77,8 +77,19 @@ public class ParserWorkflow {
 
 		ParsedResult parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
 
+		long end = System.nanoTime();
+
+		if(perfTracking != null) {
+			var readerStats = fileReader.getStats();
+			// print out file reader stats
+			System.out.println(readerStats.toString());
+			// print out total files stats
+			var fileSizes = perfTracking.getParseStats().entrySet().stream().mapToInt((entry) -> entry.getValue().getValue2());
+			System.out.println("Loaded " + perfTracking.getParseStats().size() + " files, total " + fileSizes.sum() + " bytes");
+		}
+
 		// TODO debugging
-		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (System.nanoTime() - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
+		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (end - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
 
 		if(log != null) {
 			parseRes.log(log, logLevel, true);

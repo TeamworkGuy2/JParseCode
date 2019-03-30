@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.type.TypeSig;
@@ -54,7 +53,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 		this.commentParser = commentParser;
 		this.state = State.INIT;
 
-		val enumSig = parentBlock.declaration;
+		var enumSig = parentBlock.declaration;
 		if(enumSig.getParams().size() > 0) {
 			enumType = new TypeSig.TypeSigSimpleGeneric(enumSig.getSimpleName(), enumSig.getParams(), 0, false, false);
 		}
@@ -175,8 +174,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 
 	@Override
 	public AstParser<List<FieldDef>> copy() {
-		val copy = new JavaEnumMemberExtractor(keywordUtil, parentBlock, commentParser.recycle());
-		return copy;
+		return new JavaEnumMemberExtractor(keywordUtil, parentBlock, commentParser.recycle());
 	}
 
 
@@ -197,15 +195,15 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 
 	private void updateLastAddedEnumMember(SimpleTree<CodeToken> tokenNode) {
 		// remove the minimum viable enum OR partially complete enum with args that was added when the previous identifier node OR argument block was found, this is going to be a full enum with arguments OR a body block
-		val partialEnum = enumMembers.remove(enumMembers.size() - 1);
+		var partialEnum = enumMembers.remove(enumMembers.size() - 1);
 		nextMemberComments = partialEnum.getComments();
 		addEnumMember(nextMemberName, tokenNode); // TODO if this is the enum body block, include the previous initalizer (the arguments (...)) as well
 	}
 
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
-		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
-		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
+		var comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
+		var field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.emptyList(), comments, tokenNode);
 		nextMemberComments = null;
 		commentParser.recycle();

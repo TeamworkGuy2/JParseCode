@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.val;
 import twg2.arrays.ArrayUtil;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
@@ -58,7 +57,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 		this.state = State.INIT;
 
 		// determine the enum's base type
-		val enumExtends = parentBlock.declaration.getExtendImplementSimpleNames();
+		var enumExtends = parentBlock.declaration.getExtendImplementSimpleNames();
 		if(enumExtends == null || enumExtends.isEmpty()) {
 			enumType = new TypeSig.TypeSigSimpleBase(CsKeyword.INT.toSrc(), 0, false, true);
 		}
@@ -112,7 +111,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 			// if a '=' symbol is found, the enum has a custom value (i.e. 'MY_ENUM = 2, ...;')
 			if(AstFragType.isOperator(tokenData, CsOperator.ASSIGNMENT)) {
 				// remove the minimum viable enum that was added when the previous identifier node was found, this is going to be a full enum with a value
-				val minimumEnum = enumMembers.remove(enumMembers.size() - 1);
+				var minimumEnum = enumMembers.remove(enumMembers.size() - 1);
 				nextMemberComments = minimumEnum.getComments();
 				state = State.FOUND_ASSIGNMENT_SYMBOL;
 				return true;
@@ -160,8 +159,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 
 	@Override
 	public AstParser<List<FieldDef>> copy() {
-		val copy = new CsEnumMemberExtractor(keywordUtil, parentBlock, commentParser.copy());
-		return copy;
+		return new CsEnumMemberExtractor(keywordUtil, parentBlock, commentParser.copy());
 	}
 
 
@@ -172,8 +170,8 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
-		val comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
-		val field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
+		var comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
+		var field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
 				Arrays.asList(CsKeyword.PUBLIC), Collections.<AnnotationSig>emptyList(), comments, tokenNode);
 		nextMemberComments = null;
 		commentParser.recycle();

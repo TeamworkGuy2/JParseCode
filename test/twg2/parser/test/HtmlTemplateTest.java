@@ -3,8 +3,6 @@ package twg2.parser.test;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.val;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -128,16 +126,16 @@ public class HtmlTemplateTest {
 		char[] srcChars = src.toCharArray();
 		CodeFileSrc docParser = parser.tokenizeDocument(srcChars, 0, srcChars.length, srcName, null);
 
-		val childs = docParser.astTree.getChildren();
+		var childs = docParser.astTree.getChildren();
 		for(int i = childs.size() - 1; i > -1; i--) {
-			val child = childs.get(i);
-			val frag = child.getData().getToken();
-			val text = child.getData().getText();
-			val startI = frag.getOffsetStart();
-			val endI = frag.getOffsetEnd();
+			var child = childs.get(i);
+			var frag = child.getData().getToken();
+			var text = child.getData().getText();
+			var startI = frag.getOffsetStart();
+			var endI = frag.getOffsetEnd();
 			boolean foundOne = false;
 
-			for(val var : vars) {
+			for(var var : vars) {
 				if(var.isMatch(text)) {
 					if(foundOne) {
 						throw new IllegalStateException("found two vars both matching token " + i + ": " + frag + ", text: '" + text + "'");

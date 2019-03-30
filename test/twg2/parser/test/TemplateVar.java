@@ -3,12 +3,10 @@ package twg2.parser.test;
 import java.util.List;
 import java.util.function.Function;
 
-import lombok.val;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.fragment.TextFragmentRefToken;
 import twg2.text.stringSearch.StringIndex;
 import twg2.text.stringUtils.StringJoin;
-
 
 /**
  * @author TeamworkGuy2
@@ -41,9 +39,9 @@ public class TemplateVar {
 
 
 	public int insert(TextFragmentRefToken<? extends CodeTokenType> frag, boolean preserveIndentation, StringBuilder srcDst, int off, int len) {
-		val name = inbetweenString(frag.getText(), startName + "(name=\"", "\")" + endMark);
+		var name = inbetweenString(frag.getText(), startName + "(name=\"", "\")" + endMark);
 		String replacementStr = null;
-		val lines = linesGetter.apply(name);
+		var lines = linesGetter.apply(name);
 
 		if(preserveIndentation) {
 			int ldx = StringIndex.lastIndexOf(srcDst, 0, off, '\n');

@@ -1,7 +1,7 @@
 package twg2.parser.main;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.val;
 import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
@@ -31,11 +30,11 @@ import twg2.text.stringUtils.StringSplit;
 public class ParseCodeFile {
 
 	public static List<CodeFileSrc> parseFiles(List<Path> files, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
-		val parsedFiles = new ArrayList<CodeFileSrc>(files.size());
+		var parsedFiles = new ArrayList<CodeFileSrc>(files.size());
 
 		for(Path path : files) {
-			val file = path.toFile();
-			val parsedFile = parseFile(file, fileReader, perfTracking);
+			var file = path.toFile();
+			var parsedFile = parseFile(file, fileReader, perfTracking);
 			parsedFiles.add(parsedFile);
 		}
 
@@ -44,13 +43,13 @@ public class ParseCodeFile {
 
 
 	public static CodeFileSrc parseFile(File file, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
-		val fileStr = file.toString();
-		val perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
-		val stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
+		String fileStr = file.toString();
+		var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
+		var stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
 		long start = 0;
 		if(perfTracker != null) { start = System.nanoTime(); }
 
-		char[] src = fileReader.readChars(new FileReader(file));
+		char[] src = fileReader.readChars(new FileInputStream(file));
 
 		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
 
@@ -60,9 +59,9 @@ public class ParseCodeFile {
 
 		String fileName = file.getName();
 		String fileExt = StringSplit.lastMatch(fileName, ".");
-		val lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
+		var lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
 		if(lang != null) {
-			val parsedFileInfo = parseCode(fileStr, lang, src, 0, src.length, perfTracker, stepsTracker);
+			var parsedFileInfo = parseCode(fileStr, lang, src, 0, src.length, perfTracker, stepsTracker);
 			return parsedFileInfo;
 		}
 		else {
@@ -72,7 +71,7 @@ public class ParseCodeFile {
 
 
 	public static CodeFileSrc parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepLogger stepsTracker) {
-		val parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
+		var parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
 		try {
 			CodeFileSrc parsedFileInfo = lang.getParser().apply(parseParams);
 			return parsedFileInfo;
@@ -83,8 +82,8 @@ public class ParseCodeFile {
 
 
 	public static void parseAndPrintFileStats(Path projDir, String[] fileTypes, Path dstLog, FileReadUtil fileReader) throws IOException {
-		val files = ParseDirectoryCodeFiles.loadFiles(projDir, fileTypes);
-		val results = ParseDirectoryCodeFiles.parseFileStats(projDir, files, fileReader);
+		var files = ParseDirectoryCodeFiles.loadFiles(projDir, fileTypes);
+		var results = ParseDirectoryCodeFiles.parseFileStats(projDir, files, fileReader);
 
 		Json.getDefaultInst().setPrettyPrint(true);
 		Json.stringify(results, dstLog.toFile());
@@ -105,15 +104,15 @@ public class ParseCodeFile {
 
 
 	public static void parseAndPrintCSharpFileInfo() throws IOException, FileFormatException {
-		val fileReader = FileReadUtil.threadLocalInst();
+		var fileReader = FileReadUtil.threadLocalInst();
 		PerformanceTrackers perfTracking = null;
 		Path file = Paths.get("./rsc/ITrackSearchService.cs");
 		//Path file = Paths.get("./rsc/TrackInfo.cs");
-		val files = Arrays.asList(file);
-		val parsedFiles = parseFiles(files, fileReader, perfTracking);
+		var files = Arrays.asList(file);
+		var parsedFiles = parseFiles(files, fileReader, perfTracking);
 
 		for(int i = 0, sizeI = files.size(); i < sizeI; i++) {
-			val parsedFile = parsedFiles.get(i);
+			var parsedFile = parsedFiles.get(i);
 			ParserMisc.printParseFileInfo(files.get(i).toString(), parsedFile, true, true, true, true, true);
 		}
 	}

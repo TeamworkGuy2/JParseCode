@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import lombok.val;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntListSorted;
 import twg2.parser.codeParser.CommentStyle;
@@ -42,7 +41,7 @@ public class CommentAndWhitespaceExtractor {
 		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
-		val parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
+		var parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
 			.addParser(commentParser, CodeTokenType.COMMENT)
 			.addParser(stringParser, CodeTokenType.STRING)
 			.build();
@@ -52,7 +51,7 @@ public class CommentAndWhitespaceExtractor {
 
 	public static ParsedFileStats calcCommentsAndWhitespaceLinesTreeStats(String srcId, char[] src, int srcOff, int srcLen, IntListSorted lineStartOffsets, SimpleTree<CodeToken> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
-		val tokensPerLine = documentTreeToTokensPerLine(tree);
+		var tokensPerLine = documentTreeToTokensPerLine(tree);
 
 		// find lines containing only comments (with optional whitespace)
 		IntArrayList commentLines = new IntArrayList();
@@ -67,7 +66,7 @@ public class CommentAndWhitespaceExtractor {
 				tokensPerLine.add(new ArrayList<>());
 			}
 
-			val lineTokens = tokensPerLine.get(i);
+			var lineTokens = tokensPerLine.get(i);
 			if(lineTokens.size() > 0 && lineTokens.stream().allMatch((t) -> t.getTokenType() == CodeTokenType.COMMENT)) {
 				if(lineTokens.size() > 1) {
 					// TODO this was causing issues parsing a particular project that had a number of multiple-comments-per-line files
@@ -98,8 +97,7 @@ public class CommentAndWhitespaceExtractor {
 		System.out.println("line counts: whitespace=" + whitespaceLines.size() + ", comment=" + commentLines.size() + ", total=" + (whitespaceLines.size() + commentLines.size()));
 		System.out.println("line numbers:\nwhitespace: " + whitespaceLines + "\ncomments: " + commentLines);
 
-		val stats = new ParsedFileStats(srcId, srcLen, whitespaceLines, commentLines, lineStartOffsets.size());
-		return stats;
+		return new ParsedFileStats(srcId, srcLen, whitespaceLines, commentLines, lineStartOffsets.size());
 	}
 
 
@@ -107,7 +105,7 @@ public class CommentAndWhitespaceExtractor {
 		// flatten the document tree into a nested list of tokens per source line of text
 		List<List<CodeToken>> tokensPerLine = new ArrayList<>();
 
-		val treeTraverseParams = SimpleTreeTraverseParameters.of(tree, false, TreeTraversalOrder.PRE_ORDER)
+		var treeTraverseParams = SimpleTreeTraverseParameters.of(tree, false, TreeTraversalOrder.PRE_ORDER)
 				.setSkipRoot(true)
 				.setConsumerSimpleTree((branch, index, size, depth, parentBranch) -> {
 					int startLine0 = branch.getToken().getLineStart();

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.parser.codeParser.Keyword;
@@ -25,7 +24,7 @@ public class MethodParametersParser {
 	// TODO does not support default parameters
 	public static List<ParameterSig> extractParamsFromSignature(KeywordUtil<? extends Keyword> keywordUtil, OperatorUtil<? extends Operator> operatorUtil,
 			AstParser<List<AnnotationSig>> annotationParser, SimpleTree<CodeToken> sigNode) {
-		val childs = sigNode.getChildren();
+		var childs = sigNode.getChildren();
 		int size = childs.size();
 
 		if(size == 0) {
@@ -70,7 +69,7 @@ public class MethodParametersParser {
 			// read parameter type and name
 			token = childs.get(i + 0).getData();
 
-			val type = token.getText();
+			var type = token.getText();
 
 			boolean optional = false;
 			token = childs.get(i + 1).getData();
@@ -81,7 +80,7 @@ public class MethodParametersParser {
 				i++;
 			}
 
-			val name = childs.get(i + 1).getData().getText();
+			var name = childs.get(i + 1).getData().getText();
 
 			// read parameter default value if available
 			String defaultValue = null;
@@ -94,7 +93,7 @@ public class MethodParametersParser {
 
 			List<AnnotationSig> annotations = annotationParser.getParserResult();
 			annotations = annotations.size() > 0 ? new ArrayList<>(annotations) : null;
-			val param = new ParameterSig(name, type, paramMods, annotations, optional, defaultValue);
+			var param = new ParameterSig(name, type, paramMods, annotations, optional, defaultValue);
 			params.add(param);
 		}
 

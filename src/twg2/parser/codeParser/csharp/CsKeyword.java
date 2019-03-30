@@ -1,9 +1,9 @@
 package twg2.parser.codeParser.csharp;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import lombok.Getter;
-import lombok.val;
 import lombok.experimental.Accessors;
 import twg2.arrays.ArrayUtil;
 import twg2.parser.codeParser.Keyword;
@@ -148,6 +148,7 @@ public enum CsKeyword implements Keyword {
 	@Accessors(fluent = true)
 	public static class CsKeywordUtil implements KeywordUtil<CsKeyword> {
 		public final String[] keywords;
+		public final HashMap<String, CsKeyword> keywordSet;
 		private final CsKeyword[] values;
 		private final String[] primitives;
 		@Getter private final CodeTokenEnumSubSet<CsKeyword> types;
@@ -162,7 +163,7 @@ public enum CsKeyword implements Keyword {
 
 		{
 			this.values = CsKeyword.values();
-			val enumData = EnumSplitter.split(this.values, (e) -> e.srcName,
+			var enumData = EnumSplitter.split(this.values, (e) -> e.srcName,
 				(e) -> e.isType,
 				(e) -> e.isClassModifier,
 				(e) -> e.isFieldModifier,
@@ -173,9 +174,15 @@ public enum CsKeyword implements Keyword {
 				(e) -> e.isTypeLiteral
 			);
 			this.keywords = enumData.getKey();
+			this.keywordSet = new HashMap<>(this.keywords.length);
+			int k = 0;
+			for(String keyword : this.keywords) {
+				this.keywordSet.put(keyword, this.values[k]);
+				k++;
+			}
 
 			int i = 0;
-			val enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
+			var enumSets = ArrayUtil.map(enumData.getValue(), CodeTokenEnumSubSet.class, (es) -> new CodeTokenEnumSubSet<>(CodeTokenType.KEYWORD, es));
 			types = enumSets[i++];
 			classModifiers = enumSets[i++];
 			fieldModifiers = enumSets[i++];
@@ -206,8 +213,9 @@ public enum CsKeyword implements Keyword {
 
 		@Override
 		public CsKeyword tryToKeyword(String str) {
-			int idx = Arrays.binarySearch(keywords, str);
-			return idx > -1 ? values[idx] : null;
+			//int idx = Arrays.binarySearch(keywords, str);
+			//return idx > -1 ? values[idx] : null;
+			return this.keywordSet.get(str);
 		}
 
 
@@ -219,7 +227,8 @@ public enum CsKeyword implements Keyword {
 
 		@Override
 		public boolean isKeyword(String str) {
-			return Arrays.binarySearch(keywords, str) > -1;
+			//return Arrays.binarySearch(keywords, str) > -1;
+			return this.keywordSet.containsKey(str);
 		}
 
 

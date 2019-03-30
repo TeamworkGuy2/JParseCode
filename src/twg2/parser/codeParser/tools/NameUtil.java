@@ -3,7 +3,6 @@ package twg2.parser.codeParser.tools;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.val;
 import twg2.text.stringUtils.StringJoin;
 import twg2.text.stringUtils.StringSplit;
 
@@ -43,7 +42,7 @@ public class NameUtil {
 
 	public static List<String> allExceptLastFqName(List<String> names) {
 		int size = names.size() - 1;
-		val resNames = new ArrayList<String>(size);
+		var resNames = new ArrayList<String>(size);
 		for(int i = 0; i < size; i++) {
 			resNames.add(names.get(i));
 		}

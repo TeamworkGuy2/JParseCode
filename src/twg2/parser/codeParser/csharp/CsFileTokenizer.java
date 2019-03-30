@@ -1,6 +1,5 @@
 package twg2.parser.codeParser.csharp;
 
-import lombok.val;
 import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.fragment.CodeTokenType;
@@ -20,18 +19,21 @@ import twg2.text.tokenizer.StringParserBuilder;
  * @since 2015-2-9
  */
 public class CsFileTokenizer {
+	public static int cnt = 0;
 
 	public static CodeTokenizerBuilder<CodeLanguageOptions.CSharp> createFileParser() {
-		val identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
-		val numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
+		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
-		val parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.C_SHARP)
+		var parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.C_SHARP)
 			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeTokenType.COMMENT)
 			.addParser(CodeStringTokenizer.createStringTokenizerForCSharp(), CodeTokenType.STRING)
 			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeTokenType.BLOCK)
 			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeTokenType.BLOCK)
 			.addParser(createAnnotationTokenizer(), CodeTokenType.BLOCK)
 			.addParser(identifierParser, (text, off, len) -> {
+				cnt++;
+				// TODO performance
 				return CsKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
 			})
 			.addParser(createOperatorTokenizer(), CodeTokenType.OPERATOR)
