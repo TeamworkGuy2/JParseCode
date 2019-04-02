@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import twg2.collections.dataStructures.PairList;
-import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParserActionLogger;
 import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
@@ -93,8 +93,8 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 				var res = parser.tokenizeDocument(params.src(), params.srcOff(), params.srcLen(), fileName, params.parserStepsTracker());
 
 				if(params.parseTimes() != null) {
-					params.parseTimes().log(TrackerAction.SETUP, setupDone - start);
-					params.parseTimes().log(TrackerAction.TOKENIZE, System.nanoTime() - setupDone);
+					params.parseTimes().setActionTime(TrackerAction.SETUP, setupDone - start);
+					params.parseTimes().setActionTime(TrackerAction.TOKENIZE, System.nanoTime() - setupDone);
 				}
 
 				return res;
@@ -114,7 +114,7 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
 	public static <_T_LANG extends CodeLanguage> CodeFileSrc tokenizeCodeFile(PairList<CharParserFactory, TextTransformer<CodeTokenType>> tokenizers,
-			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, TokenizeStepLogger stepsDetails) {
+			char[] src, int srcOff, int srcLen, _T_LANG lang, String srcName, ParserActionLogger stepsDetails) {
 
 		var input = TextCharsParser.of(src, srcOff, srcLen);
 
@@ -142,7 +142,7 @@ public class CodeTokenizerBuilder<T_LANG extends CodeLanguage> {
 	 * @param stepsDetails optional tracker to keep track of parser stats
 	 * @return a {@link SimpleTree} containing tokens parsed from the input
 	 */
-	public static <D extends TextToken<S, T>, T, S> SimpleTree<D> tokenizeDocument(String srcName, TextParser input, TokenizeStepLogger stepsDetails,
+	public static <D extends TextToken<S, T>, T, S> SimpleTree<D> tokenizeDocument(String srcName, TextParser input, ParserActionLogger stepsDetails,
 			PairList<CharParserFactory, TextTransformer<T>> tokenizers, D root, BiFunction<T, TextFragmentRefImpl, ? extends D> fragmentConstructor,
 			Function<? super D, Boolean> isParent, IsParentChild<? super D> isInside) {
 		SimpleTreeImpl<D> tree = new SimpleTreeImpl<>(root);

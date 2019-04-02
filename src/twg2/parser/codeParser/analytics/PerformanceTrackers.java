@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
 
 import twg2.collections.builder.ListBuilder;
 import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
@@ -24,14 +23,17 @@ import twg2.tuple.Tuples;
  * @since 2016-09-11
  */
 public class PerformanceTrackers implements JsonWritableSig {
-	private Function<String, ParseTimes> parseTimesFactory = (srcName) -> new ParseTimes();
-	private Function<String, TokenizeStepLogger> stepDetailsFactory = (srcName) -> new TokenizeStepLogger();
-	private HashMap<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>> fileParseStats = new HashMap<>();
+	private final HashMap<String, Tuple3<ParseTimes, ParserActionLogger, Integer>> fileStats;
+
+
+	public PerformanceTrackers() {
+		this.fileStats = new HashMap<>();
+	}
 
 
 	public void log(TrackerAction action, String srcName, long timeNanos) {
 		var stat = getOrCreateParseStats(srcName, null);
-		stat.getValue0().log(action, timeNanos);
+		stat.getValue0().setActionTime(action, timeNanos);
 	}
 
 
@@ -46,57 +48,61 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public TokenizeStepLogger getOrCreateStepDetails(String srcName) {
+	public ParserActionLogger getOrCreateStepDetails(String srcName) {
 		return getOrCreateParseStats(srcName, null).getValue1();
 	}
 
 
 	public void setSrcSize(String srcName, int fileSize) {
-		var stats = fileParseStats.get(srcName);
-		var inst = (stats == null
-				? Tuples.of(parseTimesFactory.apply(srcName), stepDetailsFactory.apply(srcName), fileSize)
-				: Tuples.of(stats.getValue0(), stats.getValue1(), fileSize));
-		fileParseStats.put(srcName, inst);
+		synchronized(fileStats) {
+			var stats = fileStats.get(srcName);
+			var inst = (stats == null
+					? Tuples.of(new ParseTimes(), new ParserActionLogger(), fileSize)
+					: Tuples.of(stats.getValue0(), stats.getValue1(), fileSize));
+			fileStats.put(srcName, inst);
+		}
 	}
 
 
-	public Map<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>> getParseStats() {
-		return this.fileParseStats;
+	public Map<String, Tuple3<ParseTimes, ParserActionLogger, Integer>> getParseStats() {
+		return this.fileStats;
 	}
 
 
-	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> getTopParseTimes(boolean sortAscending, int size) {
+	public List<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> getTopParseTimes(boolean sortAscending, int size) {
 		var list = ListBuilder.mutable(
-			this.fileParseStats.entrySet().stream()
+			this.fileStats.entrySet().stream()
 				.sorted(PerformanceTrackers.createParseTimesSorter(sortAscending)).iterator()
 		);
 		return (size < 0 ? list.subList(list.size() + size, list.size()) : list.subList(0, size));
 	}
 
 
-	public List<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> getTopParseStepDetails(boolean sortAscending, int size) {
+	public List<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> getTopParseStepDetails(boolean sortAscending, int size) {
 		var list = ListBuilder.mutable(
-			this.fileParseStats.entrySet().stream()
+			this.fileStats.entrySet().stream()
 				.sorted(PerformanceTrackers.createParseStepDetailsSorter(sortAscending)).iterator()
 		);
 		return (size < 0 ? list.subList(list.size() + size, list.size()) : list.subList(0, size));
 	}
 
 
-	private Tuple3<ParseTimes, TokenizeStepLogger, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
-		var stats = fileParseStats.get(srcName);
-		if(stats == null) {
-			var inst = Tuples.of(parseTimesFactory.apply(srcName), stepDetailsFactory.apply(srcName), fileSize);
-			fileParseStats.put(srcName, inst);
-			return inst;
+	private Tuple3<ParseTimes, ParserActionLogger, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
+		synchronized(fileStats) {
+			var stats = fileStats.get(srcName);
+			if(stats == null) {
+				var inst = Tuples.of(new ParseTimes(), new ParserActionLogger(), fileSize);
+				fileStats.put(srcName, inst);
+				return inst;
+			}
+			return stats;
 		}
-		return stats;
 	}
 
 
 	@Override
 	public void toJson(Appendable dst, WriteSettings st) throws IOException {
-		for(var stat : fileParseStats.entrySet()) {
+		for(var stat : fileStats.entrySet()) {
 			dst.append("{ ");
 			dst.append("\"file\": \"");
 			dst.append(stat.getKey());
@@ -113,11 +119,11 @@ public class PerformanceTrackers implements JsonWritableSig {
 
 	@Override
 	public String toString() {
-		return toString(fileParseStats.entrySet().iterator());
+		return toString(fileStats.entrySet().iterator());
 	}
 
 
-	public static final String toString(Iterator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> parseStatsIter) {
+	public static final String toString(Iterator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> parseStatsIter) {
 		var sb = new StringBuilder();
 		while(parseStatsIter.hasNext()) {
 			var stat = parseStatsIter.next();
@@ -134,7 +140,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> createParseTimesSorter(boolean sortAscending) {
+	private static final Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseTimesSorter(boolean sortAscending) {
 		if(sortAscending) {
 			return (a, b) -> (int)(a.getValue().getValue0().getTotalNs() - b.getValue().getValue0().getTotalNs());
 		}
@@ -144,7 +150,7 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, TokenizeStepLogger, Integer>>> createParseStepDetailsSorter(boolean sortAscending) {
+	private static final Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseStepDetailsSorter(boolean sortAscending) {
 		if(sortAscending) {
 			return (a, b) -> (int)(a.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS) - b.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS));
 		}

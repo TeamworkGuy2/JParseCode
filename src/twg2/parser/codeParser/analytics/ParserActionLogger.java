@@ -17,9 +17,9 @@ import twg2.text.tokenizer.analytics.TypedLogger;
  * @author TeamworkGuy2
  * @since 2016-09-11
  */
-public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettings>, JsonWritableSig {
+public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettings>, JsonWritableSig {
 
-	static class TypedAction {
+	static class CountAndDurationLog {
 		String msg;
 		long count;
 		double durationMilliseconds;
@@ -56,15 +56,15 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	Map<ParserAction, TypedAction> actions;
+	Map<ParserAction, CountAndDurationLog> actions;
 
 
-	public TokenizeStepLogger() {
+	public ParserActionLogger() {
 		this.actions = new EnumMap<>(ParserAction.class);
 	}
 
 
-	public TypedAction getLog(ParserAction action) {
+	public CountAndDurationLog getLog(ParserAction action) {
 		return this.actions.get(action);
 	}
 
@@ -169,17 +169,17 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	private TypedAction getTypedAction(ParserAction action) {
-		TypedAction data = actions.get(action);
+	private CountAndDurationLog getTypedAction(ParserAction action) {
+		var data = actions.get(action);
 		if(data == null) {
-			data = new TypedAction();
+			data = new CountAndDurationLog();
 			actions.put(action, data);
 		}
 		return data;
 	}
 
 
-	public static void toJsons(Map<String, TokenizeStepLogger> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
+	public static void toJsons(Map<String, ParserActionLogger> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
 		JsonStringify.inst.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
 			var stat = entry.getValue();
@@ -190,7 +190,7 @@ public class TokenizeStepLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	public static String toStrings(Map<String, TokenizeStepLogger> fileParserDetails) {
+	public static String toStrings(Map<String, ParserActionLogger> fileParserDetails) {
 		var sb = new StringBuilder();
 
 		for(var entry : fileParserDetails.entrySet()) {

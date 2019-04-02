@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 import twg2.io.files.FileFormatException;
-import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.workflow.ParserWorkflow;
@@ -18,21 +17,18 @@ import twg2.parser.workflow.ParserWorkflow;
 public class MainParser {
 
 	public static void main(String[] args) throws IOException, FileFormatException {
-		boolean multithread = false;
-		boolean logPerformance = false;
-		ExecutorService executor = multithread ? Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) : null;
+		var parserWorkflow = ParserWorkflow.parseArgs(args);
+		int threads = parserWorkflow.getThreadCount();
+		boolean logPerformance = parserWorkflow.isDebug();
+		ExecutorService executor = threads > 1 ? Executors.newFixedThreadPool(threads) : null;
 		PerformanceTrackers perfTracking = logPerformance ? new PerformanceTrackers() : null;
-		FileReadUtil fileReader = FileReadUtil.threadLocalInst();
 
 		// TODO for VisualVM pause
 		//java.util.Scanner in = new java.util.Scanner(System.in);
 		//System.out.print("press enter to continue: ");
 		//in.nextLine();
 
-		var parserWorkflow = ParserWorkflow.parseArgs(args);
-		parserWorkflow.run(Level.INFO, executor, fileReader, perfTracking);
-
-		//System.out.println("FileTokenizer cnt=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
+		parserWorkflow.run(Level.INFO, executor, perfTracking);
 
 		// TODO for VisualVM pause
 		//System.out.print("press enter to end: ");
@@ -42,11 +38,14 @@ public class MainParser {
 		//ParseCodeFile.parseAndPrintFileStats();
 
 		if(logPerformance) {
-			System.out.println("\n==== Parse Timings (millis) ====");
+			System.out.println("FileTokenizer identifier check cnt=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
+			System.out.println("BlockExtractor accept next token cnt=" + twg2.parser.codeParser.extractors.BlockExtractor.acceptNextCalls);
+
+			System.out.println("\n==== Parse Timings (slowest 10 in millis) ====");
 			var perfData = perfTracking.getTopParseTimes(true, -10);
 			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
 
-			System.out.println("\n==== Parse Step Details (millis) ====");
+			System.out.println("\n==== Parse Step Details (slowest 10 in millis) ====");
 			perfData = perfTracking.getTopParseStepDetails(true, -10);
 			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
 

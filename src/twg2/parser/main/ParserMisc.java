@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -83,12 +82,12 @@ public class ParserMisc {
 
 
 	public static <T_BLOCK extends BlockType> void parseFileSet(List<Path> paths, ProjectClassSet.Intermediate<T_BLOCK> dstFileSet,
-			ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
+			ExecutorService executor, ThreadLocal<FileReadUtil> fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		@SuppressWarnings("unchecked")
 		var dstFiles = (ProjectClassSet.Intermediate<BlockType>)dstFileSet;
 
 		if(executor != null) {
-			List<CodeFileParsed.Intermediate<BlockType>> dst = Collections.synchronizedList(new ArrayList<CodeFileParsed.Intermediate<BlockType>>());
+			var dst = new ArrayList<CodeFileParsed.Intermediate<BlockType>>();
 			var processedFiles = new HashSet<Path>();
 
 			// TODO should add a consumeBlocks or similar function, since we don't have a result to return
@@ -103,7 +102,7 @@ public class ParserMisc {
 					File file = path.toFile();
 					var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(file.toString()) : null;
 
-					CodeFileSrc parsedFile = ParseCodeFile.parseFile(file, fileReader, perfTracking);
+					CodeFileSrc parsedFile = ParseCodeFile.parseFile(file, fileReader.get(), perfTracking);
 
 					long start = 0;
 					if(perfTracking != null) { start = System.nanoTime(); }
@@ -113,11 +112,13 @@ public class ParserMisc {
 
 					for(var block : blockDeclarations) {
 						var fileParsed = new CodeFileParsed.Intermediate<>(parsedFile, block.getValue(), block.getKey());
-						dst.add(fileParsed);
+						synchronized(dst) {
+							dst.add(fileParsed);
+						}
 					}
 
 					if(perfTracker != null) {
-						perfTracker.log(TrackerAction.PARSE, System.nanoTime() - start);
+						perfTracker.setActionTime(TrackerAction.PARSE, System.nanoTime() - start);
 					}
 
 					return parsedFile;
@@ -126,13 +127,15 @@ public class ParserMisc {
 				}
 			});
 
-			for(int i = 0, size = dst.size(); i < size; i++) {
-				var res = dst.get(i);
-				dstFiles.addCompilationUnit(res.parsedClass.getSignature().getFullName(), res);
+			synchronized(dst) {
+				for(int i = 0, size = dst.size(); i < size; i++) {
+					var res = dst.get(i);
+					dstFiles.addCompilationUnit(res.parsedClass.getSignature().getFullName(), res);
+				}
 			}
 		}
 		else {
-			List<CodeFileSrc> parsedFiles = ParseCodeFile.parseFiles(paths, fileReader, perfTracking);
+			List<CodeFileSrc> parsedFiles = ParseCodeFile.parseFiles(paths, fileReader.get(), perfTracking);
 
 			for(int i = 0, sizeI = paths.size(); i < sizeI; i++) {
 				var parsedFile = parsedFiles.get(i);
@@ -151,7 +154,7 @@ public class ParserMisc {
 					}
 
 					if(perfTracker != null) {
-						perfTracker.log(TrackerAction.PARSE, System.nanoTime() - start);
+						perfTracker.setActionTime(TrackerAction.PARSE, System.nanoTime() - start);
 					}
 				} catch(Exception e) {
 					throw new FileFormatException(parsedFile.srcName, null, e);

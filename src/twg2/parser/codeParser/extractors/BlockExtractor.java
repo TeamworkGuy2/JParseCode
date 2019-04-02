@@ -20,6 +20,7 @@ import twg2.tuple.Tuples;
  * @since 2016-1-14
  */
 public class BlockExtractor {
+	public static int acceptNextCalls = 0;
 
 	/** Parses a simple AST tree using an {@link AstExtractor}
 	 * @param extractor provides parsers and extract methods to consume the astTree
@@ -104,6 +105,9 @@ public class BlockExtractor {
 			for(int ii = 0; ii < parserCount; ii++) {
 				var parser = parsers[ii];
 				parser.acceptNext(child);
+
+				// TODO can we optimize any TokenParser.acceptNext() sub-class methods
+				acceptNextCalls++;
 
 				//val complete = parser.isComplete();
 				//val failed = parser.isFailed();

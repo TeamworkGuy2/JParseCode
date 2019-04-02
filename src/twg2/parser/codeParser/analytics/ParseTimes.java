@@ -3,7 +3,6 @@ package twg2.parser.codeParser.analytics;
 import java.io.IOException;
 import java.util.Map;
 
-import lombok.Getter;
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.io.files.FileUtil;
 import twg2.io.json.stringify.JsonStringify;
@@ -27,10 +26,30 @@ public class ParseTimes implements JsonWritableSig {
 
 
 
-	@Getter long setupNs;
-	@Getter long loadNs;
-	@Getter long tokenizeNs;
-	@Getter long parseNs;
+	long setupNs;
+	long loadNs;
+	long tokenizeNs;
+	long parseNs;
+
+
+	public long getSetupNs() {
+		return setupNs;
+	}
+
+
+	public long getLoadNs() {
+		return loadNs;
+	}
+
+
+	public long getTokenizeNs() {
+		return tokenizeNs;
+	}
+
+
+	public long getParseNs() {
+		return parseNs;
+	}
 
 
 	public long getTotalNs() {
@@ -38,7 +57,7 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public void log(TrackerAction action, long timeNanos) {
+	public void setActionTime(TrackerAction action, long timeNanos) {
 		switch(action) {
 		case SETUP:
 			this.setupNs = timeNanos;

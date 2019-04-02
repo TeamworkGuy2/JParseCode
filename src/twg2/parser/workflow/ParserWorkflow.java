@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -38,6 +39,7 @@ import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.main.ParserMisc;
 import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
+import twg2.text.stringUtils.StringJoin;
 import twg2.text.stringUtils.StringSplit;
 import twg2.text.stringUtils.StringTrim;
 
@@ -48,31 +50,69 @@ import twg2.text.stringUtils.StringTrim;
 public class ParserWorkflow {
 	static String newline = System.lineSeparator();
 
-	List<DirectorySearchInfo> sources;
-	List<DestinationInfo> destinations;
-	Path logFile;
+	final List<DirectorySearchInfo> sources;
+	final List<DestinationInfo> destinations;
+	final Path logFile;
+	final int threadCount;
+	final boolean debug;
 
 
-	public ParserWorkflow(List<DirectorySearchInfo> sources, List<DestinationInfo> destinations, Path log) {
-		this.sources = sources;
-		this.destinations = destinations;
+	public ParserWorkflow(List<DirectorySearchInfo> sources, List<DestinationInfo> destinations, Path log, int threads, boolean debug) {
+		this.sources = Collections.unmodifiableList(sources);
+		this.destinations = Collections.unmodifiableList(destinations);
 		this.logFile = log;
+		this.threadCount = threads;
+		this.debug = debug;
 	}
 
 
-	public void run(Level logLevel, ExecutorService executor, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
+	public static String getNewline() {
+		return newline;
+	}
+
+
+	public List<DirectorySearchInfo> getSources() {
+		return sources;
+	}
+
+
+	public List<DestinationInfo> getDestinations() {
+		return destinations;
+	}
+
+
+	public Path getLogFile() {
+		return logFile;
+	}
+
+
+	public int getThreadCount() {
+		return threadCount;
+	}
+
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+
+	public void run(Level logLevel, ExecutorService executor, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 		// TODO educated guess at average namespace name parts
 		NameUtil.estimatedFqPartsCount = 5;
 
-		var missingNamespaces = new HashSet<List<String>>();
 		var log = this.logFile != null ? new LogServiceImpl(logLevel, new PrintStream(this.logFile.toFile()), LogPrefixFormat.DATETIME_LEVEL_AND_CLASS) : null;
+		var fileReaders = new ConcurrentHashMap<FileReadUtil, Object>();
+		var fileReader = ThreadLocal.withInitial(() -> {
+			FileReadUtil fileUtil = new FileReadUtil();
+			fileReaders.put(fileUtil, Object.class);
+			return fileUtil;
+		});
 
 		var loadRes = SourceFiles.load(this.sources);
 		if(log != null) {
 			loadRes.log(log, logLevel, true);
 		}
 
-		// TODO debugging
 		long start = System.nanoTime();
 
 		ParsedResult parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
@@ -80,9 +120,8 @@ public class ParserWorkflow {
 		long end = System.nanoTime();
 
 		if(perfTracking != null) {
-			var readerStats = fileReader.getStats();
 			// print out file reader stats
-			System.out.println(readerStats.toString());
+			System.out.println(StringJoin.join(fileReaders.keySet(), "\n", (k) -> k.getStats().toString()));
 			// print out total files stats
 			var fileSizes = perfTracking.getParseStats().entrySet().stream().mapToInt((entry) -> entry.getValue().getValue2());
 			System.out.println("Loaded " + perfTracking.getParseStats().size() + " files, total " + fileSizes.sum() + " bytes");
@@ -92,15 +131,18 @@ public class ParserWorkflow {
 		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (end - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
 
 		if(log != null) {
-			parseRes.log(log, logLevel, true);
+			parseRes.log(log, logLevel, true, 1);
 		}
 
+		var missingNamespaces = new HashSet<List<String>>();
 		var resolvedRes = ResolvedResult.resolve(parseRes.compilationUnits, missingNamespaces);
+
 		if(log != null) {
 			resolvedRes.log(log, logLevel, true);
 		}
 
 		var filterRes = FilterResult.filter(resolvedRes.compilationUnits, this.destinations);
+
 		if(log != null) {
 			filterRes.log(log, logLevel, true);
 		}
@@ -159,23 +201,27 @@ public class ParserWorkflow {
 		}
 
 
-		public void log(LogService log, Level level, boolean includeHeader) {
+		public void log(LogService log, Level level, boolean includeHeader, int avgCompilationUnitsPerFile) {
 			if(LogService.wouldLog(log, level)) {
+				int cnt = 0;
+				int setCnt = 0;
 				var files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
 				var fileSets = new HashMap<CodeFileSrc, List<ClassAst.SimpleImpl<BlockType>>>();
 				for(var file : files) {
 					List<ClassAst.SimpleImpl<BlockType>> fileSet = fileSets.get(file.id);
 					if(fileSet == null) {
-						fileSet = new ArrayList<>();
+						fileSet = new ArrayList<>(avgCompilationUnitsPerFile);
 						fileSets.put(file.id, fileSet);
+						setCnt++;
 					}
 					fileSet.add(file.parsedClass);
+					cnt++;
 				}
 
 				var sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);
-					sb.append("Classes/interfaces by file:");
+					sb.append("Classes/interfaces ").append(cnt).append(" in ").append(setCnt).append(" files:");
 					sb.append(newline);
 				}
 				for(var fileSet : fileSets.entrySet()) {
@@ -190,11 +236,11 @@ public class ParserWorkflow {
 		}
 
 
-		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> files, ExecutorService executor,
-				FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
+		public static ParsedResult parse(List<Entry<DirectorySearchInfo, List<Path>>> fileGroups, ExecutorService executor,
+				ThreadLocal<FileReadUtil> fileReader, PerformanceTrackers perfTracking) throws IOException, FileFormatException {
 			var fileSet = new ProjectClassSet.Intermediate<BlockType>();
 
-			for(var filesWithSrc : files) {
+			for(var filesWithSrc : fileGroups) {
 				ParserMisc.parseFileSet(filesWithSrc.getValue(), fileSet, executor, fileReader, perfTracking);
 			}
 
@@ -221,6 +267,8 @@ public class ParserWorkflow {
 
 		public void log(LogService log, Level level, boolean includeHeader) {
 			if(LogService.wouldLog(log, level)) {
+				int cnt = 0;
+				int setCnt = 0;
 				var files = compilationUnits.getCompilationUnitsStartWith(Arrays.asList(""));
 				var fileSets = new HashMap<CodeFileSrc, List<ClassAst.ResolvedImpl<BlockType>>>();
 				for(var file : files) {
@@ -228,14 +276,16 @@ public class ParserWorkflow {
 					if(fileSet == null) {
 						fileSet = new ArrayList<>();
 						fileSets.put(file.id, fileSet);
+						setCnt++;
 					}
 					fileSet.add(file.parsedClass);
+					cnt++;
 				}
 
 				var sb = new StringBuilder();
 				if(includeHeader) {
 					sb.append(newline);
-					sb.append("Resolved classes/interfaces by file:");
+					sb.append("Resolved classes/interfaces ").append(cnt).append(" in ").append(setCnt).append(" files:");
 					sb.append(newline);
 				}
 
@@ -291,7 +341,7 @@ public class ParserWorkflow {
 
 				for(var entry : filterSets.entrySet()) {
 					sb.append(newline);
-					sb.append(entry.getKey());
+					sb.append(entry.getKey()).append(" (results: ").append(entry.getValue().size() + ")");
 					sb.append(newline);
 					JsonStringify.inst.join(entry.getValue(), newline, false, sb, (f) -> NameUtil.joinFqName(f.parsedClass.getSignature().getFullName()));
 					sb.append(newline);
@@ -304,7 +354,7 @@ public class ParserWorkflow {
 		public static FilterResult filter(ProjectClassSet.Resolved<BlockType> resFileSet, List<DestinationInfo> destinations) throws IOException {
 			Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>> resSets = new HashMap<>();
 			for(var dstInfo : destinations) {
-				List<CodeFileParsed.Resolved<BlockType>> matchingNamespaces = new ArrayList<>();
+				var matchingNamespaces = new ArrayList<CodeFileParsed.Resolved<BlockType>>();
 				for(var namespace : dstInfo.namespaces) {
 					var fileSet = resFileSet.getCompilationUnitsStartWith(StringSplit.split(namespace, '.'));
 					matchingNamespaces.addAll(fileSet);
@@ -384,23 +434,27 @@ public class ParserWorkflow {
 	public static ParserWorkflow parseArgs(String[] args) {
 		if(args.length == 0 || Arrays.asList("-help", "--help", "-h").contains(args[0])) {
 			System.out.println("An in-progress suite of parsing tools for C#, Java, and TypeScript source code.\n" +
-				"Used to create basic ASTs containing class signatures, fields, and methods. (source: https://github.com/TeamworkGuy2/JParserTools)\n" +
+				"Used to create basic ASTs containing class signatures, fields, and methods. (source: https://github.com/TeamworkGuy2/JParserCode)\n" +
 				"example command:\n" +
-				"-sources 'C:/Users/TeamworkGuy2/Documents/Projects/app/server/Services=1,[cs];" +
-					"C:/Users/TeamworkGuy2/Documents/Projects/app/server/Entities=3,[cs]'" +
-				" -destinations 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Services.json=[App.Services];" +
-					"C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/Models.json=[App.Entities]'" +
-				" -log 'C:/Users/TeamworkGuy2/Downloads/Java_Programs/rsc/parser.log'");
+				"-sources 'root/TeamworkGuy2/Projects/PsServer/Services=1,[cs];" +
+					"root/TeamworkGuy2/Projects/PsServer/Entities=3,[cs]'" +
+				" -destinations 'root/TeamworkGuy2/output/Services.json=[App.Services];" +
+					"root/TeamworkGuy2/output/Models.json=[App.Entities]'" +
+				" -log 'root/TeamworkGuy2/output/parser.log'");
 		}
 
 		Map<String, String> argNames = new HashMap<>();
 		argNames.put("sources", "sources - a semicolon separated list of strings in the format 'path=depth,[fileExt,fileExt,...];path=depth,[fileExt,fileExt,...];...'.  Example: '/project/myApp/Models=3,[java,json]'");
 		argNames.put("destinations", "destinations - a semicolon separated list of strings in the format 'path=[namespace,namespace,...], ...'.  Example: '/project/tmp_files/models.json=[MyApp.Models]'");
 		argNames.put("log", "log - a log file path in the format 'path'.  Example: '/project/tmp_files/parser-log.log'");
+		argNames.put("threads", "threads - the number of threads to use, 0 for thread count equal to number of logical processors, default 1");
+		argNames.put("debug", "debug - log detailed debug and performance info");
 
 		List<DirectorySearchInfo> srcs = new ArrayList<>();
 		List<DestinationInfo> dsts = new ArrayList<>();
 		Path log = null;
+		int threads = 1;
+		boolean debug = false;
 
 		// TODO debugging
 		System.out.println("args:");
@@ -413,13 +467,26 @@ public class ParserWorkflow {
 			String name = StringTrim.trimLeading(args[i], '-');
 			String desc = argNames.get(name);
 			if(desc != null) {
-				if(i + 1 >= args.length) {
-					throw new IllegalArgumentException("'" + name + "' is a valid argument name, should contain an argument");
+				if("debug".equals(name)) {
+					debug = true;
+					continue; // skip further argument parsing
 				}
 
-				List<String> values = StringSplit.split(args[i + 1], ';');
+				if(i + 1 >= args.length) {
+					throw new IllegalArgumentException("'" + name + "' is a valid argument name, but is not followed by an argument");
+				}
+
+				if("log".equals(name)) {
+					log = Paths.get(args[i + 1]);
+				}
+
+				if("threads".equals(name)) {
+					threads = Integer.parseInt(args[i + 1]);
+					threads = (threads == 0 ? Runtime.getRuntime().availableProcessors() : threads);
+				}
 
 				if("sources".equals(name)) {
+					var values = StringSplit.split(args[i + 1], ';');
 					for(var valueStr : values) {
 						var value = DirectorySearchInfo.parseFromArgs(valueStr, "sources");
 						srcs.add(value);
@@ -427,19 +494,16 @@ public class ParserWorkflow {
 				}
 
 				if("destinations".equals(name)) {
+					var values = StringSplit.split(args[i + 1], ';');
 					for(var valueStr : values) {
 						var value = DestinationInfo.parse(valueStr, "destination");
 						dsts.add(value);
 					}
 				}
-
-				if("log".equals(name)) {
-					log = Paths.get(values.get(0));
-				}
 			}
 		}
 
-		return new ParserWorkflow(srcs, dsts, log);
+		return new ParserWorkflow(srcs, dsts, log, threads, debug);
 	}
 
 }

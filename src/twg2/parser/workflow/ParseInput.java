@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import twg2.parser.codeParser.analytics.ParseTimes;
-import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParserActionLogger;
 
 /**
  * @author TeamworkGuy2
@@ -21,7 +21,7 @@ public class ParseInput {
 	@Getter private final String fileName; // optional
 	@Getter private final Consumer<Exception> errorHandler;
 	@Getter private final ParseTimes parseTimes; // optional
-	@Getter private final TokenizeStepLogger parserStepsTracker; // optional
+	@Getter private final ParserActionLogger parserStepsTracker; // optional
 
 	@Override
 	public String toString() {

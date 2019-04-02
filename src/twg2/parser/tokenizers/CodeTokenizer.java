@@ -1,6 +1,6 @@
 package twg2.parser.tokenizers;
 
-import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParserActionLogger;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.workflow.CodeFileSrc;
 
@@ -17,6 +17,6 @@ public interface CodeTokenizer {
 	 * @param stepsDetails (optional) code parser stat tracker, if null, no stats are tracked
 	 * @return a parsed {@link CodeFileSrc} containing {@link CodeToken} nodes represented the tokens parsed from {@code src}
 	 */
-	public CodeFileSrc tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, TokenizeStepLogger stepsDetails);
+	public CodeFileSrc tokenizeDocument(char[] src, int srcOff, int srcLen, String srcName, ParserActionLogger stepsDetails);
 
 }

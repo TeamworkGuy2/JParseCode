@@ -14,7 +14,7 @@ import twg2.io.files.FileReadUtil;
 import twg2.io.json.Json;
 import twg2.parser.codeParser.analytics.ParseTimes;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
-import twg2.parser.codeParser.analytics.TokenizeStepLogger;
+import twg2.parser.codeParser.analytics.ParserActionLogger;
 import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
 import twg2.parser.language.CodeLanguage;
@@ -54,7 +54,7 @@ public class ParseCodeFile {
 		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
 
 		if(perfTracker != null) {
-			perfTracker.log(TrackerAction.LOAD, System.nanoTime() - start);
+			perfTracker.setActionTime(TrackerAction.LOAD, System.nanoTime() - start);
 		}
 
 		String fileName = file.getName();
@@ -70,7 +70,7 @@ public class ParseCodeFile {
 	}
 
 
-	public static CodeFileSrc parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, TokenizeStepLogger stepsTracker) {
+	public static CodeFileSrc parseCode(String fileName, CodeLanguage lang, char[] src, int srcOff, int srcLen, ParseTimes perfTracker, ParserActionLogger stepsTracker) {
 		var parseParams = new ParseInput(src, srcOff, srcLen, fileName, null, perfTracker, stepsTracker);
 		try {
 			CodeFileSrc parsedFileInfo = lang.getParser().apply(parseParams);

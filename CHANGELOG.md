@@ -4,7 +4,25 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.17.0](N/A) - 2019-03-30
+### [0.18.0](N/A) - 2019-03-30
+#### Changed
+* Added `-debug` and `-threads #` command line arguments
+* More detailed debug and log file information
+* Renamed `TokenizeStepLogger` -> `ParserActionLogger`
+* `ParseTimes.log()` renamed `setActionTime()`
+* Simplified and synchronized `PerformanceTrackers` so instance can be shared across threads
+* Renamed node.js plugin file `plugins/node-js/jparser-tools-cli` -> `plugins/node-js/jparse-code-cli` and renamed associated test file
+
+#### Removed
+* Unused `ScopeType` enum
+
+#### Fixed
+* Fixed multi-threaded parsing! Handling of FileReadUtil, performance logs, and result lists are now synchronized in `ParserMisc.parseFileSet()`
+* Update dependency jfile-io@0.8.3 (fix for decoding empty streams/files)
+
+
+--------
+### [0.17.0](https://github.com/TeamworkGuy2/JParseCode/commit/7745de03fb4ce135ddb8e6a7f158f6d1f27c5329) - 2019-03-30
 Performance refactor, several libraries updated: JArrays, JCollectionUtil, JFileIo, JTextParser, and JTextTokenizer
 #### Changed
 * Changed to new `FileReadUtil.readChars(InputStream)` (`jfile-io@0.8.2`)
