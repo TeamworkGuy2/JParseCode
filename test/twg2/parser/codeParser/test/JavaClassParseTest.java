@@ -56,6 +56,7 @@ public class JavaClassParseTest {
 		"    @IntAnnotation(-1)",
 		"    @BoolAnnotation(true)",
 		"    @IdentifierAnnotation(Integer.TYPE)",
+		"    @IdentifierAnnotation(Map.class)",
 		"    @StringAnnotation(Name = \"\")",
 		"    @MultiArgAnnotation(\"abc\", false , 1.23)",
 		"    @MultiNamedArgAnnotation(num =1.23, flag=false ,value = \"abc\")",
@@ -146,12 +147,14 @@ public class JavaClassParseTest {
 		assertAnnotation(as, 2, "BoolAnnotation", new String[] { "value" }, "true");
 		// annotations: IdentifierAnnotation(Integer.TYPE)
 		assertAnnotation(as, 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
+		// annotations: IdentifierAnnotation(Map.class)
+		assertAnnotation(as, 4, "IdentifierAnnotation", new String[] { "value" }, "Map.class");
 		// annotations: StringAnnotation(Name = "")
-		assertAnnotation(as, 4, "StringAnnotation", new String[] { "Name" }, "");
+		assertAnnotation(as, 5, "StringAnnotation", new String[] { "Name" }, "");
 		// annotations: MultiArgAnnotation("abc", false , 1.23)
-		assertAnnotation(as, 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
+		assertAnnotation(as, 6, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
 		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
-		assertAnnotation(as, 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
+		assertAnnotation(as, 7, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
 		assertField(fields, 1, fullClassName + "._name", "String");
 		assertField(fields, 2, fullClassName + ".Names", ary("List", ary("String")));

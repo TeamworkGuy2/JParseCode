@@ -56,6 +56,7 @@ public class CsClassParseTest {
 		"    [IntAnnotation(-1)]",
 		"    [BoolAnnotation(true)]",
 		"    [IdentifierAnnotation(Integer.TYPE)]",
+		"    [IdentifierAnnotation(typeof(Dictionary<String, Integer>))]",
 		"    [StringAnnotation(Name = \"\")]",
 		"    [MultiArgAnnotation(\"abc\", false , 1.23)]",
 		"    [MultiNamedArgAnnotation(num =1.23, flag=false ,value = \"abc\")]",
@@ -160,12 +161,14 @@ public class CsClassParseTest {
 		assertAnnotation(as, 2, "BoolAnnotation", new String[] { "value" }, "true");
 		// annotation: IdentifierAnnotation(Integer.TYPE)
 		assertAnnotation(as, 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
+		// annotation: IdentifierAnnotation(typeof(Dictionary<String, Integer>))
+		assertAnnotation(as, 4, "IdentifierAnnotation", new String[] { "value" }, "typeof(Dictionary<String, Integer>)");
 		// annotation: StringAnnotation(Name = "")
-		assertAnnotation(as, 4, "StringAnnotation", new String[] { "Name" }, "");
+		assertAnnotation(as, 5, "StringAnnotation", new String[] { "Name" }, "");
 		// annotation: MultiArgAnnotation(\"abc\", false, 1.23)
-		assertAnnotation(as, 5, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
+		assertAnnotation(as, 6, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
 		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
-		assertAnnotation(as, 6, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
+		assertAnnotation(as, 7, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
 		assertField(fs, 1, fullClassName + "._name", "string");
 		assertField(fs, 2, fullClassName + ".Names", ary("IList", ary("string")));

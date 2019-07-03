@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.18.0](N/A) - 2019-03-30
+### [0.18.1](N/A) - 2019-07-02
+#### Fixed
+* `AnnotationExtractor` to handle C# `typeof(T)` annotation arguments
+
+
+--------
+### [0.18.0](https://github.com/TeamworkGuy2/JParseCode/commit/bb033bcc4cffc4382a20d7f2394976e087690557) - 2019-03-30
 #### Changed
 * Added `-debug` and `-threads #` command line arguments
 * More detailed debug and log file information

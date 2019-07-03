@@ -3,6 +3,7 @@ package twg2.parser.codeParser.extractors;
 import java.util.HashMap;
 
 import twg2.ast.interm.annotation.AnnotationSig;
+import twg2.parser.codeParser.csharp.CsKeyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
@@ -27,15 +28,20 @@ public class AnnotationExtractor {
 		var paramChilds = annotParamsNode != null ? annotParamsNode.getChildren() : null;
 		int size = paramChilds != null ? paramChilds.size() : 0;
 
-		if(annotNameType != CodeTokenType.IDENTIFIER) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotName + "'"); }
+		if(annotNameType != CodeTokenType.IDENTIFIER) {
+			throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotName + "'");
+		}
 
 		var params = new HashMap<String, String>();
 		boolean firstParamUnnamed = false;
 
 		// parse an annotation '(arguments, ...)'
 		if(size > 0) {
+			var operatorUtil = lang.getOperatorUtil();
 			var annotParamsBlock = annotParamsNode.getData();
-			if(annotParamsBlock.getTokenType() != CodeTokenType.BLOCK) { throw new IllegalArgumentException("annotation node expected to contain identifier, found '" + annotParamsBlock.getText() + "'"); }
+			if(annotParamsBlock.getTokenType() != CodeTokenType.BLOCK) {
+				throw new IllegalArgumentException("annotation node expected to contain identifier, found " + annotParamsBlock.getTokenType() + " '" + annotParamsBlock.getText() + "'");
+			}
 
 			// += 2, for the value and the separator
 			for(int i = 0; i < size; i++) {
@@ -44,7 +50,7 @@ public class AnnotationExtractor {
 				String paramName = null;
 
 				// parse and step over named arguments, i.e. 'Annotation(id = "...")'
-				if(paramType == CodeTokenType.IDENTIFIER && i < size - 2 && paramChilds.get(i + 1).getData().getTokenType() == CodeTokenType.OPERATOR && lang.getOperatorUtil().assignmentOperators().is(paramChilds.get(i + 1).getData())) {
+				if(paramType == CodeTokenType.IDENTIFIER && i < size - 2 && paramChilds.get(i + 1).getData().getTokenType() == CodeTokenType.OPERATOR && operatorUtil.assignmentOperators().is(paramChilds.get(i + 1).getData())) {
 					paramName = param.getText();
 					i += 2;
 					param = paramChilds.get(i).getData();
@@ -70,7 +76,7 @@ public class AnnotationExtractor {
 					String valueStr = StringTrim.trimQuotes(param.getText());
 
 					// handles concatenated strings 'Annotation(name = 'a' + 'b')
-					if(i + 2 < size && lang.getOperatorUtil().concatOperators().is(paramChilds.get(i + 1).getData()) && paramChilds.get(i + 2).getData().getTokenType() == CodeTokenType.STRING) {
+					if(i + 2 < size && operatorUtil.concatOperators().is(paramChilds.get(i + 1).getData()) && paramChilds.get(i + 2).getData().getTokenType() == CodeTokenType.STRING) {
 						valueStr = valueStr + StringTrim.trimQuotes(paramChilds.get(i + 2).getData().getText());
 						i += 2;
 					}
@@ -78,9 +84,17 @@ public class AnnotationExtractor {
 					params.put(paramName, valueStr);
 				}
 				else if(paramType == CodeTokenType.KEYWORD) {
+					if(param.getText().toUpperCase().contains("TYPEOF")) {
+						System.out.println("test");
+					}
 					// type-literal-keyword: 'Annotation(true)'
 					if(lang.getKeywordUtil().typeLiterals().is(param)) {
 						params.put(paramName, param.getText());
+					}
+					// hack for C# typeof(T) in annotation parameter lists 
+					else if(CsKeyword.TYPEOF.toSrc().equals(param.getText()) && i + 1 < size && CodeTokenType.BLOCK == paramChilds.get(i + 1).getData().getTokenType()) {
+						params.put(paramName, param.getText() + paramChilds.get(i + 1).getData().getText());
+						i++;
 					}
 				}
 				// catches other things like 'Annotation(Integer.TYPE)' or 'Annotation(String.class)'
