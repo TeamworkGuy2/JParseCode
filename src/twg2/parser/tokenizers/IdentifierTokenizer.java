@@ -16,15 +16,17 @@ import twg2.text.tokenizer.CharParserMatchableFactory;
 import twg2.text.tokenizer.StringParserBuilder;
 import twg2.tuple.Tuples;
 
-/**
+/** Static methods for creating C language like identifier parsers (i.e. parsing strings '_myVar', '$num', 'camelCaseStr', etc.)
  * @author TeamworkGuy2
  * @since 2015-11-27
  */
 public class IdentifierTokenizer {
-	static int genericTypeDepth = 3;
 
-	public static CharParserFactory createIdentifierWithGenericTypeTokenizer() {
-		var typeStatementCond = GenericTypeTokenizer.createGenericTypeTokenizer(genericTypeDepth, IdentifierTokenizer::createCompoundIdentifierTokenizer);
+	private IdentifierTokenizer() { throw new AssertionError("cannot instantiate static class IdentifierTokenizer"); }
+
+
+	public static CharParserFactory createIdentifierWithGenericTypeTokenizer(int maxGenericTypeDepth) {
+		var typeStatementCond = GenericTypeTokenizer.createGenericTypeTokenizer(maxGenericTypeDepth, IdentifierTokenizer::createCompoundIdentifierTokenizer);
 		return new CharParserMatchableFactory<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
 	}
 
@@ -63,6 +65,7 @@ public class IdentifierTokenizer {
 	public static CharParserMatchable createCompoundIdentifierTokenizer() {
 		var identifierParser = Arrays.asList(newIdentifierTokenizer());
 		var separatorParser = Arrays.asList(new CharConditions.Literal("identifier namespace separator", CharArrayList.of('.'), Inclusion.INCLUDE));
+
 		return CharConditionPipe.createPipeOptionalSuffix("compound identifier (nullable)",
 			Arrays.asList(CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser)),
 			Arrays.asList(new CharConditions.Literal("nullable '?' type", CharArrayList.of('?'), Inclusion.INCLUDE))

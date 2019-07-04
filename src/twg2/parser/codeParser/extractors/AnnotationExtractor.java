@@ -3,7 +3,7 @@ package twg2.parser.codeParser.extractors;
 import java.util.HashMap;
 
 import twg2.ast.interm.annotation.AnnotationSig;
-import twg2.parser.codeParser.csharp.CsKeyword;
+import twg2.collections.interfaces.ListReadOnly;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
@@ -64,46 +64,7 @@ public class AnnotationExtractor {
 				}
 
 				// parse the annotation argument value
-				// number: 'Annotation(1)' or 'Annotation(-15)'
-				int num;
-				if((num = DataTypeExtractor.isNumber(param, (i + 1 < size ? paramChilds.get(i + 1).getData() : null))) > 0) {
-					String paramValue = param.getText() + (i + 1 < size && num > 1 ? paramChilds.get(i + 1).getData().getText() : "");
-					params.put(paramName, paramValue);
-					i += (num - 1);
-				}
-				// string: 'Annotation("str")'
-				else if(paramType == CodeTokenType.STRING) {
-					String valueStr = StringTrim.trimQuotes(param.getText());
-
-					// handles concatenated strings 'Annotation(name = 'a' + 'b')
-					if(i + 2 < size && operatorUtil.concatOperators().is(paramChilds.get(i + 1).getData()) && paramChilds.get(i + 2).getData().getTokenType() == CodeTokenType.STRING) {
-						valueStr = valueStr + StringTrim.trimQuotes(paramChilds.get(i + 2).getData().getText());
-						i += 2;
-					}
-
-					params.put(paramName, valueStr);
-				}
-				else if(paramType == CodeTokenType.KEYWORD) {
-					if(param.getText().toUpperCase().contains("TYPEOF")) {
-						System.out.println("test");
-					}
-					// type-literal-keyword: 'Annotation(true)'
-					if(lang.getKeywordUtil().typeLiterals().is(param)) {
-						params.put(paramName, param.getText());
-					}
-					// hack for C# typeof(T) in annotation parameter lists 
-					else if(CsKeyword.TYPEOF.toSrc().equals(param.getText()) && i + 1 < size && CodeTokenType.BLOCK == paramChilds.get(i + 1).getData().getTokenType()) {
-						params.put(paramName, param.getText() + paramChilds.get(i + 1).getData().getText());
-						i++;
-					}
-				}
-				// catches other things like 'Annotation(Integer.TYPE)' or 'Annotation(String.class)'
-				else if(paramType == CodeTokenType.IDENTIFIER) {
-					params.put(paramName, param.getText());
-				}
-				else {
-					throw new IllegalArgumentException("annotation param expected to start with identifier, string, number, or boolean, found " + paramType + " '" + param.getText() + "'");
-				}
+				i += parseAnnotationArgument(lang, param, paramName, paramType, i, size, paramChilds, params);
 			}
 		}
 		// contains just an annotation name, no (arguments...), e.g. 'Annotation'
@@ -115,6 +76,50 @@ public class AnnotationExtractor {
 			params.remove("arg1");
 		}
 		return new AnnotationSig(annotName, NameUtil.splitFqName(annotName), params);
+	}
+
+
+	private static int parseAnnotationArgument(CodeLanguage lang, CodeToken param, String paramName, CodeTokenType paramType, int i, int size, ListReadOnly<SimpleTree<CodeToken>> paramChilds, HashMap<String, String> dstParams) {
+		// number: 'Annotation(1)' or 'Annotation(-15)'
+		int num;
+		if((num = DataTypeExtractor.isNumber(param, (i + 1 < size ? paramChilds.get(i + 1).getData() : null))) > 0) {
+			String paramValue = param.getText() + (i + 1 < size && num > 1 ? paramChilds.get(i + 1).getData().getText() : "");
+			dstParams.put(paramName, paramValue);
+			return (num - 1);
+		}
+		// string: 'Annotation("str")'
+		else if(paramType == CodeTokenType.STRING) {
+			String valueStr = StringTrim.trimQuotes(param.getText());
+
+			// handle concatenated strings 'Annotation(name = 'a' + 'b')
+			if(i + 2 < size && lang.getOperatorUtil().concatOperators().is(paramChilds.get(i + 1).getData()) && paramChilds.get(i + 2).getData().getTokenType() == CodeTokenType.STRING) {
+				valueStr = valueStr + StringTrim.trimQuotes(paramChilds.get(i + 2).getData().getText());
+				dstParams.put(paramName, valueStr);
+				return 2;
+			}
+			else {
+				dstParams.put(paramName, valueStr);
+				return 0;
+			}
+		}
+		// keyword-or-identifier followed by constant-block-expression: 'Annotation(typeof(String))' (for C# default(T), nameof(T), and typeof(T))
+		else if((paramType == CodeTokenType.KEYWORD || paramType == CodeTokenType.IDENTIFIER) && i + 1 < size && CodeTokenType.BLOCK == paramChilds.get(i + 1).getData().getTokenType()) {
+			dstParams.put(paramName, param.getText() + paramChilds.get(i + 1).getData().getText());
+			return 1;
+		}
+		// type-literal-keyword: 'Annotation(true)'
+		else if(paramType == CodeTokenType.KEYWORD && lang.getKeywordUtil().typeLiterals().is(param)) {
+			dstParams.put(paramName, param.getText());
+			return 0;
+		}
+		// catches other things like 'Annotation(Integer.TYPE)' or 'Annotation(String.class)'
+		else if(paramType == CodeTokenType.IDENTIFIER) {
+			dstParams.put(paramName, param.getText());
+			return 0;
+		}
+		else {
+			throw new IllegalArgumentException("annotation param expected to start with identifier, string, number, or boolean, found " + paramType + " '" + param.getText() + "'");
+		}
 	}
 
 }

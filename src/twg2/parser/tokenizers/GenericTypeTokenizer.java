@@ -10,22 +10,26 @@ import twg2.text.tokenizer.CharConditionPipe;
 import twg2.text.tokenizer.CharConditions;
 import twg2.text.tokenizer.StringConditions;
 
-/**
+/** Static methods for creating generic type tokenizers that support nesting (i.e. for tokenizing '{@code HashMap<Entry<String, Integer>, List<String>>}').
  * @author TeamworkGuy2
  * @since 2015-11-28
  */
 public class GenericTypeTokenizer {
 
-	/**
-	 * @param genericTypeDepth the nesting depth of generic type statements that the returned parser can support.
-	 * i.e. {@code A<B>} would require depth=1, {@code A<B<C>>} would require depth=2
+	private GenericTypeTokenizer() { throw new AssertionError("cannot instantiate static class GenericTypeTokenizer"); }
+
+
+	/** Create a tokenizer for nested generic types up to a specific nesting depth.
+	 * @param maxGenericTypeDepth the nesting depth of generic type statements that the returned tokenizer can support.
+	 * i.e. '{@code A<B>}' would require depth=1, '{@code A<B<C>>}' would require depth=2
+	 * @param singleIdentifierParserConstructor supplies the tokenizer which can tokenize individual text tokens before and inside a generic type. i.e. in '{@code A<B>}' the text tokens are 'A' and 'B'.
 	 */
-	public static CharParserMatchable createGenericTypeTokenizer(int genericTypeDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
-		return _createGenericTypeTokenizer(genericTypeDepth, singleIdentifierParserConstructor);
+	public static CharParserMatchable createGenericTypeTokenizer(int maxGenericTypeDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
+		return _createGenericTypeTokenizer(maxGenericTypeDepth, singleIdentifierParserConstructor);
 	}
 
 
-	public static CharParserMatchable _createGenericTypeTokenizer(int recursionDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
+	private static CharParserMatchable _createGenericTypeTokenizer(int recursionDepth, Supplier<CharParserMatchable> singleIdentifierParserConstructor) {
 		// the condition that parses identifiers nested inside the generic type definition
 		var nestedGenericTypeIdentifierCond = recursionDepth > 1 ? _createGenericTypeTokenizer(recursionDepth - 1, singleIdentifierParserConstructor) : singleIdentifierParserConstructor.get();
 

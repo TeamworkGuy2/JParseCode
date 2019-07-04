@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import twg2.collections.dataStructures.PairList;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntListSorted;
 import twg2.parser.codeParser.CommentStyle;
@@ -13,8 +14,9 @@ import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.textFragment.TextFragmentRef;
+import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.tokenizers.CodeStringTokenizer;
-import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CodeTokenizer;
 import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.stringUtils.StringCheck;
@@ -41,10 +43,11 @@ public class CommentAndWhitespaceExtractor {
 		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
 		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
 
-		var parser = new CodeTokenizerBuilder<>((CodeLanguage)null)
-			.addParser(commentParser, CodeTokenType.COMMENT)
-			.addParser(stringParser, CodeTokenType.STRING)
-			.build();
+		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
+		parsers.add(commentParser, CodeTokenizer.ofType(CodeTokenType.COMMENT));
+		parsers.add(stringParser, CodeTokenizer.ofType(CodeTokenType.STRING));
+
+		var parser = CodeTokenizer.createTokenizer((CodeLanguage)null, parsers);
 		return parser.tokenizeDocument(src, srcOff, srcLen, srcName, null);
 	}
 

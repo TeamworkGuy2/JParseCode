@@ -4,7 +4,25 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.18.1](N/A) - 2019-07-02
+### [0.19.0](N/A) - 2019-07-04
+#### Changed
+* `IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer()` now takes one parameter `int maxGenericTypeDepth`
+* Changed `CsFileTokenizer.createFileParser()` -> `createCsTokenizers()` and `JavaFileTokenizer.createFileParser()` -> `createJavaTokenizers()`
+* Added some private constructors that throw AssertionError to static classes
+
+#### Removed
+* Changed `GenericTypeTokenizer._createGenericTypeTokenizer()` from public to private
+* Removed `IdentifierTokenizer` field `static int genericTypeDepth` in favor of callers explicitly passing the argument to `createIdentifierWithGenericTypeTokenizer()` which now takes one parameter `int maxGenericTypeDepth`
+* Removed `CodeTokenizerBuilder` in favor of `CodeTokenizer` static methods
+  * Manually build a tokenizer list of type `PairList<CharParserFactory, TextTransformer<CodeTokenType>>`
+  * Call `CodeTokenizer.createTokenizer()` with the language you used to pass to the `CodeTokenizerBuilder` constructor and the list of tokenizers you manually created
+
+#### Fixed
+* `AnnotationExtractor` to handle all C# keyword-followed-by-a-block annotation arguments like `default(T)`, `nameof(T)`, and `typeof(T)`
+
+
+--------
+### [0.18.1](https://github.com/TeamworkGuy2/JParseCode/commit/88ab130b4a6e79bdefa3f071ec64c19e316e91af) - 2019-07-02
 #### Fixed
 * `AnnotationExtractor` to handle C# `typeof(T)` annotation arguments
 

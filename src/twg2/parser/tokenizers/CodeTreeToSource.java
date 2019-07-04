@@ -18,6 +18,8 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class CodeTreeToSource {
 
+	private CodeTreeToSource() { throw new AssertionError("cannot instantiate static class CodeTreeToSource"); }
+
 
 	public static String toSource(SimpleTree<? extends TextToken<TextFragmentRef, CodeTokenType>> tree, char[] src, int srcOff, int srcLen, boolean includeParsedFragments) {
 		StringBuilder sb = new StringBuilder();

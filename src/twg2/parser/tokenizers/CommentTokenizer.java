@@ -13,7 +13,7 @@ import twg2.text.tokenizer.StringBoundedParserBuilder;
  */
 public final class CommentTokenizer {
 
-	private CommentTokenizer() { throw new AssertionError("cannot instantiate static class CommentParser"); }
+	private CommentTokenizer() { throw new AssertionError("cannot instantiate static class CommentTokenizer"); }
 
 
 	public static final CharParserFactory createCommentTokenizerForJava() {

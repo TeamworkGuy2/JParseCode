@@ -10,6 +10,9 @@ import twg2.text.tokenizer.StringBoundedParserBuilder;
  */
 public class CodeBlockTokenizer {
 
+	private CodeBlockTokenizer() { throw new AssertionError("cannot instantiate static class CodeBlockTokenizer"); }
+
+
 	public static CharParserFactory createBlockTokenizer(char startChar, char endChar) {
 		CharParserFactory commentParser = new StringBoundedParserBuilder("block")
 			.addStartEndMarkers("block " + startChar + " " + endChar, startChar, endChar, Inclusion.INCLUDE)

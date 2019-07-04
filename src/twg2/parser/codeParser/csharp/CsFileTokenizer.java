@@ -1,12 +1,14 @@
 package twg2.parser.codeParser.csharp;
 
+import twg2.collections.dataStructures.PairList;
 import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.tokenizers.CodeBlockTokenizer;
 import twg2.parser.tokenizers.CodeStringTokenizer;
-import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CodeTokenizer;
 import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.IdentifierTokenizer;
 import twg2.parser.tokenizers.NumberTokenizer;
@@ -14,33 +16,43 @@ import twg2.text.tokenizer.CharParserFactory;
 import twg2.text.tokenizer.StringBoundedParserBuilder;
 import twg2.text.tokenizer.StringParserBuilder;
 
+import static twg2.parser.tokenizers.CodeTokenizer.ofType;
+
 /**
  * @author TeamworkGuy2
  * @since 2015-2-9
  */
 public class CsFileTokenizer {
+	public static int maxGenericTypeDepth = 3;
 	public static int cnt = 0;
 
-	public static CodeTokenizerBuilder<CodeLanguageOptions.CSharp> createFileParser() {
-		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
+
+	public static CodeTokenizer createCsTokenizer() {
+		return CodeTokenizer.createTokenizer(CodeLanguageOptions.C_SHARP, createCsTokenizers());
+	}
+
+
+	public static PairList<CharParserFactory, TextTransformer<CodeTokenType>> createCsTokenizers() {
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(maxGenericTypeDepth);
 		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
-		var parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.C_SHARP)
-			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeTokenType.COMMENT)
-			.addParser(CodeStringTokenizer.createStringTokenizerForCSharp(), CodeTokenType.STRING)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeTokenType.BLOCK)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeTokenType.BLOCK)
-			.addParser(createAnnotationTokenizer(), CodeTokenType.BLOCK)
-			.addParser(identifierParser, (text, off, len) -> {
-				cnt++;
-				// TODO performance
-				return CsKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
-			})
-			.addParser(createOperatorTokenizer(), CodeTokenType.OPERATOR)
-			.addParser(createSeparatorTokenizer(), CodeTokenType.SEPARATOR)
-			.addParser(numericLiteralParser, CodeTokenType.NUMBER);
+		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 
-		return parser;
+		parsers.add(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
+		parsers.add(CodeStringTokenizer.createStringTokenizerForCSharp(), ofType(CodeTokenType.STRING));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer('{', '}'), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer('(', ')'), ofType(CodeTokenType.BLOCK));
+		parsers.add(createAnnotationTokenizer(), ofType(CodeTokenType.BLOCK));
+		parsers.add(identifierParser, (text, off, len) -> {
+			cnt++;
+			// TODO performance
+			return CsKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
+		});
+		parsers.add(createOperatorTokenizer(), ofType(CodeTokenType.OPERATOR));
+		parsers.add(createSeparatorTokenizer(), ofType(CodeTokenType.SEPARATOR));
+		parsers.add(numericLiteralParser, ofType(CodeTokenType.NUMBER));
+
+		return parsers;
 	}
 
 

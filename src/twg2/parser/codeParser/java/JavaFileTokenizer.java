@@ -3,39 +3,52 @@ package twg2.parser.codeParser.java;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
+import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.tokenizers.CodeBlockTokenizer;
 import twg2.parser.tokenizers.CodeStringTokenizer;
-import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CodeTokenizer;
 import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.IdentifierTokenizer;
 import twg2.parser.tokenizers.NumberTokenizer;
 import twg2.text.tokenizer.CharParserFactory;
 import twg2.text.tokenizer.StringParserBuilder;
 
+import static twg2.parser.tokenizers.CodeTokenizer.ofType;
+
+import twg2.collections.dataStructures.PairList;
+
 /**
  * @author TeamworkGuy2
  * @since 2015-2-9
  */
 public class JavaFileTokenizer {
+	public static int maxGenericTypeDepth = 3;
 
-	public static CodeTokenizerBuilder<CodeLanguageOptions.Java> createFileParser() {
-		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer();
+
+	public static CodeTokenizer createJavaTokenizer() {
+		return CodeTokenizer.createTokenizer(CodeLanguageOptions.C_SHARP, createJavaTokenizers());
+	}
+
+
+	public static PairList<CharParserFactory, TextTransformer<CodeTokenType>> createJavaTokenizers() {
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(maxGenericTypeDepth);
 		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
 
-		var parser = new CodeTokenizerBuilder<>(CodeLanguageOptions.JAVA)
-			.addParser(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), CodeTokenType.COMMENT)
-			.addParser(CodeStringTokenizer.createStringTokenizerForJava(), CodeTokenType.STRING)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('{', '}'), CodeTokenType.BLOCK)
-			.addParser(CodeBlockTokenizer.createBlockTokenizer('(', ')'), CodeTokenType.BLOCK)
-			// no annotation parser, instead we parse
-			.addParser(identifierParser, (text, off, len) -> {
-				return JavaKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
-			})
-			.addParser(createOperatorTokenizer(), CodeTokenType.OPERATOR)
-			.addParser(createSeparatorTokenizer(), CodeTokenType.SEPARATOR)
-			.addParser(numericLiteralParser, CodeTokenType.NUMBER);
+		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 
-		return parser;
+		parsers.add(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
+		parsers.add(CodeStringTokenizer.createStringTokenizerForJava(), ofType(CodeTokenType.STRING));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer('{', '}'), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer('(', ')'), ofType(CodeTokenType.BLOCK));
+		// no annotation parser, instead we parse
+		parsers.add(identifierParser, (text, off, len) -> {
+			return JavaKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
+		});
+		parsers.add(createOperatorTokenizer(), ofType(CodeTokenType.OPERATOR));
+		parsers.add(createSeparatorTokenizer(), ofType(CodeTokenType.SEPARATOR));
+		parsers.add(numericLiteralParser, ofType(CodeTokenType.NUMBER));
+
+		return parsers;
 	}
 
 

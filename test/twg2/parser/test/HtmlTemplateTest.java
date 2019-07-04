@@ -6,13 +6,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import twg2.collections.dataStructures.PairList;
 import twg2.collections.primitiveCollections.CharArrayList;
 import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
+import twg2.parser.textFragment.TextTransformer;
 import twg2.parser.tokenizers.CodeTokenizer;
-import twg2.parser.tokenizers.CodeTokenizerBuilder;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.text.tokenizer.CharConditionPipe;
 import twg2.text.tokenizer.CharConditions;
@@ -48,7 +49,7 @@ public class HtmlTemplateTest {
 			"</head>";
 
 		StringBuilder dst = new StringBuilder(src);
-		compileTemplate(createHtmlParser().build(), src, dst, srcName, true, createHtmlVarsSingleline());
+		compileTemplate(createHtmlParser(), src, dst, srcName, true, createHtmlVarsSingleline());
 
 		Assert.assertEquals(expect, dst.toString());
 	}
@@ -78,16 +79,18 @@ public class HtmlTemplateTest {
 			"</head>";
 
 		StringBuilder dst = new StringBuilder(src);
-		compileTemplate(createHtmlParser().build(), src, dst, srcName, true, createHtmlVarsMultiline());
+		compileTemplate(createHtmlParser(), src, dst, srcName, true, createHtmlVarsMultiline());
 
 		Assert.assertEquals(expect, dst.toString());
 	}
 
 
-	private static final CodeTokenizerBuilder<CodeLanguage> createHtmlParser() {
+	private static final CodeTokenizer createHtmlParser() {
 		CharParserFactory parser = createHtmlNamedVarParser("$", "importHtml", "$");
-		CodeTokenizerBuilder<CodeLanguage> docParser = new CodeTokenizerBuilder<CodeLanguage>((CodeLanguage)null).addParser(parser, CodeTokenType.IDENTIFIER);
-		return docParser;
+		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
+		parsers.add(parser, CodeTokenizer.ofType(CodeTokenType.IDENTIFIER));
+
+		return CodeTokenizer.createTokenizer((CodeLanguage)null, parsers);
 	}
 
 

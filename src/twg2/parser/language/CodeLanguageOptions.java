@@ -28,7 +28,7 @@ import twg2.parser.codeParser.java.JavaBlockParser;
 import twg2.parser.codeParser.java.JavaFileTokenizer;
 import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.parser.codeParser.java.JavaOperator;
-import twg2.parser.tokenizers.CodeTokenizerBuilder;
+import twg2.parser.tokenizers.CodeTokenizer;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.parser.workflow.ParseInput;
 
@@ -160,12 +160,12 @@ public enum CodeLanguageOptions {
 
 	public static final CSharp C_SHARP = registerCodeLanguage(
 		new CSharp("C#", new CsBlockUtil(), new CsAstUtil(), CsKeyword.check, CsOperator.check,
-			CodeTokenizerBuilder.createTokenizerWithTimer(() -> CsFileTokenizer.createFileParser().build()), new CsBlockParser(), Arrays.asList("cs"))
+			CodeTokenizer.createTokenizerWithTimer(() -> CsFileTokenizer.createCsTokenizer()), new CsBlockParser(), Arrays.asList("cs"))
 	);
 
 	public static final Java JAVA = registerCodeLanguage(
 		new Java("Java", new JavaBlockUtil(), new JavaAstUtil(), JavaKeyword.check, JavaOperator.check,
-			CodeTokenizerBuilder.createTokenizerWithTimer(() -> JavaFileTokenizer.createFileParser().build()), new JavaBlockParser(), Arrays.asList("java"))
+			CodeTokenizer.createTokenizerWithTimer(() -> JavaFileTokenizer.createJavaTokenizer()), new JavaBlockParser(), Arrays.asList("java"))
 	);
 
 	public static final CodeLanguageImpl<BlockType, Keyword, CodeLanguage, Operator, AstUtil<BlockType, Keyword>, OperatorUtil<Operator>, AstExtractor<BlockType>> JAVASCRIPT = registerCodeLanguage(
