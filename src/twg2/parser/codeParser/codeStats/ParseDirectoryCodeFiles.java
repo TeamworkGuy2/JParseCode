@@ -67,7 +67,7 @@ public class ParseDirectoryCodeFiles {
 		Map<CodeLanguage, List<ParsedFileStats>> filesPerCategory = new HashMap<>();
 
 		for(ParsedFileStats fileStat : fileStats) {
-			CodeLanguage lang = CodeLanguageOptions.tryFromFileExtension(StringSplit.lastMatch(fileStat.getSrcId(), "."));
+			CodeLanguage lang = CodeLanguageOptions.tryFromFileExtension(StringSplit.lastMatch(fileStat.getSrcId(), '.'));
 			if(lang == null) {
 				uncategorizedFiles.add(fileStat);
 			}
@@ -140,7 +140,7 @@ public class ParseDirectoryCodeFiles {
 			char[] src = fileReader.readChars(new FileInputStream(file));
 			int srcOff = 0;
 			int srcLen = src.length;
-			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, ".");
+			Entry<String, String> fileNameExt = StringSplit.lastMatchParts(fullFileName, '.');
 			if("json".equals(fileNameExt.getValue())) {
 				int lineCount = StringSplit.countMatches(src, srcOff, srcLen, new char[] { '\n' }, 0, 1);
 				var parsedStats = new ParsedFileStats(file.toString(), srcLen, 0, 0, lineCount);

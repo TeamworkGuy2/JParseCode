@@ -21,7 +21,7 @@ import twg2.parser.workflow.CodeFileParsed;
  * @author TeamworkGuy2
  * @since 2016-1-1
  */
-public class JavasEnumParseTest {
+public class JavaEnumParseTest {
 	private static final CodeFileAndAst<JavaBlock> simpleEnumJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleEnumJava.java", "ParserExamples.Samples.SimpleEnumJava", true, ls(
 		"package ParserExamples.Samples;",
 		"",

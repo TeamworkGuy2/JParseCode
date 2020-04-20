@@ -74,6 +74,9 @@ public class JavaClassParseTest {
 		"    /** The access timestamps. */",
 		"    public ZonedDateTime[] accesses;",
 		"",
+		"    /** The track */",
+		"    private TrackInfo TrackInfo;",
+		"",
 		"    /** Add name",
 		"     * @param name the name",
 		"     * @return the names",
@@ -128,7 +131,7 @@ public class JavaClassParseTest {
 		String fullClassName = simpleJava.fullClassName;
 		Assert.assertEquals(1, blocks.size());
 		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).parsedClass;
-		Assert.assertEquals(5, clas.getFields().size());
+		Assert.assertEquals(6, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
@@ -139,27 +142,28 @@ public class JavaClassParseTest {
 		assertField(fields, 0, fullClassName + ".mod", "int");
 		Assert.assertEquals(ls(" The modification count. "), fields.get(0).getComments());
 		List<AnnotationSig> as = fields.get(0).getAnnotations();
-		// annotations: EmptyAnnotation()
+		// annotation: EmptyAnnotation()
 		assertAnnotation(as, 0, "EmptyAnnotation", new String[0], new String[0]);
-		// annotations: IntAnnotation(-1)
+		// annotation: IntAnnotation(-1)
 		assertAnnotation(as, 1, "IntAnnotation", new String[] { "value" }, "-1");
-		// annotations: BoolAnnotation(-1)
+		// annotation: BoolAnnotation(-1)
 		assertAnnotation(as, 2, "BoolAnnotation", new String[] { "value" }, "true");
-		// annotations: IdentifierAnnotation(Integer.TYPE)
+		// annotation: IdentifierAnnotation(Integer.TYPE)
 		assertAnnotation(as, 3, "IdentifierAnnotation", new String[] { "value" }, "Integer.TYPE");
-		// annotations: IdentifierAnnotation(Map.class)
+		// annotation: IdentifierAnnotation(Map.class)
 		assertAnnotation(as, 4, "IdentifierAnnotation", new String[] { "value" }, "Map.class");
-		// annotations: StringAnnotation(Name = "")
+		// annotation: StringAnnotation(Name = "")
 		assertAnnotation(as, 5, "StringAnnotation", new String[] { "Name" }, "");
-		// annotations: MultiArgAnnotation("abc", false , 1.23)
+		// annotation: MultiArgAnnotation("abc", false , 1.23)
 		assertAnnotation(as, 6, "MultiArgAnnotation", new String[] { "arg1", "arg2", "arg3" }, "abc", "false", "1.23");
-		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
+		// annotation: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
 		assertAnnotation(as, 7, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
 		assertField(fields, 1, fullClassName + "._name", "String");
 		assertField(fields, 2, fullClassName + ".Names", ary("List", ary("String")));
 		assertField(fields, 3, fullClassName + ".Count", "int");
 		assertField(fields, 4, fullClassName + ".accesses", "ZonedDateTime[]");
+		assertField(fields, 5, fullClassName + ".TrackInfo", "TrackInfo");
 
 		// methods:
 		Assert.assertEquals(2, clas.getMethods().size());

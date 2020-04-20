@@ -85,6 +85,9 @@ public class CsClassParseTest {
 		"    /// <value>The access timestamps.</value>",
 		"    public string name { get { this.mod++; return this.name != null ? this._name : \"\"; } set { this.mod++; this._name = value; } }",
 		"",
+		"    /// <value>The track</value>",
+		"    public TrackInfo TrackInfo { get; }",
+		"",
 		"    /// <summary>Add name</summary>",
 		"    /// <param name=\"name\">the name</param>",
 		"    /// <returns>the names</returns>",
@@ -144,17 +147,17 @@ public class CsClassParseTest {
 		String fullClassName = simpleCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
 		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).parsedClass;
-		Assert.assertEquals(8, clas.getFields().size());
+		Assert.assertEquals(9, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "StringAnnotation", new String[] { "value" }, "-SimpleCs-");
 
-		List<FieldSig> fs = clas.getFields();
-		assertField(fs, 0, fullClassName + ".mod", "int");
-		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fs.get(0).getComments());
-		List<AnnotationSig> as = fs.get(0).getAnnotations();
+		List<FieldSig> fields = clas.getFields();
+		assertField(fields, 0, fullClassName + ".mod", "int");
+		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fields.get(0).getComments());
+		List<AnnotationSig> as = fields.get(0).getAnnotations();
 		// annotation: EmptyAnnotation()
 		assertAnnotation(as, 0, "EmptyAnnotation", new String[0], new String[0]);
 		// annotation: IntAnnotation(-1)
@@ -177,12 +180,14 @@ public class CsClassParseTest {
 		// annotations: MultiNamedArgAnnotation(num =1.23, flag=false ,value = "abc")
 		assertAnnotation(as, 9, "MultiNamedArgAnnotation", new String[] { "num", "flag", "value" }, "1.23", "false", "abc");
 
-		assertField(fs, 1, fullClassName + "._name", "string");
-		assertField(fs, 2, fullClassName + ".Names", ary("IList", ary("string")));
-		assertField(fs, 3, fullClassName + ".Count", "int");
-		assertField(fs, 4, fullClassName + ".C2", "float");
-		assertField(fs, 5, fullClassName + ".C3", "decimal");
-		assertField(fs, 6, fullClassName + ".accesses", "DateTime[]");
+		assertField(fields, 1, fullClassName + "._name", "string");
+		assertField(fields, 2, fullClassName + ".Names", ary("IList", ary("string")));
+		assertField(fields, 3, fullClassName + ".Count", "int");
+		assertField(fields, 4, fullClassName + ".C2", "float");
+		assertField(fields, 5, fullClassName + ".C3", "decimal");
+		assertField(fields, 6, fullClassName + ".accesses", "DateTime[]");
+		assertField(fields, 7, fullClassName + ".name", "string");
+		assertField(fields, 8, fullClassName + ".TrackInfo", "TrackInfo");
 
 		// methods:
 		Assert.assertEquals(2, clas.getMethods().size());

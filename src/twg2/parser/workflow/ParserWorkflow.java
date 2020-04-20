@@ -165,7 +165,7 @@ public class ParserWorkflow {
 
 
 		public static DestinationInfo parse(String str, String argName) {
-			String[] values = StringSplit.split(str, "=", 2);
+			String[] values = StringSplit.split(str, '=', 2);
 
 			if(values[0] == null) {
 				throw new IllegalArgumentException("argument '" + argName + "' should contain an argument value");

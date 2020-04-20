@@ -193,7 +193,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 		}
 
 		// convert the generic parameters to TypeSig nested
-		var rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), "#");
+		var rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), '#');
 		String paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
 		var nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
 		boolean isOptional = rootNameAndMarker.getKey().endsWith("?");
@@ -231,7 +231,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 		for(String param : params) {
 			// Split the generic parameter name and possible marker indicating further nested generic type
-			var paramNameAndMarker = StringSplit.firstMatchParts(param, "#");
+			var paramNameAndMarker = StringSplit.firstMatchParts(param, '#');
 
 			// Create basic generic parameter using the name
 			String paramName = StringTrim.trimTrailing(paramNameAndMarker.getKey(), '?');

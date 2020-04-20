@@ -32,8 +32,8 @@
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-builders/bin/jcollection_builders.jar" sourcepath="/JCollectionBuilders"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-interfaces/bin/jcollection_interfaces.jar" sourcepath="/JCollectionInterfaces"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jcollection-util/bin/jcollection_util.jar" sourcepath="/JCollectionUtil"/>
-	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdata-util/bin/jdata_util.jar" sourcepath="/JDataUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdate-times/bin/jdate_times.jar" sourcepath="/JDateTimes"/>
+	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jdata-util/bin/jdata_util.jar" sourcepath="/JDataUtil"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfile-io/bin/jfile_io.jar" sourcepath="/JFileIo"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jfunc/bin/jfunc.jar" sourcepath="/JFunc"/>
 	<classpathentry kind="lib" path="C:/Users/TeamworkGuy2/Documents/Java/Libraries/jinterfaces/bin/jinterfaces.jar" sourcepath="/JInterfaces"/>

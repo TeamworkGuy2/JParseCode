@@ -58,7 +58,7 @@ public class ParseCodeFile {
 		}
 
 		String fileName = file.getName();
-		String fileExt = StringSplit.lastMatch(fileName, ".");
+		String fileExt = StringSplit.lastMatch(fileName, '.');
 		var lang = CodeLanguageOptions.tryFromFileExtension(fileExt);
 		if(lang != null) {
 			var parsedFileInfo = parseCode(fileStr, lang, src, 0, src.length, perfTracker, stepsTracker);

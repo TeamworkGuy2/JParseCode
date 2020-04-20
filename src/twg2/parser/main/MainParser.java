@@ -14,6 +14,9 @@ import twg2.parser.workflow.ParserWorkflow;
  * @author TeamworkGuy2
  * @since 2016-1-4
  */
+// TODO make extractClassFieldsAndMethodSignatures() easier to call
+// see test/utils/CodeFileAndAst.java (x1)
+// see parser/main/ParserMisc.java (x3)
 public class MainParser {
 
 	public static void main(String[] args) throws IOException, FileFormatException {

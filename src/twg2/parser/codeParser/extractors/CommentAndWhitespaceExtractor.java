@@ -62,8 +62,7 @@ public class CommentAndWhitespaceExtractor {
 		for(int i = 0, size = lineStartOffsets.size(); i < size; i++) {
 			int startIndex = lineStartOffsets.get(i);
 			int endIndexExclusive = i + 1 < size ? lineStartOffsets.get(i + 1) : srcLen;
-			char[] line = new char[endIndexExclusive - startIndex];
-			System.arraycopy(src, startIndex, line, 0, endIndexExclusive);
+			int lineLen = endIndexExclusive - startIndex;
 
 			if(tokensPerLine.size() <= i) {
 				tokensPerLine.add(new ArrayList<>());
@@ -77,23 +76,25 @@ public class CommentAndWhitespaceExtractor {
 				}
 				else {
 					TextFragmentRef comment = lineTokens.get(0).getToken();
-					String prefix = comment.getLineStart() < i ? "" : new String(line, 0, comment.getColumnStart()); // if the token started on a previous line, there is no prefix text before it starts on this line
-					String suffix = "";
-					// in case the token ends at the end of the line
-					if(comment.getColumnEnd() + 1 < line.length) {
-						// TODO not sure why this was originally here
-						//new String(line, comment.getColumnEnd() + 1, line.length - (comment.getColumnEnd() + 1));
-					}
+					var prefixLen = comment.getOffsetStart() - startIndex;
+					var noneOrWhitespacePrefix = comment.getLineStart() < i || StringCheck.isWhitespace(src, startIndex, prefixLen); // if the token started on a previous line, there is no prefix text before it starts on this line
+					var suffixLen = endIndexExclusive - comment.getOffsetEnd();
+					var noneOrWhitespaceSuffix = comment.getLineEnd() > i || StringCheck.isWhitespace(src, comment.getOffsetEnd(), suffixLen);
 
-					if(prefix.trim().length() == 0 && suffix.trim().length() == 0) {
-						commentLines.add(i + 1);
+					if(noneOrWhitespacePrefix && noneOrWhitespaceSuffix) {
+						if(StringCheck.isWhitespace(src, startIndex, lineLen)) {
+							whitespaceLines.add(i);
+						}
+						else {
+							commentLines.add(i);
+						}
 					}
 				}
 			}
-			else if(StringCheck.isWhitespace(line, 0, line.length)) {
-				whitespaceLines.add(i + 1);
+			else if(StringCheck.isWhitespace(src, startIndex, lineLen)) {
+				whitespaceLines.add(i);
 			}
-			System.out.println("line " + i + " tokens: " + lineTokens);
+			//System.out.println("line " + i + " tokens: " + lineTokens);
 		}
 
 		System.out.println("line count: " + lineStartOffsets.size());
@@ -106,17 +107,17 @@ public class CommentAndWhitespaceExtractor {
 
 	public static List<List<CodeToken>> documentTreeToTokensPerLine(SimpleTree<CodeToken> tree) {
 		// flatten the document tree into a nested list of tokens per source line of text
-		List<List<CodeToken>> tokensPerLine = new ArrayList<>();
+		var tokensPerLine = new ArrayList<List<CodeToken>>();
 
 		var treeTraverseParams = SimpleTreeTraverseParameters.of(tree, false, TreeTraversalOrder.PRE_ORDER)
 				.setSkipRoot(true)
 				.setConsumerSimpleTree((branch, index, size, depth, parentBranch) -> {
-					int startLine0 = branch.getToken().getLineStart();
-					int endLine0 = branch.getToken().getLineEnd();
-					while(tokensPerLine.size() <= endLine0) {
+					int startLine = branch.getToken().getLineStart();
+					int endLine = branch.getToken().getLineEnd();
+					while(tokensPerLine.size() <= endLine) {
 						tokensPerLine.add(new ArrayList<>());
 					}
-					for(int i = startLine0; i <= endLine0; i++) {
+					for(int i = startLine; i <= endLine; i++) {
 						tokensPerLine.get(i).add(branch);
 					}
 				});

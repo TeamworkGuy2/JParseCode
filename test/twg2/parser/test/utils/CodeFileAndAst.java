@@ -50,7 +50,6 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 	public static <_T_BLOCK extends BlockType> CodeFileAndAst<_T_BLOCK> parse(CodeLanguage lang, String fileName, String fullClassName, boolean print, Iterable<String> srcCodeLines) {
 		char[] srcCode = StringJoin.join(srcCodeLines, "\n").toCharArray();
 		CodeFileSrc ast = ParseCodeFile.parseCode(fileName, lang, srcCode, 0, srcCode.length, null, null);
-		List<CodeFileParsed.Simple<_T_BLOCK>> parsedBlocks = new ArrayList<CodeFileParsed.Simple<_T_BLOCK>>();
 
 		if(print) {
 			System.out.println(srcCode);
@@ -58,7 +57,10 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 
 		@SuppressWarnings("unchecked")
 		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.astTree);
-		for(Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>> block : blockDeclarations) {
+
+		List<CodeFileParsed.Simple<_T_BLOCK>> parsedBlocks = new ArrayList<CodeFileParsed.Simple<_T_BLOCK>>();
+
+		for(var block : blockDeclarations) {
 			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
 			CodeFileParsed.Simple<_T_BLOCK> fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
 			parsedBlocks.add(fileParsed);

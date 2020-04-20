@@ -4,7 +4,16 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.19.0](N/A) - 2019-07-04
+### [0.19.1](N/A) - 2020-04-20
+#### Changed
+* Finish `CommentAndWhitespaceExtractor` and tests for it
+* `TextToken` interface now includes `hashCode()` and `equals(Object)`
+  * `TextFragmentRefToken` now implements `hashCode()` and `equals(Object)`
+* Minor code cleanup, use `StringSplit.split()` with `char` instead of `String` where possible
+
+
+--------
+### [0.19.0](https://github.com/TeamworkGuy2/JParseCode/commit/9e95bec5e50e9fd229d25f181d17da98a8d238b3) - 2019-07-04
 #### Changed
 * `IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer()` now takes one parameter `int maxGenericTypeDepth`
 * Changed `CsFileTokenizer.createFileParser()` -> `createCsTokenizers()` and `JavaFileTokenizer.createFileParser()` -> `createJavaTokenizers()`

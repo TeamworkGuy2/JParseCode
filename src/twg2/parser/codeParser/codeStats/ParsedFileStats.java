@@ -1,7 +1,6 @@
 package twg2.parser.codeParser.codeStats;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import twg2.collections.primitiveCollections.IntArrayList;
 import twg2.collections.primitiveCollections.IntList;
 
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author TeamworkGuy2
  * @since 2015-9-19
  */
-@NoArgsConstructor
 public final class ParsedFileStats {
 	@Getter String srcId;
 	@Getter int charCount;
@@ -23,6 +21,10 @@ public final class ParsedFileStats {
 	@Getter IntList commentLineNumbers;
 	@Getter int commentLineCount;
 	@Getter int totalLineCount;
+
+
+	public ParsedFileStats() {
+	}
 
 
 	public ParsedFileStats(String srcId, int charCount, int whitespaceLineCount, int commentLineCount, int totalLineCount) {

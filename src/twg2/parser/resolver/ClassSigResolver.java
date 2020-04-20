@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.val;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.classes.ClassSigResolved;
@@ -36,14 +35,14 @@ public class ClassSigResolver {
 			BlockType defaultBlockType,
 			Collection<List<String>> missingNamespacesDst
 	) {
-		val classExtendImplementNames = classSig.getExtendImplementSimpleNames();
+		var classExtendImplementNames = classSig.getExtendImplementSimpleNames();
 		int nameCnt = classExtendImplementNames.size();
 		List<List<String>> resolvedParentNames = new ArrayList<>(nameCnt);
 		List<BlockType> resolvedParentBlockTypess = new ArrayList<>(nameCnt);
 
 		if(classExtendImplementNames != null) {
-			for(val simpleName : classExtendImplementNames) {
-				val resolvedClass = projFiles.resolveSimpleNameToClass(simpleName, namespaceClass, missingNamespacesDst);
+			for(var simpleName : classExtendImplementNames) {
+				var resolvedClass = projFiles.resolveSimpleNameToClass(simpleName, namespaceClass, missingNamespacesDst);
 				if(resolvedClass != null) {
 					resolvedParentBlockTypess.add(resolvedClass.getBlockType());
 					resolvedParentNames.add(resolvedClass.getSignature().getFullName());
@@ -59,14 +58,14 @@ public class ClassSigResolver {
 		TypeSig.TypeSigResolved extendClassType = null;
 		List<TypeSig.TypeSigResolved> implementInterfaceTypes = Collections.emptyList();
 		if(resolvedParentNames.size() > 0) {
-			val firstCompilationUnitName = resolvedParentNames.get(0);
-			val firstCompilationUnitBlockType = resolvedParentBlockTypess.get(0);
+			var firstCompilationUnitName = resolvedParentNames.get(0);
+			var firstCompilationUnitBlockType = resolvedParentBlockTypess.get(0);
 			boolean extendsClass = false;
 			// Get the extends class name
 			// TODO maybe should check isClass() rather than !isInterface()
 			if(!firstCompilationUnitBlockType.isInterface()) {
-				val name = NameUtil.joinFqName(firstCompilationUnitName);
-				val extendClassSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
+				var name = NameUtil.joinFqName(firstCompilationUnitName);
+				var extendClassSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
 				extendClassType = TypeSigResolver.resolveFrom(extendClassSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 				extendsClass = true;
 			}
@@ -79,9 +78,9 @@ public class ClassSigResolver {
 					if(!resolvedParentBlockTypess.get(i).isInterface() && resolvedParentNames.get(i).size() > 1) {
 						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullName() + "'");
 					}
-					val name = NameUtil.joinFqName(resolvedParentNames.get(i));
-					val implementInterfaceSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
-					val implementInterfaceType = TypeSigResolver.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
+					var name = NameUtil.joinFqName(resolvedParentNames.get(i));
+					var implementInterfaceSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
+					var implementInterfaceType = TypeSigResolver.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 					implementInterfaceTypes.add(implementInterfaceType);
 				}
 			}
@@ -91,17 +90,16 @@ public class ClassSigResolver {
 		List<TypeSig.TypeSigResolved> resolvedClassParams = Collections.emptyList();
 		if(classSig.isGeneric()) {
 			resolvedClassParams = new ArrayList<>();
-			for(val simpleParam : classSig.getParams()) {
-				val resolvedClassParam = TypeSigResolver.resolveFrom(simpleParam, namespaceClass, projFiles, missingNamespacesDst);
+			for(var simpleParam : classSig.getParams()) {
+				var resolvedClassParam = TypeSigResolver.resolveFrom(simpleParam, namespaceClass, projFiles, missingNamespacesDst);
 				resolvedClassParams.add(resolvedClassParam);
 			}
 		}
 
-		val classFqName = classSig.getFullName();
+		var classFqName = classSig.getFullName();
 
-		val res = new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getAnnotations(),
+		return new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getAnnotations(),
 				classSig.getDeclarationType(), extendClassType, implementInterfaceTypes);
-		return res;
 	}
 
 }

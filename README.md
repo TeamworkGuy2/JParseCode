@@ -18,43 +18,39 @@ Example:
 Source Code (SimpleCs.cs):
 ```C#
 namespace ParserExamples.Samples {
+    /// <summary>
+    /// A simple class to test parsing.
+    /// </summary>
+    public class SimpleCs {
+        /// <value>The modification count.</value>
+        private int mod;
 
-	/// <summary>
-	/// A simple class to test parsing.
-	/// </summary>
-	public class SimpleCs {
+        /// <value>The name.</value>
+        private string _name;
 
-		/// <value>The modification count.</value>
-		private int mod;
+        /// <value>The names.</value>
+        public IList<string> Names { get; }
 
-		/// <value>The name.</value>
-		private string _name;
+        /// <value>The number of names.</value>
+        public int Count { set; }
 
-		/// <value>The names.</value>
-		public IList<string> Names { get; }
+        /// <value>The access timestamps.</value>
+        public DateTime[] accesses { set { this.mod++; this.accesses = value; } }
 
-		/// <value>The number of names.</value>
-		public int Count { set; }
+        /// <value>The access timestamps.</value>
+        public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }
 
-		/// <value>The access timestamps.</value>
-		public DateTime[] accesses { set { this.mod++; this.accesses = value; } }
-
-		/// <value>The access timestamps.</value>
-		public string name { get { this.mod++; return this._name; } set { this.mod++; this._name = value; } }
-
-		/// <summary>Add name</summary>
-		/// <param name="name">the name</param>
-		/// <returns>the names</returns>
-		[OperationContract]
-		[WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
-				ResponseFormat = WebMessageFormat.Json)]
-		[TransactionFlow(TransactionFlowOption.Allowed)]
-		Result<IList<String>> AddName(string name) {
-			content of block;
-		}
-
-	}
-
+        /// <summary>Add name</summary>
+        /// <param name="name">the name</param>
+        /// <returns>the names</returns>
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/AddName?name={name}",
+                ResponseFormat = WebMessageFormat.Json)]
+        [TransactionFlow(TransactionFlowOption.Allowed)]
+        Result<IList<String>> AddName(string name) {
+            content of block;
+        }
+    }
 }
 ```
 
@@ -65,11 +61,11 @@ CodeFileSrc<CodeLanguage> simpleCsAst = ParseCodeFile.parseCode("SimpleCs.cs", C
 WriteSettings ws = new WriteSettings(true, true, true, true);
 
 for(Map.Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>> block : CodeLanguageOptions.C_SHARP.getExtractor().extractClassFieldsAndMethodSignatures(simpleCsAst.getDoc())) {
-	CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
+    CodeFileParsed.Simple<String, CsBlock> fileParsed = new CodeFileParsed.Simple<>("SimpleCs.cs", block.getValue(), block.getKey());
 
-	StringBuilder sb = new StringBuilder();
-	fileParsed.getParsedClass().toJson(sb, ws);
-	System.out.println(sb.toString()); // Print the parsed AST to System.out
+    StringBuilder sb = new StringBuilder();
+    fileParsed.getParsedClass().toJson(sb, ws);
+    System.out.println(sb.toString()); // Print the parsed AST to System.out
 }
 ```
 
@@ -77,102 +73,102 @@ for(Map.Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<CsBlock>> block : CodeL
 JSON Result (printed to System.out):
 ```JSON
 {
-	"classSignature": {
-		"access": "PUBLIC",
-		"name": "ParserExamples.Samples.SimpleCs",
-		"declarationType": "class"
-	},
-	"blockType": "CLASS",
-	"using": [],
-	"fields": [{
-		"name": "ParserExamples.Samples.SimpleCs.mod",
-		"type": {
-			"typeName": "int",
-			"primitive": true
-		},
-		"accessModifiers": ["private"],
-		"annotations": [],
-		"comments": [" <value>The modification count.</value>\n"]
-	}, {
-		"name": "ParserExamples.Samples.SimpleCs._name",
-		"type": {
-			"typeName": "string"
-		},
-		"accessModifiers": ["private"],
-		"annotations": [],
-		"comments": [" <value>The name.</value>\n"]
-	}, {
-		"name": "ParserExamples.Samples.SimpleCs.Names",
-		"type": {
-			"typeName": "IList",
-			"genericParameters": [{
-				"typeName": "string"
-			}]
-		},
-		"accessModifiers": ["public"],
-		"annotations": [],
-		"comments": [" <value>The names.</value>\n"]
-	}, {
-		"name": "ParserExamples.Samples.SimpleCs.Count",
-		"type": {
-			"typeName": "int",
-			"primitive": true
-		},
-		"accessModifiers": ["public"],
-		"annotations": [],
-		"comments": [" <value>The number of names.</value>\n"]
-	}, {
-		"name": "ParserExamples.Samples.SimpleCs.accesses",
-		"type": {
-			"typeName": "DateTime",
-			"arrayDimensions": 1
-		},
-		"accessModifiers": ["public"],
-		"annotations": [],
-		"comments": [" <value>The access timestamps.</value>\n"]
-	}, {
-		"name": "ParserExamples.Samples.SimpleCs.name",
-		"type": {
-			"typeName": "string"
-		},
-		"accessModifiers": ["public"],
-		"annotations": [],
-		"comments": [" <value>The access timestamps.</value>\n"]
-	}],
-	"methods": [{
-		"name": "ParserExamples.Samples.SimpleCs.AddName",
-		"parameters": [{
-			"type": "string",
-			"name": "name"
-		}],
-		"accessModifiers": [],
-		"annotations": [{
-			"name": "OperationContract",
-			"arguments": {}
-		}, {
-			"name": "WebInvoke",
-			"arguments": {
-				"ResponseFormat": "WebMessageFormat.Json",
-				"Method": "POST",
-				"UriTemplate": "/AddName?name={name}"
-			}
-		}, {
-			"name": "TransactionFlow",
-			"arguments": {
-				"value": "TransactionFlowOption.Allowed"
-			}
-		}],
-		"returnType": {
-			"typeName": "Result",
-			"genericParameters": [{
-				"typeName": "IList",
-				"genericParameters": [{
-					"typeName": "String"
-				}]
-			}]
-		},
-		"comments": [" <summary>Add name</summary>\n", " <param name=\"name\">the name</param>\n", " <returns>the names</returns>\n"]
-	}]
+    "classSignature": {
+        "access": "PUBLIC",
+        "name": "ParserExamples.Samples.SimpleCs",
+        "declarationType": "class"
+    },
+    "blockType": "CLASS",
+    "using": [],
+    "fields": [{
+        "name": "ParserExamples.Samples.SimpleCs.mod",
+        "type": {
+            "typeName": "int",
+            "primitive": true
+        },
+        "accessModifiers": ["private"],
+        "annotations": [],
+        "comments": [" <value>The modification count.</value>\n"]
+    }, {
+        "name": "ParserExamples.Samples.SimpleCs._name",
+        "type": {
+            "typeName": "string"
+        },
+        "accessModifiers": ["private"],
+        "annotations": [],
+        "comments": [" <value>The name.</value>\n"]
+    }, {
+        "name": "ParserExamples.Samples.SimpleCs.Names",
+        "type": {
+            "typeName": "IList",
+            "genericParameters": [{
+                "typeName": "string"
+            }]
+        },
+        "accessModifiers": ["public"],
+        "annotations": [],
+        "comments": [" <value>The names.</value>\n"]
+    }, {
+        "name": "ParserExamples.Samples.SimpleCs.Count",
+        "type": {
+            "typeName": "int",
+            "primitive": true
+        },
+        "accessModifiers": ["public"],
+        "annotations": [],
+        "comments": [" <value>The number of names.</value>\n"]
+    }, {
+        "name": "ParserExamples.Samples.SimpleCs.accesses",
+        "type": {
+            "typeName": "DateTime",
+            "arrayDimensions": 1
+        },
+        "accessModifiers": ["public"],
+        "annotations": [],
+        "comments": [" <value>The access timestamps.</value>\n"]
+    }, {
+        "name": "ParserExamples.Samples.SimpleCs.name",
+        "type": {
+            "typeName": "string"
+        },
+        "accessModifiers": ["public"],
+        "annotations": [],
+        "comments": [" <value>The access timestamps.</value>\n"]
+    }],
+    "methods": [{
+        "name": "ParserExamples.Samples.SimpleCs.AddName",
+        "parameters": [{
+            "type": "string",
+            "name": "name"
+        }],
+        "accessModifiers": [],
+        "annotations": [{
+            "name": "OperationContract",
+            "arguments": {}
+        }, {
+            "name": "WebInvoke",
+            "arguments": {
+                "ResponseFormat": "WebMessageFormat.Json",
+                "Method": "POST",
+                "UriTemplate": "/AddName?name={name}"
+            }
+        }, {
+            "name": "TransactionFlow",
+            "arguments": {
+                "value": "TransactionFlowOption.Allowed"
+            }
+        }],
+        "returnType": {
+            "typeName": "Result",
+            "genericParameters": [{
+                "typeName": "IList",
+                "genericParameters": [{
+                    "typeName": "String"
+                }]
+            }]
+        },
+        "comments": [" <summary>Add name</summary>\n", " <param name=\"name\">the name</param>\n", " <returns>the names</returns>\n"]
+    }]
 }
 ```
 
