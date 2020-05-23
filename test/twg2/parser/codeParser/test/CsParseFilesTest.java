@@ -1,6 +1,7 @@
 package twg2.parser.codeParser.test;
 
 import static twg2.parser.test.utils.TypeAssert.assertType;
+import static twg2.parser.test.utils.AnnotationAssert.assertAnnotation;
 import static twg2.parser.test.utils.TypeAssert.ary;
 import static twg2.parser.test.utils.TypeAssert.ls;
 
@@ -81,6 +82,12 @@ public class CsParseFilesTest {
 		assertType(ary("ISerializable"), trackInfoDef.getSignature().getExtendClass());
 		Assert.assertEquals(1, trackInfoDef.getSignature().getImplementInterfaces().size());
 		assertType(ary("IComparable", ary("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(0));
+
+		// AlbumInfo
+		Assert.assertArrayEquals(ary("ParserExamples", "Models", "AlbumInfo"), albumInfoDef.getSignature().getFullName().toArray());
+		assertAnnotation(albumInfoDef.getSignature().getAnnotations(), 0, "DataContract", new String[0]);
+		Assert.assertNull(albumInfoDef.getSignature().getExtendClass());
+		Assert.assertEquals(0, albumInfoDef.getSignature().getImplementInterfaces().size());
 	}
 
 

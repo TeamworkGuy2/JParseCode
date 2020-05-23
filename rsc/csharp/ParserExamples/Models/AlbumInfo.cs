@@ -16,7 +16,7 @@ namespace ParserExamples.Models {
         public string AlbumName { get; set; }
 
         /// <value>The track duration in milliseconds</value>
-        public IList<TrackInfo> Tracks { get; set }
+        public IList<TrackInfo> Tracks { get; set; }
 
     }
 

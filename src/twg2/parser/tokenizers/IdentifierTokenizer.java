@@ -3,17 +3,13 @@ package twg2.parser.tokenizers;
 import java.util.Arrays;
 
 import twg2.collections.primitiveCollections.CharArrayList;
-import twg2.functions.predicates.CharPredicate;
-import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
-import twg2.parser.condition.text.CharParserPredicate;
-import twg2.parser.textParser.TextParser;
-import twg2.ranges.CharSearchSet;
 import twg2.text.tokenizer.CharConditionPipe;
 import twg2.text.tokenizer.CharConditions;
 import twg2.text.tokenizer.CharParserFactory;
 import twg2.text.tokenizer.CharParserMatchableFactory;
-import twg2.text.tokenizer.StringParserBuilder;
+import twg2.text.tokenizer.Inclusion;
+import twg2.text.tokenizer.StringConditions;
 import twg2.tuple.Tuples;
 
 /** Static methods for creating C language like identifier parsers (i.e. parsing strings '_myVar', '$num', 'camelCaseStr', etc.)
@@ -31,31 +27,11 @@ public class IdentifierTokenizer {
 	}
 
 
-	public static CharParserFactory createIdentifierTokenizer() {
-		CharParserFactory identifierParser = new StringParserBuilder("identifier")
-			.addConditionMatcher(newIdentifierTokenizer())
-			.build();
-		return identifierParser;
-	}
-
-
 	/**
-	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'mySpecialLoopCount', '$thing', or '_stspr')
+	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'FancyObject.LoopCount', '$thing', or '_stspr')
 	 */
-	public static CharConditions.BaseCharParserMatchable newIdentifierTokenizer() {
-		CharSearchSet firstCharSet = new CharSearchSet();
-		firstCharSet.addChar('$');
-		firstCharSet.addChar('_');
-		firstCharSet.addRange('a', 'z');
-		firstCharSet.addRange('A', 'Z');
-		CharParserPredicate firstCharCheck = (char ch, TextParser parser) -> (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '$';
-
-		CharSearchSet charSet = firstCharSet.copy();
-		charSet.addRange('0', '9');
-		CharPredicate charCheck = (char ch) -> (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '$';
-
-		var cond = new CharConditions.ContainsFirstSpecial("identifier", charCheck, firstCharCheck, firstCharSet.toCharList().toArray(), Inclusion.INCLUDE);
-		return cond;
+	public static CharConditions.BaseCharParserMatchable createIdentifierTokenizer() {
+		return CharConditions.Identifier.newInstance("identifier");
 	}
 
 
@@ -63,12 +39,12 @@ public class IdentifierTokenizer {
 	 * @return a compound identifier parser (i.e. can parse 'Aa.Bb.Cc' as one identifier token')
 	 */
 	public static CharParserMatchable createCompoundIdentifierTokenizer() {
-		var identifierParser = Arrays.asList(newIdentifierTokenizer());
-		var separatorParser = Arrays.asList(new CharConditions.Literal("identifier namespace separator", CharArrayList.of('.'), Inclusion.INCLUDE));
+		var identifierParser = createIdentifierTokenizer();
 
 		return CharConditionPipe.createPipeOptionalSuffix("compound identifier (nullable)",
-			Arrays.asList(CharConditionPipe.createPipeRepeatableSeparator("compound identifier", identifierParser, separatorParser)),
-			Arrays.asList(new CharConditions.Literal("nullable '?' type", CharArrayList.of('?'), Inclusion.INCLUDE))
+			Arrays.asList(identifierParser),
+			Arrays.asList(new CharConditions.Literal("nullable '?' suffix", CharArrayList.of('?'), Inclusion.INCLUDE)
+					, new StringConditions.Literal("params '...' suffix", new String[] { "..." }, Inclusion.INCLUDE))
 		);
 	}
 

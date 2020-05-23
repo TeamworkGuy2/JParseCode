@@ -96,17 +96,29 @@ public class JavaClassParseTest {
 		"        : new Dictionary<string, object> { content = value } : new { content = object };",
 		"    }",
 		"",
+		"",
+		"    private void CheckState(int guid, String... states) {",
+		"        class Callback implements Consumer<String> {",
+		"            @Override public void accept(String state) {",
+		"                System.out.println();",
+		"            }",
+		"        }",
+		"        if(states != null && states.length > 0) Arrays.asList(states).forEach(new Callback());",
+		"    }",
+		"",
 		"}"
 	);
 
 	@Parameter
-	private CodeFileAndAst<JavaBlock> simpleJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleJava.java", "ParserExamples.Samples.SimpleJava", true, srcLines);
+	private CodeFileAndAst<JavaBlock> simpleJava;
 
 	@Parameter
-	private CodeFileSrc file = ParseCodeFile.parseFiles(ls(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java")), FileReadUtil.threadLocalInst(), null).get(0);
+	private CodeFileSrc file;
 
 
 	public JavaClassParseTest() throws IOException {
+		simpleJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "SimpleJava.java", "ParserExamples.Samples.SimpleJava", true, srcLines);
+		file = ParseCodeFile.parseFiles(ls(Paths.get("rsc/java/ParserExamples/Models/TrackInfo.java")), FileReadUtil.threadLocalInst(), null).get(0);
 	}
 
 
@@ -129,7 +141,7 @@ public class JavaClassParseTest {
 	public void simpleJavaParseTest() {
 		List<CodeFileParsed.Simple<JavaBlock>> blocks = simpleJava.parsedBlocks;
 		String fullClassName = simpleJava.fullClassName;
-		Assert.assertEquals(1, blocks.size());
+		Assert.assertEquals(2, blocks.size());
 		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).parsedClass;
 		Assert.assertEquals(6, clas.getFields().size());
 
@@ -166,7 +178,7 @@ public class JavaClassParseTest {
 		assertField(fields, 5, fullClassName + ".TrackInfo", "TrackInfo");
 
 		// methods:
-		Assert.assertEquals(2, clas.getMethods().size());
+		Assert.assertEquals(3, clas.getMethods().size());
 
 		// AddName(...)
 		MethodSigSimple m = clas.getMethods().get(0);
@@ -196,6 +208,13 @@ public class JavaClassParseTest {
 		ps = m.paramSigs;
 		assertParameter(ps, 0, "constraints", "Constraints", null, null, null);
 		assertParameter(ps, 1, "names", "String[]", null, ls(JavaKeyword.FINAL), null);
+
+		// CheckState(...) (int guid, String... states)
+		m = clas.getMethods().get(2);
+		Assert.assertEquals(fullClassName + ".CheckState", NameUtil.joinFqName(m.fullName));
+		ps = m.paramSigs;
+		assertParameter(ps, 0, "guid", "int", null, null, null);
+		assertParameter(ps, 1, "states", "String...", null, null, null);
 	}
 
 }

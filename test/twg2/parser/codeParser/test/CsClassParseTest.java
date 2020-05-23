@@ -110,19 +110,31 @@ public class CsClassParseTest {
 		"        : new Dictionary<string, object> { content = value } : new { content = object };",
 		"    }",
 		"",
+		"",
+		"    private void CheckState(int guid, params string[] states) {",
+		"",
+		"        void Accept(string state) {",
+		"            Console.WriteLine(state);",
+		"        }",
+		"",
+		"        if (states != null && states.Length > 0) new List<string>(states).ForEach(Accept);",
+		"    }",
+		"",
 		"  }",
 		"",
 		"}"
 	);
 
 	@Parameter
-	private CodeFileAndAst<CsBlock> simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, srcLines);
+	private CodeFileAndAst<CsBlock> simpleCs;
 
 	@Parameter
-	private CodeFileSrc file = ParseCodeFile.parseFiles(ls(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
+	private CodeFileSrc file;
 
 
 	public CsClassParseTest() throws IOException {
+		simpleCs = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "SimpleCs.cs", "ParserExamples.Samples.SimpleCs", true, srcLines);
+		file = ParseCodeFile.parseFiles(ls(Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs")), FileReadUtil.threadLocalInst(), null).get(0);
 	}
 
 
@@ -190,7 +202,7 @@ public class CsClassParseTest {
 		assertField(fields, 8, fullClassName + ".TrackInfo", "TrackInfo");
 
 		// methods:
-		Assert.assertEquals(2, clas.getMethods().size());
+		Assert.assertEquals(3, clas.getMethods().size());
 
 		// AddName(...)
 		MethodSigSimple m = clas.getMethods().get(0);
@@ -222,6 +234,13 @@ public class CsClassParseTest {
 		assertParameter(ps, 0, "inst", "SimpleCs", null, ls(CsKeyword.THIS), null);
 		assertParameter(ps, 1, "constraints", "Constraints", null, ls(CsKeyword.REF), null);
 		assertParameter(ps, 2, "names", "string[]", null, ls(CsKeyword.PARAMS), null);
+
+		// CheckState(...)
+		m = clas.getMethods().get(2);
+		Assert.assertEquals(fullClassName + ".CheckState", NameUtil.joinFqName(m.fullName));
+		ps = m.paramSigs;
+		assertParameter(ps, 0, "guid", "int", null, null, null);
+		assertParameter(ps, 1, "states", "string[]", null, ls(CsKeyword.PARAMS), null);
 	}
 
 }

@@ -1,6 +1,6 @@
 package twg2.parser.test;
 
-import static twg2.text.tokenizer.test.ParserTestUtils.parseTestSameParsed;
+import static twg2.text.tokenizer.test.ParserTestUtils.parseTest;
 
 import org.junit.Test;
 
@@ -18,13 +18,13 @@ public class IdentifierParserTest {
 		String name = "CompoundIdentifierParse";
 		CharParser cond = IdentifierTokenizer.createCompoundIdentifierTokenizer();
 
-		parseTestSameParsed(false, false, name, cond, "");
-		parseTestSameParsed(false, false, name, cond, "thing.");
-		parseTestSameParsed(false, true, name, cond, "a..c");
-		parseTestSameParsed(false, true, name, cond, "12th.sing");
-		parseTestSameParsed(true, false, name, cond, "th12a.sing");
-		parseTestSameParsed(true, false, name, cond, "a.b.c");
-		parseTestSameParsed(true, false, name, cond, "A.Bb.Ccc");
+		parseTest(false, false, name, cond, "");
+		parseTest(false, false, name, cond, "thing.");
+		parseTest(false, true, name, cond, "12th.sing");
+		parseTest(true, false, name, cond, "a..c", "a");
+		parseTest(true, false, name, cond, "th12a.sing");
+		parseTest(true, false, name, cond, "a.b.c");
+		parseTest(true, false, name, cond, "A.Bb.Ccc");
 	}
 
 }

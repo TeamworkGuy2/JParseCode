@@ -10,7 +10,7 @@ import System.Runtime.Serialization;
 /// <threadsafety>
 /// This class is mutable. And it is not thread-safe.
 /// </threadsafety>
-[DataContract]
+@DataContract
 public class TrackInfo implements Serializable, Comparable<TrackInfo> {
 
 	/// <value>The track name.</value>

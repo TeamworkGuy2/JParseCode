@@ -1,6 +1,6 @@
 package twg2.parser.test;
 
-import static twg2.text.tokenizer.test.ParserTestUtils.parseTestSameParsed;
+import static twg2.text.tokenizer.test.ParserTestUtils.parseTest;
 
 import org.junit.Test;
 
@@ -15,37 +15,39 @@ import twg2.parser.tokenizers.IdentifierTokenizer;
 public class TypeParserTest {
 
 	@Test
-	public void identifierWithGenericTypeParse() {
+	public void compoundIdentifierParse() {
 		String name = "IdentifierWithGenericTypeParse";
 		CharParser cond = GenericTypeTokenizer.createGenericTypeTokenizer(3, IdentifierTokenizer::createCompoundIdentifierTokenizer);
 
-		parseTestSameParsed(false, false, name, cond, "thing<");
-		parseTestSameParsed(false, true, name, cond, "thing<,>");
-		parseTestSameParsed(false, true, name, cond, "thing<abc, >");
-		parseTestSameParsed(true, false, name, cond, "thing<abc>");
-		parseTestSameParsed(false, true, name, cond, "1t<abc>");
-		parseTestSameParsed(true, false, name, cond, "t1_a2c<abc1>");
-		parseTestSameParsed(true, false, name, cond, "thing<abc, _def>");
-		parseTestSameParsed(true, false, name, cond, "thing<abc, _def<sub>>");
-		parseTestSameParsed(true, false, name, cond, "thing<abc, _def<sub, wub, tub>>");
-		parseTestSameParsed(true, false, name, cond, "Modified<A, B>");
-		parseTestSameParsed(true, false, name, cond, "Result<IDictionary<AaInfo, IList<BbInfo>>>");
+		parseTest(false, true, name, cond, "1t<abc>");
+		parseTest(false, false, name, cond, "thing<", "thing");
+
+		parseTest(true, false, name, cond, "thing<,>", "thing");
+		parseTest(true, false, name, cond, "thing<abc, >", "thing");
+		parseTest(true, false, name, cond, "thing<abc>");
+		parseTest(true, false, name, cond, "t_a2c<abc1>");
+		parseTest(true, false, name, cond, "thing<abc, _def>");
+		parseTest(true, false, name, cond, "thing<abc, _def<sub>>");
+		parseTest(true, false, name, cond, "thing<abc, _def<sub, wub, tub>>");
+		parseTest(true, false, name, cond, "Modified<A, B>");
+		parseTest(true, false, name, cond, "IList<int?>");
+		parseTest(true, false, name, cond, "Result<IDictionary<AaInfo, IList<BbInfo>>>");
 	}
 
 
 	@Test
-	public void identifierWithArrayDimensions() {
+	public void identifierParse() {
 		String name = "IdentifierWithArrayDimensions";
-		CharParser cond = GenericTypeTokenizer.createGenericTypeTokenizer(3, IdentifierTokenizer::createCompoundIdentifierTokenizer);
+		CharParser cond = GenericTypeTokenizer.createGenericTypeTokenizer(3, IdentifierTokenizer::createIdentifierTokenizer);
 
-		parseTestSameParsed(false, false, name, cond, "thing<abc>[");
-		parseTestSameParsed(false, true, name, cond, "thing<abc>[a");
-		parseTestSameParsed(false, true, name, cond, "thing<abc>[a");
-		parseTestSameParsed(true, false, name, cond, "thing<abc>[]");
-		parseTestSameParsed(true, false, name, cond, "thing<abc>[][]");
-		parseTestSameParsed(true, false, name, cond, "thing<abc[]>");
-		parseTestSameParsed(true, false, name, cond, "thing<abc[]>[][]");
-		parseTestSameParsed(true, false, name, cond, "thing[]");
+		parseTest(false, false, name, cond, "thing<abc>[");
+
+		parseTest(true, false, name, cond, "thing<abc>[a", "thing<abc>");
+		parseTest(true, false, name, cond, "thing<abc>[]");
+		parseTest(true, false, name, cond, "thing<abc>[][]");
+		parseTest(true, false, name, cond, "thing<abc[]>");
+		parseTest(true, false, name, cond, "thing<abc[]>[][]");
+		parseTest(true, false, name, cond, "thing[]");
 	}
 
 }

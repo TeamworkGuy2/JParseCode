@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import twg2.collections.dataStructures.PairList;
 import twg2.collections.primitiveCollections.CharArrayList;
-import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguage;
@@ -19,6 +18,7 @@ import twg2.text.tokenizer.CharConditionPipe;
 import twg2.text.tokenizer.CharConditions;
 import twg2.text.tokenizer.CharParserFactory;
 import twg2.text.tokenizer.CharParserMatchableFactory;
+import twg2.text.tokenizer.Inclusion;
 import twg2.text.tokenizer.StringConditions;
 
 /**
@@ -117,7 +117,7 @@ public class HtmlTemplateTest {
 	public static final CharParserFactory createHtmlNamedVarParser(String startMark, String templateName, String endMark) {
 		CharParserFactory htmlParser = new CharParserMatchableFactory<CharParserMatchable>("HTML Named Var Template", false, Arrays.asList(CharConditionPipe.createPipeAllRequired("HTML Named Var Template", Arrays.asList(
 			new StringConditions.Literal("start tag", new String[] { startMark + templateName + "(name=" }, Inclusion.INCLUDE),
-			new CharConditions.Start("attribute-string-start", CharArrayList.of('"'), Inclusion.INCLUDE),
+			new CharConditions.Literal("attribute-string-start", CharArrayList.of('"'), Inclusion.INCLUDE),
 			new CharConditions.EndNotPrecededBy("attribute-string-end", CharArrayList.of('"'), Inclusion.INCLUDE, CharArrayList.of('\\')),
 			new StringConditions.Literal("end tag", new String[] { ")" + endMark }, Inclusion.INCLUDE)
 		))));

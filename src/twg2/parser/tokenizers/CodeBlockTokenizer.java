@@ -1,8 +1,8 @@
 package twg2.parser.tokenizers;
 
-import twg2.parser.Inclusion;
 import twg2.text.tokenizer.CharParserFactory;
-import twg2.text.tokenizer.StringBoundedParserBuilder;
+import twg2.text.tokenizer.Inclusion;
+import twg2.text.tokenizer.StringParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -14,7 +14,7 @@ public class CodeBlockTokenizer {
 
 
 	public static CharParserFactory createBlockTokenizer(char startChar, char endChar) {
-		CharParserFactory commentParser = new StringBoundedParserBuilder("block")
+		CharParserFactory commentParser = new StringParserBuilder("block")
 			.addStartEndMarkers("block " + startChar + " " + endChar, startChar, endChar, Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();

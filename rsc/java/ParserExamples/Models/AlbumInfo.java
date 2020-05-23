@@ -8,7 +8,7 @@ import System.Runtime.Serialization;
 /// <threadsafety>
 /// This class is mutable. And it is not thread-safe.
 /// </threadsafety>
-[DataContract]
+@DataContract
 public class AlbumInfo {
 
 	/// <value>The track name.</value>

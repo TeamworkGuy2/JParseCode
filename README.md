@@ -177,7 +177,7 @@ JSON Result (printed to System.out):
 
 ## Command Line Interface (CLI)
 
-A command line call looks like:
+A command line call looks like this:
 ```
 path/to/java -jar path/to/jparse-code.jar 
  -sources './src/java/Server/Services=1,[cs];./src/java/Server/Models=3,[cs]'
@@ -190,7 +190,7 @@ Where `./src/java/Server/**` is where source files are kept
 And the files in `./src/java/Server/Services` belong to the C# namespace `App.Services` and `./src/java/Server/Models` belong to the C# namespace `App.Entities`
 
 
-### Sources
+### -sources
 A semicolon separated list of paths set equal to a directory depth followed by a comma and a comma separated, brackets wrapped, list of file extensions. 
 The path, child directory depth, and file extensions are used to create a file system filter and all matching files are parsed.
 The following formats are valid:
@@ -202,7 +202,7 @@ Example: ```/project/myApp/Models=3,[java,json]```
 Note: the brackets around the '[java,json]' file extension list are literal.
 
 
-### Destinations
+### -destinations
 A semicolon separated list of output file names associated with lists of namespaces.  Each parsed file who's namespace falls into one of these lists is written to that file. 
 The following format is valid:
 'path=[namespace,namespace,...]'
@@ -210,18 +210,18 @@ The following format is valid:
 Example: ```/project/output/models.json=[MyApp.Models]```
 
 
-### Log
+### -log
 An optional log file name to write parser information to, in the format:
 'path'
 
 Example: ```/project/output/parser-log.log```
 
 
-### Threads
+### -threads
 An optional number of threads to run parsing in parallel, 0 uses the logical number of processors on the current machine, default is 1
 
 
-### Debug
+### -debug
 An optional flag which causes extra debug and performance information to be logged
 
 

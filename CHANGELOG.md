@@ -4,7 +4,23 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.19.1](N/A) - 2020-04-20
+### [0.19.2](N/A) - 2020-05-23
+__Parameter varargs parsing support__ (i.e. 'int...' in Java).
+#### Changed
+* Update dependency `jtext-parser@0.16.0` and `jtext-tokenizer@0.4.0`
+  * Classes combined, class names simplified, and unused classes and methods removed from libraries
+  * Code identifier parser now provided by `jtext-tokenizer`
+  * Several bug fixes around compound optional parser conditions
+* Added `char[] src, int srcOff, int srcLen` parameters to `CodeTokenizer.tokenizeDocument()`
+* Renamed `IdentifierTokenizer` `newIdentifierTokenizer()` to `createIdentifierTokenizer()`
+* Improved unit tests
+
+#### Removed
+* `IdentifierTokenizer.createIdentifierTokenizer()`
+
+
+--------
+### [0.19.1](https://github.com/TeamworkGuy2/JParseCode/commit/691c019ee2b8a889bd44a8048957fdf86a02bcd4) - 2020-04-20
 #### Changed
 * Finish `CommentAndWhitespaceExtractor` and tests for it
 * `TextToken` interface now includes `hashCode()` and `equals(Object)`

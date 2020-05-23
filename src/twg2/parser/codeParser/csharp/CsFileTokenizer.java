@@ -1,7 +1,6 @@
 package twg2.parser.codeParser.csharp;
 
 import twg2.collections.dataStructures.PairList;
-import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.language.CodeLanguageOptions;
@@ -13,7 +12,7 @@ import twg2.parser.tokenizers.CommentTokenizer;
 import twg2.parser.tokenizers.IdentifierTokenizer;
 import twg2.parser.tokenizers.NumberTokenizer;
 import twg2.text.tokenizer.CharParserFactory;
-import twg2.text.tokenizer.StringBoundedParserBuilder;
+import twg2.text.tokenizer.Inclusion;
 import twg2.text.tokenizer.StringParserBuilder;
 
 import static twg2.parser.tokenizers.CodeTokenizer.ofType;
@@ -57,7 +56,7 @@ public class CsFileTokenizer {
 
 
 	public static CharParserFactory createAnnotationTokenizer() {
-		CharParserFactory annotationParser = new StringBoundedParserBuilder("C# annotation")
+		CharParserFactory annotationParser = new StringParserBuilder("C# annotation")
 			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', Inclusion.INCLUDE)
 			.isCompound(true)
 			.build();

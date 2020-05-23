@@ -1,8 +1,8 @@
 package twg2.parser.tokenizers;
 
-import twg2.parser.Inclusion;
 import twg2.text.tokenizer.CharParserFactory;
-import twg2.text.tokenizer.StringBoundedParserBuilder;
+import twg2.text.tokenizer.Inclusion;
+import twg2.text.tokenizer.StringParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -14,7 +14,7 @@ public final class CodeStringTokenizer {
 
 
 	public static final CharParserFactory createStringTokenizerForJava() {
-		CharParserFactory stringParser = new StringBoundedParserBuilder("Java string")
+		CharParserFactory stringParser = new StringParserBuilder("Java string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -24,7 +24,7 @@ public final class CodeStringTokenizer {
 
 	// TODO make parser work with all types of C# string literals
 	public static final CharParserFactory createStringTokenizerForCSharp() {
-		CharParserFactory stringParser = new StringBoundedParserBuilder("C# string")
+		CharParserFactory stringParser = new StringParserBuilder("C# string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();
@@ -33,7 +33,7 @@ public final class CodeStringTokenizer {
 
 
 	public static final CharParserFactory createStringTokenizerForJavascript() {
-		CharParserFactory stringParser = new StringBoundedParserBuilder("JS string")
+		CharParserFactory stringParser = new StringParserBuilder("JS string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
 			.build();

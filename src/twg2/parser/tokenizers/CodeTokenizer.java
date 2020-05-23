@@ -14,7 +14,8 @@ import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.fragment.TextToken;
 import twg2.parser.language.CodeLanguage;
-import twg2.parser.textFragment.TextConsumer;
+import twg2.parser.textFragment.TextFragmentConsumer;
+import twg2.parser.textFragment.TextFragmentRef;
 import twg2.parser.textFragment.TextFragmentRefImpl;
 import twg2.parser.textFragment.TextFragmentRefImplMut;
 import twg2.parser.textFragment.TextTransformer;
@@ -100,10 +101,10 @@ public interface CodeTokenizer {
 		var input = TextCharsParser.of(src, srcOff, srcLen);
 
 		var docTextFragment = new TextFragmentRefImplMut(srcOff, srcOff + srcLen, 0, 0, -1, -1);
-		var docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(src, srcOff, srcLen).toString());
+		var docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(0, src, srcOff, srcLen).toString());
 
-		SimpleTree<CodeToken> docTree = tokenizeDocument(srcName, input, stepsDetails, tokenizers, docRoot,
-				(type, frag) -> new CodeToken(type, frag, frag.getText(src, srcOff, srcLen).toString()),
+		SimpleTree<CodeToken> docTree = tokenizeDocument(srcName, input, src, srcOff, srcLen, stepsDetails, tokenizers, docRoot,
+				(type, frag) -> new CodeToken(type, frag, frag.getText(0, src, srcOff, srcLen).toString()),
 				(docFrag) -> docFrag.getTokenType().isCompound(),
 				(parent, child) -> parent != child && parent.getToken().contains(child.getToken()));
 
@@ -126,6 +127,7 @@ public interface CodeTokenizer {
 	public static <D extends TextToken<S, T>, T, S> SimpleTree<D> tokenizeDocument(
 		String srcName,
 		TextParser input,
+		char[] src, int srcOff, int srcLen,
 		ParserActionLogger stepsDetails,
 		PairList<? extends CharParserFactory, ? extends TextTransformer<T>> tokenizers,
 		D root,
@@ -135,12 +137,13 @@ public interface CodeTokenizer {
 	) {
 		SimpleTreeImpl<D> tree = new SimpleTreeImpl<>(root);
 
-		List<Entry<CharParserFactory, TextConsumer>> conditions = new ArrayList<>();
+		List<Entry<CharParserFactory, TextFragmentConsumer>> conditions = new ArrayList<>();
 
 		for(int i = 0, size = tokenizers.size(); i < size; i++) {
 			TextTransformer<T> transformer = tokenizers.getValue(i);
 
-			conditions.add(Tuples.of(tokenizers.getKey(i), (text, off, len, lineStart, columnStart, lineEnd, columnEnd) -> {
+			conditions.add(Tuples.of(tokenizers.getKey(i), (off, len, lineStart, columnStart, lineEnd, columnEnd) -> {
+				var text = TextFragmentRef.getText(srcOff, src, srcOff, srcLen, off, off + len);
 				T elemType = transformer.apply(text, off, len);
 				var textFragment = new TextFragmentRefImpl(off, off + len, lineStart, columnStart, lineEnd, columnEnd);
 

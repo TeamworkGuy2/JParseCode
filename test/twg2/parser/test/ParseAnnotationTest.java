@@ -1,7 +1,6 @@
 package twg2.parser.test;
 
-import static twg2.text.tokenizer.test.ParserTestUtils.parseTestSameParsed;
-
+import static twg2.text.tokenizer.test.ParserTestUtils.parseTest;
 import org.junit.Test;
 
 import twg2.parser.codeParser.csharp.CsFileTokenizer;
@@ -18,10 +17,10 @@ public class ParseAnnotationTest {
 		String name = "AnnotationParse";
 		CharParser cond = CsFileTokenizer.createAnnotationTokenizer().createParser();
 
-		parseTestSameParsed(false, false, name, cond, "[");
-		parseTestSameParsed(false, true, name, cond, "]");
-		parseTestSameParsed(false, false, name, cond, "[]");
-		parseTestSameParsed(true, false, name, cond, "[A]");
+		parseTest(false, false, name, cond, "[");
+		parseTest(false, true, name, cond, "]");
+		parseTest(false, false, name, cond, "[]");
+		parseTest(true, false, name, cond, "[A]");
 	}
 
 }

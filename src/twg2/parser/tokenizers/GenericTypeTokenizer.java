@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 import twg2.collections.primitiveCollections.CharArrayList;
-import twg2.parser.Inclusion;
 import twg2.parser.condition.text.CharParserMatchable;
 import twg2.text.tokenizer.CharConditionPipe;
 import twg2.text.tokenizer.CharConditions;
+import twg2.text.tokenizer.Inclusion;
 import twg2.text.tokenizer.StringConditions;
 
 /** Static methods for creating generic type tokenizers that support nesting (i.e. for tokenizing '{@code HashMap<Entry<String, Integer>, List<String>>}').
@@ -35,20 +35,17 @@ public class GenericTypeTokenizer {
 
 		var typeIdentifierParser = Arrays.asList(singleIdentifierParserConstructor.get());
 		// TODO only matches generic types in the format '<a, b>', allow whitespace between '<'/'>' and after ','
-		var genericParamsParser = Arrays.asList(CharConditionPipe.createPipeOptionalSuffixesAny("generic type and array dimensions", Arrays.asList(
-			CharConditionPipe.createPipeAllRequired("generic type signature", Arrays.asList(
-				new CharConditions.Literal("<", CharArrayList.of('<'), Inclusion.INCLUDE),
-				CharConditionPipe.createPipeRepeatableSeparator("generic type params",
-					Arrays.asList(nestedGenericTypeIdentifierCond),
-					Arrays.asList(new StringConditions.Literal("separator", new String[] { ", " }, Inclusion.INCLUDE))
-				),
-				new CharConditions.Literal(">", CharArrayList.of('>'), Inclusion.INCLUDE)
-			))), Arrays.asList(
-				CharConditionPipe.createPipeRepeatableSeparator("array dimensions '[]'...", Arrays.asList(new StringConditions.Literal("array dimension '[]'", new String[] { "[]" }, Inclusion.INCLUDE)), null)
-			)
-		));
+		var genericParamsParser = CharConditionPipe.createPipeAllRequired("generic type signature",
+			new CharConditions.Literal("<", CharArrayList.of('<'), Inclusion.INCLUDE),
+			CharConditionPipe.createPipeRepeatableSeparator("generic type params",
+				Arrays.asList(nestedGenericTypeIdentifierCond),
+				Arrays.asList(new StringConditions.Literal("separator", new String[] { ", " }, Inclusion.INCLUDE))
+			),
+			new CharConditions.Literal(">", CharArrayList.of('>'), Inclusion.INCLUDE)
+		);
+		var arrayDimensionsParser = CharConditionPipe.createPipeRepeatableSeparator("array dimensions '[]'...", Arrays.asList(new StringConditions.Literal("array dimension '[]'", new String[] { "[]" }, Inclusion.INCLUDE)), null);
 
-		return CharConditionPipe.createPipeOptionalSuffix("type parser", typeIdentifierParser, genericParamsParser);
+		return CharConditionPipe.createPipeOptionalSuffix("type parser", typeIdentifierParser, Arrays.asList(genericParamsParser, arrayDimensionsParser));
 	}
 
 }

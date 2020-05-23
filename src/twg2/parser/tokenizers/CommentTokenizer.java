@@ -2,10 +2,10 @@ package twg2.parser.tokenizers;
 
 import java.util.EnumSet;
 
-import twg2.parser.Inclusion;
 import twg2.parser.codeParser.CommentStyle;
 import twg2.text.tokenizer.CharParserFactory;
-import twg2.text.tokenizer.StringBoundedParserBuilder;
+import twg2.text.tokenizer.Inclusion;
+import twg2.text.tokenizer.StringParserBuilder;
 
 /**
  * @author TeamworkGuy2
@@ -17,7 +17,7 @@ public final class CommentTokenizer {
 
 
 	public static final CharParserFactory createCommentTokenizerForJava() {
-		CharParserFactory commentParser = new StringBoundedParserBuilder("comment")
+		CharParserFactory commentParser = new StringParserBuilder("comment")
 			.addStartEndMarkers("multi-line comment", "/*", "*/", Inclusion.INCLUDE)
 			.addStartEndMarkers("single-line comment", "//", '\n', Inclusion.EXCLUDE)
 			.build();
@@ -26,7 +26,7 @@ public final class CommentTokenizer {
 
 
 	public static final CharParserFactory createCommentTokenizer(EnumSet<CommentStyle> style) {
-		StringBoundedParserBuilder commentParser = new StringBoundedParserBuilder("comment " + style);
+		StringParserBuilder commentParser = new StringParserBuilder("comment " + style);
 		int markerCount = 0;
 
 		if(style.contains(CommentStyle.MULTILINE_C_STYLE)) {
