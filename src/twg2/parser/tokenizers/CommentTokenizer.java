@@ -16,15 +16,6 @@ public final class CommentTokenizer {
 	private CommentTokenizer() { throw new AssertionError("cannot instantiate static class CommentTokenizer"); }
 
 
-	public static final CharParserFactory createCommentTokenizerForJava() {
-		CharParserFactory commentParser = new StringParserBuilder("comment")
-			.addStartEndMarkers("multi-line comment", "/*", "*/", Inclusion.INCLUDE)
-			.addStartEndMarkers("single-line comment", "//", '\n', Inclusion.EXCLUDE)
-			.build();
-		return commentParser;
-	}
-
-
 	public static final CharParserFactory createCommentTokenizer(EnumSet<CommentStyle> style) {
 		StringParserBuilder commentParser = new StringParserBuilder("comment " + style);
 		int markerCount = 0;

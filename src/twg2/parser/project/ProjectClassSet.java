@@ -73,7 +73,7 @@ public class ProjectClassSet<T_CLASS extends ClassAst<? extends ClassSig, ? exte
 	 * the namespace is added this {@code missingNamespacesDst} parameter, else throw an {@link IllegalStateException}
 	 */
 	public T_CLASS resolveClassNameAgainstNamespaces(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
-		T_CLASS match = null;
+		T_CODE_FILE match = null;
 
 		for(var namespace : namespaces) {
 			String nsName = NameUtil.joinFqName(namespace);
@@ -92,17 +92,17 @@ public class ProjectClassSet<T_CLASS extends ClassAst<? extends ClassSig, ? exte
 				for(var entry : nsEntries) {
 					String entrySimpleName = entry.parsedClass.getSignature().getSimpleName();
 					if(entrySimpleName.equals(simpleName)) {
-						if(match != null) {
+						if(match != null && entry != match) {
 							throw new IllegalStateException("found multiple compilation units matching the name '" + simpleName + "' in namespace '" + nsName + "'" +
-									", [" + match.getSignature() + ", " + entry.parsedClass.getSignature() + "]");
+									", [" + match.parsedClass.getSignature() + ", " + entry.parsedClass.getSignature() + "] (" + match.id + ", " + entry.id + ")");
 						}
-						match = entry.parsedClass;
+						match = entry;
 					}
 				}
 			}
 		}
 
-		return match;
+		return match != null ? match.parsedClass : null;
 	}
 
 

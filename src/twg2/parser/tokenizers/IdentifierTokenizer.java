@@ -10,7 +10,6 @@ import twg2.text.tokenizer.CharParserFactory;
 import twg2.text.tokenizer.CharParserMatchableFactory;
 import twg2.text.tokenizer.Inclusion;
 import twg2.text.tokenizer.StringConditions;
-import twg2.tuple.Tuples;
 
 /** Static methods for creating C language like identifier parsers (i.e. parsing strings '_myVar', '$num', 'camelCaseStr', etc.)
  * @author TeamworkGuy2
@@ -23,7 +22,7 @@ public class IdentifierTokenizer {
 
 	public static CharParserFactory createIdentifierWithGenericTypeTokenizer(int maxGenericTypeDepth) {
 		var typeStatementCond = GenericTypeTokenizer.createGenericTypeTokenizer(maxGenericTypeDepth, IdentifierTokenizer::createCompoundIdentifierTokenizer);
-		return new CharParserMatchableFactory<>("compound identifier with optional generic type", false, Tuples.of(typeStatementCond.getFirstCharMatcher(), typeStatementCond));
+		return new CharParserMatchableFactory<>("compound identifier with optional generic type", false, new CharParserMatchable[] { typeStatementCond });
 	}
 
 
@@ -31,7 +30,7 @@ public class IdentifierTokenizer {
 	 * @return a basic parser for a string of contiguous characters matching those allowed in identifiers (i.e. 'FancyObject.LoopCount', '$thing', or '_stspr')
 	 */
 	public static CharConditions.BaseCharParserMatchable createIdentifierTokenizer() {
-		return CharConditions.Identifier.newInstance("identifier");
+		return CharConditions.Identifier.newInstance("identifier", false);
 	}
 
 

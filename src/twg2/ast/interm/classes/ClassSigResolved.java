@@ -3,11 +3,11 @@ package twg2.ast.interm.classes;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -18,7 +18,6 @@ import twg2.parser.output.WriteSettings;
  * @since 2015-12-5
  */
 @Immutable
-@AllArgsConstructor
 public class ClassSigResolved implements ClassSig {
 	private final @Getter List<String> fullName;
 	/** This type's generic type parameters, if any */
@@ -31,6 +30,25 @@ public class ClassSigResolved implements ClassSig {
 	private final @Getter String declarationType;
 	private final @Getter TypeSig.TypeSigResolved extendClass;
 	private final @Getter List<TypeSig.TypeSigResolved> implementInterfaces;
+
+
+	public ClassSigResolved(List<String> fullName, List<? extends TypeSigResolved> params, Keyword accessModifier, List<? extends AnnotationSig> annotations,
+			String declarationType, TypeSigResolved extendClass, List<? extends TypeSigResolved> implementInterfaces) {
+		@SuppressWarnings("unchecked")
+		var paramsCast = (List<TypeSigResolved>)params;
+		@SuppressWarnings("unchecked")
+		var annotationsCast = (List<AnnotationSig>)annotations;
+		@SuppressWarnings("unchecked")
+		var implementInterfacesCast = (List<TypeSigResolved>)implementInterfaces;
+
+		this.fullName = fullName;
+		this.params = paramsCast;
+		this.accessModifier = accessModifier;
+		this.annotations = annotationsCast;
+		this.declarationType = declarationType;
+		this.extendClass = extendClass;
+		this.implementInterfaces = implementInterfacesCast;
+	}
 
 
 	@Override

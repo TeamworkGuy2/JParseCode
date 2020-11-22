@@ -36,6 +36,12 @@ import twg2.tuple.Tuples;
 @FunctionalInterface
 public interface CodeTokenizer {
 
+	public static class Stats {
+		public static int parentFrags = 0;
+		public static int frags = 0;
+	}
+
+
 	/** Tokenize a source string, see {@link #createTokenizer(CodeLanguage, PairList)}.
 	 * @param src the source string
 	 * @param srcName (optional) the name of the source, can be null
@@ -60,13 +66,11 @@ public interface CodeTokenizer {
 	public static <_T_LANG> Function<ParseInput, CodeFileSrc> createTokenizerWithTimer(Supplier<CodeTokenizer> parserConstructor) {
 		return (params) -> {
 			try {
-				long start = 0;
-				if(params.parseTimes() != null) { start = System.nanoTime(); }
+				long start = (params.parseTimes() != null ? System.nanoTime() : 0);
 
 				var parser = parserConstructor.get();
 
-				long setupDone = 0;
-				if(params.parseTimes() != null) { setupDone = System.nanoTime(); }
+				long setupDone = (params.parseTimes() != null ? System.nanoTime() : 0);
 
 				var fileName = params.fileName();
 				var res = parser.tokenizeDocument(params.src(), params.srcOff(), params.srcLen(), fileName, params.parserStepsTracker());
@@ -150,6 +154,7 @@ public interface CodeTokenizer {
 				D docFrag = fragmentConstructor.apply(elemType, textFragment);
 
 				if(isParent.apply(docFrag)) {
+					Stats.parentFrags++;
 					List<SimpleTreeImpl<D>> subChildren = new ArrayList<>();
 					getChildrenInRange(tree.getChildrenRaw(), docFrag, isInside, subChildren);
 					removeChildren(tree, subChildren);
@@ -161,6 +166,7 @@ public interface CodeTokenizer {
 					}
 				}
 				else {
+					Stats.frags++;
 					// add after checking for children, so that this fragment does not include itself as one of it's children
 					tree.addChild(docFrag);
 				}

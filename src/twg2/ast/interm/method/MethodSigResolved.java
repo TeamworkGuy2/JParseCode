@@ -11,8 +11,8 @@ import twg2.parser.codeParser.Keyword;
 public class MethodSigResolved extends MethodSig<ParameterSigResolved, TypeSig.TypeSigResolved> {
 
 	public MethodSigResolved(String name, List<String> fullName, List<? extends ParameterSigResolved> paramSigs,
-			TypeSig.TypeSigResolved returnType, List<? extends Keyword> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
-		super(name, fullName, paramSigs, returnType, accessModifiers, annotations, comments);
+			TypeSig.TypeSigResolved returnType, List<? extends Keyword> accessModifiers, List<? extends TypeSig.TypeSigResolved> typeParameters, List<? extends AnnotationSig> annotations, List<String> comments) {
+		super(name, fullName, paramSigs, returnType, accessModifiers, typeParameters, annotations, comments);
 	}
 
 }

@@ -82,7 +82,7 @@ public class AnnotationExtractor {
 	private static int parseAnnotationArgument(CodeLanguage lang, CodeToken param, String paramName, CodeTokenType paramType, int i, int size, ListReadOnly<SimpleTree<CodeToken>> paramChilds, HashMap<String, String> dstParams) {
 		// number: 'Annotation(1)' or 'Annotation(-15)'
 		int num;
-		if((num = DataTypeExtractor.isNumber(param, (i + 1 < size ? paramChilds.get(i + 1).getData() : null))) > 0) {
+		if((num = TypeExtractor.isNumber(param, (i + 1 < size ? paramChilds.get(i + 1).getData() : null))) > 0) {
 			String paramValue = param.getText() + (i + 1 < size && num > 1 ? paramChilds.get(i + 1).getData().getText() : "");
 			dstParams.put(paramName, paramValue);
 			return (num - 1);

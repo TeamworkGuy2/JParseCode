@@ -46,15 +46,14 @@ public class ParseCodeFile {
 		String fileStr = file.toString();
 		var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
 		var stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
-		long start = 0;
-		if(perfTracker != null) { start = System.nanoTime(); }
+		long start = (perfTracker != null ? System.nanoTime() : 0);
 
 		char[] src = fileReader.readChars(new FileInputStream(file));
 
 		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
 
 		if(perfTracker != null) {
-			perfTracker.setActionTime(TrackerAction.LOAD, System.nanoTime() - start);
+			perfTracker.setActionTime(TrackerAction.READ, System.nanoTime() - start);
 		}
 
 		String fileName = file.getName();
@@ -103,11 +102,10 @@ public class ParseCodeFile {
 	}
 
 
-	public static void parseAndPrintCSharpFileInfo() throws IOException, FileFormatException {
+	public static void parseAndPrintCSharpFileInfo(String relativeFilePath) throws IOException, FileFormatException {
 		var fileReader = FileReadUtil.threadLocalInst();
 		PerformanceTrackers perfTracking = null;
-		Path file = Paths.get("./rsc/ITrackSearchService.cs");
-		//Path file = Paths.get("./rsc/TrackInfo.cs");
+		Path file = Paths.get(relativeFilePath);
 		var files = Arrays.asList(file);
 		var parsedFiles = parseFiles(files, fileReader, perfTracking);
 

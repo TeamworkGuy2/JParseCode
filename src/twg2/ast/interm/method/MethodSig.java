@@ -15,25 +15,28 @@ import twg2.parser.output.WriteSettings;
  * @author TeamworkGuy2
  * @since 2015-11-24
  * @param <T_PARAM> the type of {@link ParameterSig} parameters of this method
+ * @param <T_TYPE> the type of {@link TypeSig} returned by this method and accepted as generic type parameters
  */
-// TODO also support simple/resolved return type and annotations
 @Immutable
-public class MethodSig<T_PARAM extends JsonWritableSig, T_RET extends JsonWritableSig> implements JsonWritableSig {
+public class MethodSig<T_PARAM extends JsonWritableSig, T_TYPE extends JsonWritableSig> implements JsonWritableSig {
 	public final String name;
 	public final List<String> fullName;
 	public final List<T_PARAM> paramSigs;
-	public final T_RET returnType;
+	public final T_TYPE returnType;
 	public final List<Keyword> accessModifiers;
+	public final List<T_TYPE> typeParameters;
 	public final List<AnnotationSig> annotations;
 	public final List<String> comments;
 
 
 	public MethodSig(String name, List<String> fullName, List<? extends T_PARAM> paramSigs,
-			T_RET returnType, List<? extends Keyword> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
+			T_TYPE returnType, List<? extends Keyword> accessModifiers, List<? extends T_TYPE> typeParameters, List<? extends AnnotationSig> annotations, List<String> comments) {
 		@SuppressWarnings("unchecked")
 		var paramSigsCast = (List<T_PARAM>)paramSigs;
 		@SuppressWarnings("unchecked")
 		var accessModifiersCast = (List<Keyword>)accessModifiers;
+		@SuppressWarnings("unchecked")
+		var typeParamsCast = (List<T_TYPE>)typeParameters;
 		@SuppressWarnings("unchecked")
 		var annotationsCast = (List<AnnotationSig>)annotations;
 
@@ -42,6 +45,7 @@ public class MethodSig<T_PARAM extends JsonWritableSig, T_RET extends JsonWritab
 		this.paramSigs = paramSigsCast;
 		this.returnType = returnType;
 		this.accessModifiers = accessModifiersCast;
+		this.typeParameters = typeParamsCast;
 		this.annotations = annotationsCast;
 		this.comments = comments;
 	}
@@ -60,8 +64,15 @@ public class MethodSig<T_PARAM extends JsonWritableSig, T_RET extends JsonWritab
 		json.comma(dst).propName("accessModifiers", dst)
 			.toStringArray(accessModifiers, dst, (acs) -> acs.toSrc());
 
-		json.comma(dst).propName("annotations", dst)
-			.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		if(typeParameters != null && typeParameters.size() > 0) {
+			json.comma(dst).propName("typeParameters", dst)
+				.toArrayConsume(typeParameters, dst, (type) -> type.toJson(dst, st));
+		}
+
+		if(annotations != null && annotations.size() > 0) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		}
 
 		json.comma(dst).propName("returnType", dst);
 		returnType.toJson(dst, st);

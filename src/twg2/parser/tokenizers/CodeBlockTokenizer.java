@@ -13,12 +13,30 @@ public class CodeBlockTokenizer {
 	private CodeBlockTokenizer() { throw new AssertionError("cannot instantiate static class CodeBlockTokenizer"); }
 
 
-	public static CharParserFactory createBlockTokenizer(char startChar, char endChar) {
-		CharParserFactory commentParser = new StringParserBuilder("block")
-			.addStartEndMarkers("block " + startChar + " " + endChar, startChar, endChar, Inclusion.INCLUDE)
+	public static CharParserFactory createBlockTokenizer(char... blockStarts) {
+		StringParserBuilder blockParser = new StringParserBuilder("block");
+
+		for(char blockStart : blockStarts) {
+			if(blockStart == '{') {
+				blockParser.addStartEndMarkers("block { }", '{', '}', Inclusion.INCLUDE);
+			}
+			else if(blockStart == '(') {
+				blockParser.addStartEndMarkers("block ( )", '(', ')', Inclusion.INCLUDE);
+			}
+			else if(blockStart == '[') {
+				blockParser.addStartEndMarkers("block [ ]", '[', ']', Inclusion.INCLUDE);
+			}
+			else if(blockStart == '<') {
+				blockParser.addStartEndMarkers("block < >", '<', '>', Inclusion.INCLUDE);
+			}
+			else {
+				throw new IllegalArgumentException("unknown block type '" + blockStart + "'");
+			}
+		}
+
+		return blockParser
 			.isCompound(true)
 			.build();
-		return commentParser;
 	}
 
 }

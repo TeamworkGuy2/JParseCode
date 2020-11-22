@@ -73,7 +73,7 @@ public class FieldExtractor extends AstMemberInClassParserReusable<FieldExtracto
 				res = findingAccessModifiers(tokenNode);
 				if(res.isAccept()) { return true; }
 			}
-			if(DataTypeExtractor.isPossiblyType(keywordUtil, tokenNode, false)) {
+			if(TypeExtractor.isPossiblyType(keywordUtil, tokenNode, false)) {
 				state = State.FINDING_DATA_TYPE;
 				res = updateAndCheckTypeParser(tokenNode);
 				if(res.isAccept()) { return true; }

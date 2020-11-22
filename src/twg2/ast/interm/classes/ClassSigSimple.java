@@ -3,18 +3,17 @@ package twg2.ast.interm.classes;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.TypeSigSimple;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.WriteSettings;
 
 @Immutable
-@AllArgsConstructor
 public class ClassSigSimple implements ClassSig {
 	private final @Getter List<String> fullName;
 	/** This type's generic type parameters, if any */
@@ -26,6 +25,22 @@ public class ClassSigSimple implements ClassSig {
 	/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 	private final @Getter String declarationType;
 	private final @Getter List<String> extendImplementSimpleNames;
+
+
+
+	public ClassSigSimple(List<String> fullName, List<? extends TypeSigSimple> params, Keyword accessModifier, List<? extends AnnotationSig> annotations, String declarationType, List<String> extendImplementSimpleNames) {
+		@SuppressWarnings("unchecked")
+		var paramsCast = (List<TypeSigSimple>)params;
+		@SuppressWarnings("unchecked")
+		var annotationsCast = (List<AnnotationSig>)annotations;
+
+		this.fullName = fullName;
+		this.params = paramsCast;
+		this.accessModifier = accessModifier;
+		this.annotations = annotationsCast;
+		this.declarationType = declarationType;
+		this.extendImplementSimpleNames = extendImplementSimpleNames;
+	}
 
 
 	@Override

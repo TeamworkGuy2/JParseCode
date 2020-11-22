@@ -7,7 +7,6 @@ import java.util.logging.Level;
 
 import twg2.io.files.FileFormatException;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
-import twg2.parser.output.WriteSettings;
 import twg2.parser.workflow.ParserWorkflow;
 
 /**
@@ -37,23 +36,29 @@ public class MainParser {
 		//System.out.print("press enter to end: ");
 		//in.nextLine();
 
-		//ParseCodeFile.parseAndPrintCSharpFileInfo();
+		//ParseCodeFile.parseAndPrintCSharpFileInfo("./rsc/ITrackSearchService.cs");
 		//ParseCodeFile.parseAndPrintFileStats();
 
 		if(logPerformance) {
-			System.out.println("FileTokenizer identifier check cnt=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
-			System.out.println("BlockExtractor accept next token cnt=" + twg2.parser.codeParser.extractors.BlockExtractor.acceptNextCalls);
+			System.out.println("FileTokenizer identifier checks=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
+			System.out.println("CodeTokenizer frags=" + (twg2.parser.tokenizers.CodeTokenizer.Stats.parentFrags + twg2.parser.tokenizers.CodeTokenizer.Stats.frags) + " (parentFrags=" + twg2.parser.tokenizers.CodeTokenizer.Stats.parentFrags + ", frags=" + twg2.parser.tokenizers.CodeTokenizer.Stats.frags + ")");
+			System.out.println("BlockExtractor accept token cnt=" + twg2.parser.codeParser.extractors.BlockExtractor.acceptNextCalls);
+			System.out.println("TypeExtractor isPossiblyType cnt=" + twg2.parser.codeParser.extractors.TypeExtractor.isPossiblyType);
+			System.out.println("CsBlockParser tree cnt=" + twg2.parser.codeParser.csharp.CsBlockParser.treeCount);
+			System.out.println("CsBlockParser loop cnt=" + twg2.parser.codeParser.csharp.CsBlockParser.blockLoopCount);
+			System.out.println("CsAnnotationExtractor accept token cnt=" + twg2.parser.codeParser.csharp.CsAnnotationExtractor.acceptNextCalls);
+			System.out.println("JavaAnnotationExtractor accept token cnt=" + twg2.parser.codeParser.java.JavaAnnotationExtractor.acceptNextCalls);
 
 			System.out.println("\n==== Parse Timings (slowest 10 in millis) ====");
 			var perfData = perfTracking.getTopParseTimes(true, -10);
 			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
 
-			System.out.println("\n==== Parse Step Details (slowest 10 in millis) ====");
+			System.out.println("\n==== Parse Step Details (most 10 in millis) ====");
 			perfData = perfTracking.getTopParseStepDetails(true, -10);
 			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
 
 			//System.out.println("\n==== All Performance Data ====\n");
-			//var writeSettings = new WriteSettings(true, false, false, true);
+			//var writeSettings = new twg2.parser.output.WriteSettings(true, false, false, true);
 			//perfTracking.toJson(System.out, writeSettings);
 		}
 

@@ -108,12 +108,14 @@ public class ParserWorkflow {
 			return fileUtil;
 		});
 
+		long start = System.nanoTime();
+
 		var loadRes = SourceFiles.load(this.sources);
 		if(log != null) {
 			loadRes.log(log, logLevel, true);
 		}
 
-		long start = System.nanoTime();
+		long postLoad = System.nanoTime();
 
 		ParsedResult parseRes = ParsedResult.parse(loadRes.getSources(), executor, fileReader, perfTracking);
 
@@ -128,7 +130,9 @@ public class ParserWorkflow {
 		}
 
 		// TODO debugging
-		System.out.println("load() time: " + TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (end - start), TimeUnit.MILLISECONDS) + " " + TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false));
+		var abbr = TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false);
+		System.out.println("load() time: " + (int)TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (postLoad - start), TimeUnit.MILLISECONDS) + " " + abbr);
+		System.out.println("parse() time: " + (int)TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (end - postLoad), TimeUnit.MILLISECONDS) + " " + abbr);
 
 		if(log != null) {
 			parseRes.log(log, logLevel, true, 1);
@@ -258,10 +262,9 @@ public class ParserWorkflow {
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
 
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public ResolvedResult(ProjectClassSet.Resolved<? extends BlockType> compilationUnits,
-				HashSet<List<String>> missingNamespaces) {
-			this.compilationUnits = (ProjectClassSet.Resolved<BlockType>)(ProjectClassSet)compilationUnits;
+		@SuppressWarnings({ "unchecked" })
+		public ResolvedResult(ProjectClassSet.Resolved<? extends BlockType> compilationUnits, HashSet<List<String>> missingNamespaces) {
+			this.compilationUnits = (ProjectClassSet.Resolved<BlockType>)compilationUnits;
 		}
 
 
@@ -324,9 +327,9 @@ public class ParserWorkflow {
 		Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>> filterSets;
 
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings({ "unchecked" })
 		public FilterResult(Map<? extends DestinationInfo, ? extends List<? extends CodeFileParsed.Resolved<? extends BlockType>>> filterSets) {
-			this.filterSets = (Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>>)(Map)filterSets;
+			this.filterSets = (Map<DestinationInfo, List<CodeFileParsed.Resolved<BlockType>>>)filterSets;
 		}
 
 

@@ -22,7 +22,8 @@ import twg2.treeLike.simpleTree.SimpleTree;
  * @since 2015-12-12
  */
 // TODO contains various hard coded values, but as long as this is one of the centralized places containing these values, it should be fine
-public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.State, TypeSig.TypeSigSimple> {
+public class TypeExtractor extends AstParserReusableBase<TypeExtractor.State, TypeSig.TypeSigSimple> {
+	public static int isPossiblyType = 0;
 
 	static enum State {
 		INIT,
@@ -42,7 +43,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	/**
 	 * @param allowVoid indicate whether 'void'/'Void' is a valid data type when parsing (true for method return types, but invalid for field/variable types)
 	 */
-	public DataTypeExtractor(CodeLanguage lang, boolean allowVoid) {
+	public TypeExtractor(CodeLanguage lang, boolean allowVoid) {
 		super(lang + " data type", State.COMPLETE, State.FAILED);
 		this.lang = lang;
 		this.allowVoid = allowVoid;
@@ -75,7 +76,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 				isNullable = true;
 			}
 			this.state = State.COMPLETE;
-			this.type = DataTypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""), lang.getKeywordUtil());
+			this.type = TypeExtractor.extractGenericTypes(typeName + (isNullable ? "?" : ""), lang.getKeywordUtil());
 			prevNodeWasBlockId = lang.getKeywordUtil().blockModifiers().is(tokenNode.getData());
 			return isNullable;
 		}
@@ -92,15 +93,15 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 
 
 	@Override
-	public DataTypeExtractor recycle() {
+	public TypeExtractor recycle() {
 		reset();
 		return this;
 	}
 
 
 	@Override
-	public DataTypeExtractor copy() {
-		return new DataTypeExtractor(this.lang, this.allowVoid);
+	public TypeExtractor copy() {
+		return new TypeExtractor(this.lang, this.allowVoid);
 	}
 
 
@@ -122,6 +123,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	/** Check if a tree node is possibly a data type (just a type name, no generics)
 	 */
 	public static <T> boolean isPossiblyType(KeywordUtil<? extends Keyword> keywordUtil, SimpleTree<CodeToken> node, boolean allowVoid) {
+		isPossiblyType++;
 		var nodeData = node.getData();
 		return AstFragType.isIdentifierOrKeyword(nodeData) && (!keywordUtil.isKeyword(nodeData.getText()) || keywordUtil.isDataTypeKeyword(nodeData.getText())) || (allowVoid ? "void".equalsIgnoreCase(nodeData.getText()) : false);
 	}
@@ -144,7 +146,7 @@ public class DataTypeExtractor extends AstParserReusableBase<DataTypeExtractor.S
 	/** Check if a {@link CodeToken} is a numeric literal, a boolean literal, or a null literal
 	 */
 	public static boolean isDefaultValueLiteral(CodeToken node) {
-		return (node.getTokenType() == CodeTokenType.NUMBER || DataTypeExtractor.isBooleanLiteral(node) || DataTypeExtractor.isNullLiteral(node));
+		return (node.getTokenType() == CodeTokenType.NUMBER || TypeExtractor.isBooleanLiteral(node) || TypeExtractor.isNullLiteral(node));
 	}
 
 

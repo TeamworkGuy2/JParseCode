@@ -85,7 +85,7 @@ public class MethodParametersParser {
 			// read parameter default value if available
 			String defaultValue = null;
 			if(i + 3 < size && (token = childs.get(i + 2).getData()).getTokenType() == CodeTokenType.OPERATOR && operatorUtil.assignmentOperators().is(token)) {
-				if(DataTypeExtractor.isDefaultValueLiteral(token = childs.get(i + 3).getData())) {
+				if(TypeExtractor.isDefaultValueLiteral(token = childs.get(i + 3).getData())) {
 					defaultValue = token.getText();
 					i += 2;
 				}

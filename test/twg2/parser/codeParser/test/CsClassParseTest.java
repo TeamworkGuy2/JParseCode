@@ -33,6 +33,7 @@ import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.AnnotationAssert;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.test.utils.TypeAssert;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -145,11 +146,35 @@ public class CsClassParseTest {
 
 		Assert.assertEquals(1, blocks.size());
 
-		ClassAst.SimpleImpl<CsBlock> trackInfoBlock = blocks.get(0).getValue();
-		Assert.assertEquals(CsBlock.CLASS, trackInfoBlock.getBlockType());
-		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
+		ClassAst.SimpleImpl<CsBlock> trackInfo = blocks.get(0).getValue();
+		String fullClassName = NameUtil.joinFqName(trackInfo.getSignature().getFullName());
+		Assert.assertEquals(CsBlock.CLASS, trackInfo.getBlockType());
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", fullClassName);
 
-		Assert.assertEquals(ls("ISerializable", "IComparable<TrackInfo>"), trackInfoBlock.getSignature().getExtendImplementSimpleNames());
+		Assert.assertEquals(ls("ISerializable", "IComparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
+
+		var fields = trackInfo.getFields();
+		assertField(fields, 0, fullClassName + ".Name", "string");
+		assertField(fields, 1, fullClassName + ".artist", "string");
+		assertField(fields, 2, fullClassName + ".durationMillis", "int");
+		assertField(fields, 3, fullClassName + ".contentId", "long");
+
+		// int CompareTo(Implementer other)
+		MethodSigSimple m = trackInfo.getMethods().get(0);
+		Assert.assertEquals(fullClassName + ".CompareTo", NameUtil.joinFqName(m.fullName));
+		assertParameter(m.paramSigs, 0, "other", "Implementer", null, null, null);
+
+		// void GetObjectData(SerializationInfo info, StreamingContext context)
+		m = trackInfo.getMethods().get(1);
+		Assert.assertEquals(fullClassName + ".GetObjectData", NameUtil.joinFqName(m.fullName));
+		assertParameter(m.paramSigs, 0, "info", "SerializationInfo", null, null, null);
+		assertParameter(m.paramSigs, 1, "context", "StreamingContext", null, null, null);
+
+		// TType Refresh<TType>(TType tt) where TType : IConvertible
+		m = trackInfo.getMethods().get(2);
+		Assert.assertEquals(fullClassName + ".Refresh", NameUtil.joinFqName(m.fullName));
+		TypeAssert.assertType("TType", m.typeParameters.get(0)); // TODO type bounds for C# type parameters are not parsed/stored
+		assertParameter(m.paramSigs, 0, "tt", "TType", null, null, null);
 	}
 
 

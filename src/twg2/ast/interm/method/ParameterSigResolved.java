@@ -3,11 +3,10 @@ package twg2.ast.interm.method;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.output.JsonWritableSig;
@@ -18,14 +17,28 @@ import twg2.parser.output.WriteSettings;
  * @since 2016-1-3
  */
 @Immutable
-@AllArgsConstructor
 public class ParameterSigResolved implements JsonWritableSig {
-	final @Getter String name;
-	final @Getter TypeSig.TypeSigResolved type;
-	final @Getter List<Keyword> parameterModifiers;
-	final @Getter List<AnnotationSig> annotations;
-	final @Getter boolean optional;
-	final @Getter String defaultValue;
+	public final String name;
+	public final TypeSig.TypeSigResolved type;
+	public final List<Keyword> parameterModifiers;
+	public final List<AnnotationSig> annotations;
+	public final boolean optional;
+	public final String defaultValue;
+
+
+	public ParameterSigResolved(String name, TypeSigResolved type, List<? extends Keyword> parameterModifiers, List<? extends AnnotationSig> annotations, boolean optional, String defaultValue) {
+		@SuppressWarnings("unchecked")
+		var paramModifiersCast = (List<Keyword>)parameterModifiers;
+		@SuppressWarnings("unchecked")
+		var annotationsCast = (List<AnnotationSig>)annotations;
+
+		this.name = name;
+		this.type = type;
+		this.parameterModifiers = paramModifiersCast;
+		this.annotations = annotationsCast;
+		this.optional = optional;
+		this.defaultValue = defaultValue;
+	}
 
 
 	@Override
@@ -42,7 +55,7 @@ public class ParameterSigResolved implements JsonWritableSig {
 		json.comma(dst).propName("parameterModifiers", dst)
 			.toStringArray(parameterModifiers, dst, (acs) -> acs.toSrc());
 
-		if(annotations != null) {
+		if(annotations != null && annotations.size() > 0) {
 			json.comma(dst).propName("annotations", dst)
 				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
 		}

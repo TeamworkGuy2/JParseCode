@@ -110,7 +110,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 		}
 		else if(state == State.FOUND_NAME) {
 			// if a '()' argument block is found (i.e. 'MY_ENUM(2), ...;')
-			if(AstFragType.isBlock(tokenData, "(")) {
+			if(AstFragType.isBlock(tokenData, '(')) {
 				updateLastAddedEnumMember(tokenNode);
 				state = State.FOUND_ARGUMENTS;
 				return true;
@@ -131,7 +131,7 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 			}
 		}
 		else if(state == State.FOUND_ARGUMENTS) {
-			if(AstFragType.isBlock(tokenData, "{")) {
+			if(AstFragType.isBlock(tokenData, '{')) {
 				updateLastAddedEnumMember(tokenNode);
 				state = State.EXPECTING_ANOTHER_MEMBER;
 				return true;

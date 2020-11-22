@@ -3,6 +3,7 @@ package twg2.parser.codeParser.java;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map.Entry;
 
 import twg2.ast.interm.annotation.AnnotationSig;
@@ -13,21 +14,21 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
+import twg2.collections.dataStructures.BaseList;
 import twg2.collections.interfaces.ListReadOnly;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.extractors.AccessModifierExtractor;
 import twg2.parser.codeParser.extractors.BlockExtractor;
 import twg2.parser.codeParser.extractors.CommentBlockExtractor;
-import twg2.parser.codeParser.extractors.DataTypeExtractor;
 import twg2.parser.codeParser.extractors.FieldExtractor;
 import twg2.parser.codeParser.extractors.MethodExtractor;
+import twg2.parser.codeParser.extractors.TypeExtractor;
+import twg2.parser.codeParser.tools.EnhancedListIterator;
 import twg2.parser.codeParser.tools.NameUtil;
-import twg2.parser.codeParser.tools.TokenListIterable;
 import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParser;
-import twg2.streams.EnhancedListBuilderIterator;
 import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.tuple.Tuples;
@@ -48,7 +49,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<TypeSig.TypeSigSimple> createTypeParser() {
 		var lang = CodeLanguageOptions.JAVA;
-		return new DataTypeExtractor(lang, true);
+		return new TypeExtractor(lang, true);
 	}
 
 
@@ -74,7 +75,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<List<FieldSig>> createFieldParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		var lang = CodeLanguageOptions.JAVA;
-		var typeParser = new DataTypeExtractor(lang, false);
+		var typeParser = new TypeExtractor(lang, false);
 		return new FieldExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
@@ -82,7 +83,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		var lang = CodeLanguageOptions.JAVA;
-		var typeParser = new DataTypeExtractor(lang, true);
+		var typeParser = new TypeExtractor(lang, true);
 		return new MethodExtractor(lang.displayName(), JavaKeyword.check, lang.getOperatorUtil(), block, typeParser, annotationParser, commentParser);
 	}
 
@@ -123,9 +124,11 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		var keywordUtil = lang.getKeywordUtil();
 		var children = blockTree.getChildren();
 
-		var childIterable = new TokenListIterable(children);
-		var childIter = childIterable.iterator();
-		for(var child : childIterable) {
+		//var childIter = (BaseList<SimpleTree<CodeToken>>.BaseListIterator)children.listIterator();
+		var childIter = new EnhancedListIterator<SimpleTree<CodeToken>>(children); // this appears ~1% faster in total program time, slower using BaseList iterator (2020-11-21)
+
+		while(childIter.hasNext()) {
+			var child = childIter.next();
 			var token = child.getData();
 
 			boolean annotAccepted = annotationExtractor.acceptNext(child);
@@ -133,17 +136,17 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 			int addBlockCount = 0;
 
 			// if this token is an opening block, then this is probably a valid block declaration
-			if(AstFragType.isBlock(token, "{")) {
+			if(AstFragType.isBlock(token, '{')) {
 				if(childIter.hasPrevious()) {
 					// read the identifier
-					int mark = childIter.mark();
+					int mark = childIter.nextIndex();
 					// since the current token is the opening '{', step back to the class signature
 					childIter.previous();
 					var nameCompoundRes = readClassIdentifierAndExtends(childIter);
 					var prevNode = childIter.hasPrevious() ? childIter.previous() : null;
 
 					// if a block keyword ("class", "interface", etc.) and an identifier were found, then this is probably a valid block declaration
-					if(nameCompoundRes != null && nameCompoundRes.getKey() != null && prevNode != null && keywordUtil.blockModifiers().is(prevNode.getData())) {
+					if(nameCompoundRes != null && prevNode != null && keywordUtil.blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
 						var blockTypeStr = prevNode.getData().getText();
 						var blockType = lang.getBlockUtil().tryParseKeyword(keywordUtil.tryToKeyword(blockTypeStr));
@@ -154,7 +157,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 						nameScope.add(nameCompoundRes.getKey());
 
-						var blockSig = DataTypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), keywordUtil);
+						var blockSig = TypeExtractor.extractGenericTypes(NameUtil.joinFqName(nameScope), keywordUtil);
 						var blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						var blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 						var annotations = new ArrayList<>(annotationExtractor.getParserResult());
@@ -198,7 +201,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * Returns the iterator where {@code next()} would return the class name element.
 	 * @return {@code <className, extendImplementNames>}
 	 */
-	private static Entry<String, List<String>> readClassIdentifierAndExtends(EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
+	private static Entry<String, List<String>> readClassIdentifierAndExtends(ListIterator<SimpleTree<CodeToken>> iter) {
 		var lang = CodeLanguageOptions.JAVA;
 		var keywordUtil = lang.getKeywordUtil();
 		// class signatures are read backward from the opening '{'
@@ -233,7 +236,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		// else, we should have only read one name with the loop and it is the class name
 		else if(names.size() == 1) {
 			String className = names.get(0);
-			nameCompoundRes = Tuples.of(className, new ArrayList<>());
+			nameCompoundRes = Tuples.of(className, Collections.emptyList());
 			// move iterator forward since the while loop doesn't use the last value (i.e. reads one element past the valid elements it wants to consume)
 			if(prevCount > 0) {
 				iter.next();

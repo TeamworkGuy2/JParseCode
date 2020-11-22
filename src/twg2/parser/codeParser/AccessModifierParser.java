@@ -20,7 +20,7 @@ public interface AccessModifierParser<T_ACCESS_MODIFIER extends Keyword, T_BLOCK
 	public default T_ACCESS_MODIFIER parseFromSrc(String src) {
 		T_ACCESS_MODIFIER access = tryParseFromSrc(src);
 		if(access == null) {
-			throw new IllegalArgumentException("'" + src + "' is not recognized as a '" + getLanguage().displayName() + "' language access modifier");
+			throw new IllegalArgumentException("'" + src + "' is not recognized as a '" + getLanguage().displayName() + "' access modifier");
 		}
 		return access;
 	}

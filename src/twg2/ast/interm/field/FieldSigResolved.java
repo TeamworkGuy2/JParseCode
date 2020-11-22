@@ -3,11 +3,11 @@ package twg2.ast.interm.field;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig;
+import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -19,7 +19,6 @@ import twg2.parser.output.WriteSettings;
  * @since 2016-1-4
  */
 @Immutable
-@AllArgsConstructor
 public class FieldSigResolved implements JsonWritableSig {
 	final @Getter String name;
 	final @Getter List<String> fullName;
@@ -27,6 +26,21 @@ public class FieldSigResolved implements JsonWritableSig {
 	final @Getter List<Keyword> accessModifiers;
 	final @Getter List<AnnotationSig> annotations;
 	final @Getter List<String> comments;
+
+
+	public FieldSigResolved(String name, List<String> fullName, TypeSigResolved fieldType, List<? extends Keyword> accessModifiers, List<? extends AnnotationSig> annotations, List<String> comments) {
+		@SuppressWarnings("unchecked")
+		var accessModifiersCast = (List<Keyword>)accessModifiers;
+		@SuppressWarnings("unchecked")
+		var annotationsCast = (List<AnnotationSig>)annotations;
+		
+		this.name = name;
+		this.fullName = fullName;
+		this.fieldType = fieldType;
+		this.accessModifiers = accessModifiersCast;
+		this.annotations = annotationsCast;
+		this.comments = comments;
+	}
 
 
 	@Override
@@ -42,8 +56,10 @@ public class FieldSigResolved implements JsonWritableSig {
 		json.comma(dst).propName("accessModifiers", dst)
 			.toStringArray(accessModifiers, dst, (acs) -> acs.toSrc());
 
-		json.comma(dst).propName("annotations", dst)
-			.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		if(annotations != null && annotations.size() > 0) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		}
 
 		json.comma(dst).propName("comments", dst)
 			.toStringArray(comments, dst);

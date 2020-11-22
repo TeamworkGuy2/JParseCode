@@ -58,11 +58,10 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 		@SuppressWarnings("unchecked")
 		List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> blockDeclarations = ((AstExtractor<_T_BLOCK>)lang.getExtractor()).extractClassFieldsAndMethodSignatures(ast.astTree);
 
-		List<CodeFileParsed.Simple<_T_BLOCK>> parsedBlocks = new ArrayList<CodeFileParsed.Simple<_T_BLOCK>>();
+		var parsedBlocks = new ArrayList<CodeFileParsed.Simple<_T_BLOCK>>();
 
 		for(var block : blockDeclarations) {
-			//CodeFileParsed.Simple<CodeFileSrc<DocumentFragmentText<CodeFragmentType>, CodeLanguage>, CompoundBlock> fileParsed = new CodeFileParsed.Simple<>(parsedFile, block.getValue(), block.getKey());
-			CodeFileParsed.Simple<_T_BLOCK> fileParsed = new CodeFileParsed.Simple<>(fileName, block.getValue(), block.getKey());
+			var fileParsed = new CodeFileParsed.Simple<_T_BLOCK>(fileName, block.getValue(), block.getKey());
 			parsedBlocks.add(fileParsed);
 
 			try {
@@ -78,9 +77,7 @@ public class CodeFileAndAst<T_BLOCK extends BlockType> {
 			}
 		}
 
-		CodeFileAndAst<_T_BLOCK> inst = new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, 0, srcCode.length, ast, parsedBlocks);
-
-		return inst;
+		return new CodeFileAndAst<_T_BLOCK>(lang, fileName, fullClassName, srcCode, 0, srcCode.length, ast, parsedBlocks);
 	}
 
 }

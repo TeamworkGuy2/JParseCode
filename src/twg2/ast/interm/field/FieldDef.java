@@ -9,7 +9,7 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.type.TypeSig.TypeSigSimple;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.codeParser.Keyword;
-import twg2.parser.codeParser.extractors.DataTypeExtractor;
+import twg2.parser.codeParser.extractors.TypeExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
@@ -46,8 +46,10 @@ public class FieldDef extends FieldSig {
 		json.comma(dst).propName("accessModifiers", dst)
 			.toStringArray(accessModifiers, dst, (acs) -> acs.toSrc());
 
-		json.comma(dst).propName("annotations", dst)
-			.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		if(annotations != null && annotations.size() > 0) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		}
 
 		initializerToJson(initializer, true, dst, st);
 
@@ -72,7 +74,7 @@ public class FieldDef extends FieldSig {
 		boolean isNumOrBoolOrNull = false;
 		if(astNode != null && !astNode.hasChildren() && (data = astNode.getData()) != null &&
 				(data.getTokenType() == CodeTokenType.STRING ||
-				(isNumOrBoolOrNull = DataTypeExtractor.isDefaultValueLiteral(data)))) {
+				(isNumOrBoolOrNull = TypeExtractor.isDefaultValueLiteral(data)))) {
 			if(preClosingComma) {
 				dst.append(", ");
 			}
@@ -91,7 +93,7 @@ public class FieldDef extends FieldSig {
 				dst.append(", ");
 			}
 			dst.append("\"initializerExpression\": ");
-			if((data = astNode.getData()) != null && !DataTypeExtractor.isNullLiteral(data)) {
+			if((data = astNode.getData()) != null && !TypeExtractor.isNullLiteral(data)) {
 				dst.append('"');
 				dst.append(StringEscapeJson.toJsonString(data.getText()));
 				dst.append('"');

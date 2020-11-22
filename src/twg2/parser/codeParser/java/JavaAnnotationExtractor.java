@@ -13,6 +13,7 @@ import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotationExtractor.State, List<AnnotationSig>> {
+	public static int acceptNextCalls = 0;
 
 	static enum State {
 		INIT,
@@ -36,6 +37,7 @@ public class JavaAnnotationExtractor extends AstParserReusableBase<JavaAnnotatio
 	@Override
 	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		var lang = CodeLanguageOptions.JAVA;
+		acceptNextCalls++;
 
 		if(state != State.FOUND_ANNOTATION_MARK && AstFragType.isSeparator(tokenNode.getData(), "@")) {
 			if(state == State.FOUND_NAME) {

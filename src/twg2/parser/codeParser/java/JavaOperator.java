@@ -71,20 +71,6 @@ public enum JavaOperator implements Operator {
 	public final boolean isUnary;
 
 
-	JavaOperator(String symbol, IntArrayList operandCounts) {
-		this.srcSymbol = symbol;
-		this.operandCounts = operandCounts;
-		this.isArithmetic = false;
-		this.isAssignment = false;
-		this.isBitwise = false;
-		this.isConcat = false;
-		this.isConditional = false;
-		this.isEquality = false;
-		this.isTypeCheck = false;
-		this.isUnary = false;
-	}
-
-
 	JavaOperator(String symbol, int typeFlags, IntArrayList operandCounts) {
 		this.srcSymbol = symbol;
 		this.operandCounts = operandCounts;

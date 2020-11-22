@@ -89,7 +89,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 		if(tokenData.getTokenType() == CodeTokenType.COMMENT) {
 			return true;
 		}
-		if(AstFragType.isBlock(tokenData, "[")) {
+		if(AstFragType.isBlock(tokenData, '[')) {
 			return true;
 		}
 		if(state == State.COMPLETE || state == State.FAILED) {

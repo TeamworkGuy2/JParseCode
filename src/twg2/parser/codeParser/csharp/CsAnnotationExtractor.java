@@ -12,6 +12,7 @@ import twg2.parser.stateMachine.AstParserReusableBase;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 public class CsAnnotationExtractor extends AstParserReusableBase<CsAnnotationExtractor.State, List<AnnotationSig>> {
+	public static int acceptNextCalls = 0;
 
 	static enum State {
 		INIT,
@@ -31,11 +32,12 @@ public class CsAnnotationExtractor extends AstParserReusableBase<CsAnnotationExt
 	@Override
 	public boolean acceptNext(SimpleTree<CodeToken> tokenNode) {
 		var lang = CodeLanguageOptions.C_SHARP;
+		acceptNextCalls++;
 
 		if(state != State.FAILED) {
 			var childs = tokenNode.getChildren();
 			CodeToken annotTypeFrag = null;
-			if(AstFragType.isBlock(tokenNode.getData(), "[") && childs != null && childs.size() > 0 && AstFragType.isIdentifier(annotTypeFrag = childs.get(0).getData())) {
+			if(AstFragType.isBlock(tokenNode.getData(), '[') && childs != null && childs.size() > 0 && AstFragType.isIdentifier(annotTypeFrag = childs.get(0).getData())) {
 				var annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getTokenType(), annotTypeFrag.getText(), (childs.size() > 1 ? childs.get(1) : null));
 				annotations.add(annot);
 				state = State.COMPLETE;

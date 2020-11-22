@@ -4,18 +4,23 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
 import twg2.annotations.Immutable;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 
 @Immutable
-@AllArgsConstructor
 public class AnnotationSig implements JsonWritableSig {
 	public final String name;
 	public final List<String> fullName;
 	public final Map<String, String> arguments;
+
+
+	public AnnotationSig(String name, List<String> fullName, Map<String, String> arguments) {
+		this.name = name;
+		this.fullName = fullName;
+		this.arguments = arguments;
+	}
 
 
 	@Override

@@ -33,8 +33,13 @@ namespace ParserExamples.Models {
 
 
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            var a = Int32.Parse("");
         }
 
+
+        public TType Refresh<TType>(TType tt) where TType : IConvertible {
+            return tt;
+        }
     }
 
 }

@@ -6,6 +6,7 @@ import static twg2.parser.test.utils.TypeAssert.ary;
 import static twg2.parser.test.utils.TypeAssert.ls;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -24,6 +25,7 @@ import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.main.ParserMisc;
+import twg2.parser.output.WriteSettings;
 import twg2.parser.project.ProjectClassSet;
 import twg2.parser.workflow.CodeFileParsed;
 
@@ -55,6 +57,9 @@ public class CsParseFilesTest {
 
 		List<CodeFileParsed.Resolved<CsBlock>> res = resFileSet.getCompilationUnitsStartWith(ls(""));
 
+		WriteSettings ws = new WriteSettings(true, true, true, true);
+		StringBuilder sb = new StringBuilder();
+
 		// get a subset of all the parsed files
 		for(CodeFileParsed.Resolved<CsBlock> classInfo : res) {
 			ClassAst.ResolvedImpl<CsBlock> classParsed = classInfo.parsedClass;
@@ -70,6 +75,16 @@ public class CsParseFilesTest {
 			}
 			else {
 				throw new IllegalStateException("unknown class '" + NameUtil.joinFqName(classParsed.getSignature().getFullName()) + "'");
+			}
+
+			try {
+				sb.setLength(0);
+				// ensure that toJson() methods work
+				classParsed.toJson(sb, ws);
+
+				System.out.println(sb.toString());
+			} catch(IOException ioe) {
+				throw new UncheckedIOException(ioe);
 			}
 		}
 	}

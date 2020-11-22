@@ -12,44 +12,6 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class AstFragType {
 
-
-	/** Check if a {@link TextToken} has a fragment type equal to {@code type1}
-	 */
-	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1) {
-		return node != null && (node.getTokenType() == type1);
-	}
-
-
-	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2}
-	 */
-	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1, CodeTokenType type2) {
-		return node != null && (node.getTokenType() == type1 || node.getTokenType() == type2);
-	}
-
-
-	/** Check if a {@link TextToken} has a fragment type equal to {@code type1 OR type2 OR type3}
-	 */
-	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType type1, CodeTokenType type2, CodeTokenType type3) {
-		return node != null && (node.getTokenType() == type1 || node.getTokenType() == type2 || node.getTokenType() == type3);
-	}
-
-
-	/** Check if a {@link TextToken} has a fragment type equal to any of {@code types}
-	 */
-	public static final boolean isType(TextToken<?, CodeTokenType> node, CodeTokenType... types) {
-		if(node == null) {
-			return false;
-		}
-		CodeTokenType nodeType = node.getTokenType();
-		for(CodeTokenType type : types) {
-			if(nodeType != type) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-
 	public static final boolean isOperator(CodeToken node, Operator op) {
 		return node != null && node.getTokenType() == CodeTokenType.OPERATOR && op.toSrc().equals(node.getText());
 	}
@@ -77,6 +39,12 @@ public class AstFragType {
 
 	public static final boolean isKeyword(CodeToken node) {
 		return node != null && (node.getTokenType() == CodeTokenType.KEYWORD);
+	}
+
+
+	public static final boolean isBlock(CodeToken node, char blockSymbol) {
+		String nodeText;
+		return node != null && node.getTokenType().isCompound() && (nodeText = node.getText()).length() > 0 && nodeText.charAt(0) == blockSymbol;
 	}
 
 

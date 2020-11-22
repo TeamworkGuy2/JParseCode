@@ -43,8 +43,10 @@ public class FieldDefResolved extends FieldSigResolved {
 		json.comma(dst).propName("accessModifiers", dst)
 			.toStringArray(accessModifiers, dst, (acs) -> acs.toSrc());
 
-		json.comma(dst).propName("annotations", dst)
-			.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		if(annotations != null && annotations.size() > 0) {
+			json.comma(dst).propName("annotations", dst)
+				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
+		}
 
 		FieldDef.initializerToJson(initializer, true, dst, st);
 

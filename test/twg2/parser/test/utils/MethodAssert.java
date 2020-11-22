@@ -16,14 +16,14 @@ public class MethodAssert {
 
 	public static void assertParameter(List<ParameterSig> params, int idx, String name, String type, String defaultValue, List<? extends Keyword> accessMods, List<? extends AnnotationSig> annotations) {
 		ParameterSig p = params.get(idx);
-		Assert.assertEquals(name, p.getName());
-		Assert.assertEquals(type, p.getTypeSimpleName());
-		Assert.assertEquals(defaultValue, p.getDefaultValue());
+		Assert.assertEquals(name, p.name);
+		Assert.assertEquals(type, p.typeSimpleName);
+		Assert.assertEquals(defaultValue, p.defaultValue);
 		if(accessMods != null) {
-			Assert.assertEquals(accessMods, p.getParameterModifiers());
+			Assert.assertEquals(accessMods, p.parameterModifiers);
 		}
 		if(annotations != null) {
-			Assert.assertEquals(annotations, p.getAnnotations());
+			Assert.assertEquals(annotations, p.annotations);
 		}
 	}
 

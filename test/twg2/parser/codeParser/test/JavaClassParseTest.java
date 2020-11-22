@@ -33,6 +33,7 @@ import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.main.ParseCodeFile;
 import twg2.parser.test.utils.AnnotationAssert;
 import twg2.parser.test.utils.CodeFileAndAst;
+import twg2.parser.test.utils.TypeAssert;
 import twg2.parser.workflow.CodeFileParsed;
 import twg2.parser.workflow.CodeFileSrc;
 import twg2.treeLike.simpleTree.SimpleTree;
@@ -129,11 +130,29 @@ public class JavaClassParseTest {
 
 		Assert.assertEquals(1, blocks.size());
 
-		ClassAst.SimpleImpl<JavaBlock> trackInfoBlock = blocks.get(0).getValue();
-		Assert.assertEquals(JavaBlock.CLASS, trackInfoBlock.getBlockType());
-		Assert.assertEquals("TrackInfo", trackInfoBlock.getSignature().getSimpleName());
+		ClassAst.SimpleImpl<JavaBlock> trackInfo = blocks.get(0).getValue();
+		String fullClassName = NameUtil.joinFqName(trackInfo.getSignature().getFullName());
+		Assert.assertEquals(JavaBlock.CLASS, trackInfo.getBlockType());
+		Assert.assertEquals("ParserExamples.Models.TrackInfo", fullClassName);
 
-		Assert.assertEquals(ls("Serializable", "Comparable<TrackInfo>"), trackInfoBlock.getSignature().getExtendImplementSimpleNames());
+		Assert.assertEquals(ls("Serializable", "Comparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
+
+		var fields = trackInfo.getFields();
+		assertField(fields, 0, fullClassName + ".Name", "String");
+		assertField(fields, 1, fullClassName + ".artist", "String");
+		assertField(fields, 2, fullClassName + ".durationMillis", "int");
+		assertField(fields, 3, fullClassName + ".contentId", "long");
+
+		// int compareTo(TrackInfo o)
+		MethodSigSimple m = trackInfo.getMethods().get(0);
+		Assert.assertEquals(fullClassName + ".compareTo", NameUtil.joinFqName(m.fullName));
+		assertParameter(m.paramSigs, 0, "o", "TrackInfo", null, null, null);
+
+		// <TType extends Number> TType refresh(TType tt)
+		m = trackInfo.getMethods().get(1);
+		Assert.assertEquals(fullClassName + ".refresh", NameUtil.joinFqName(m.fullName));
+		TypeAssert.assertType("TType extends Number", m.typeParameters.get(0));
+		assertParameter(m.paramSigs, 0, "tt", "TType", null, null, null);
 	}
 
 

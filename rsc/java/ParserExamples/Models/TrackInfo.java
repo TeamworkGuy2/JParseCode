@@ -33,4 +33,9 @@ public class TrackInfo implements Serializable, Comparable<TrackInfo> {
 		return other != null ? (this.Name != null ? this.Name.CompareTo(other.Name) : (other.Name != null ? 1 : 0)) : (this.Name != null ? -1 : 0);
 	}
 
+
+	public <TType extends Number> TType refresh(TType tt) {
+		return tt;
+	}
+
 }

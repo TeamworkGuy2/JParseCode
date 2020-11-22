@@ -3,8 +3,6 @@ package twg2.ast.interm.method;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.io.json.stringify.JsonStringify;
@@ -17,14 +15,28 @@ import twg2.parser.output.WriteSettings;
  * @since 2016-1-3
  */
 @Immutable
-@AllArgsConstructor
 public class ParameterSig implements JsonWritableSig {
-	final @Getter String name;
-	final @Getter String typeSimpleName;
-	final @Getter List<Keyword> parameterModifiers;
-	final @Getter List<AnnotationSig> annotations;
-	final @Getter boolean optional;
-	final @Getter String defaultValue;
+	public final String name;
+	public final String typeSimpleName;
+	public final List<Keyword> parameterModifiers;
+	public final List<AnnotationSig> annotations;
+	public final boolean optional;
+	public final String defaultValue;
+
+
+	public ParameterSig(String name, String typeSimpleName, List<? extends Keyword> parameterModifiers, List<? extends AnnotationSig> annotations, boolean optional, String defaultValue) {
+		@SuppressWarnings("unchecked")
+		var paramModifiersCast = (List<Keyword>)parameterModifiers;
+		@SuppressWarnings("unchecked")
+		var annotationsCast = (List<AnnotationSig>)annotations;
+
+		this.name = name;
+		this.typeSimpleName = typeSimpleName;
+		this.parameterModifiers = paramModifiersCast;
+		this.annotations = annotationsCast;
+		this.optional = optional;
+		this.defaultValue = defaultValue;
+	}
 
 
 	@Override
@@ -32,6 +44,7 @@ public class ParameterSig implements JsonWritableSig {
 		var json = JsonStringify.inst;
 
 		dst.append("{ ");
+
 		json.toProp("type", typeSimpleName, dst);
 
 		json.comma(dst).toProp("name", name, dst);
@@ -39,7 +52,7 @@ public class ParameterSig implements JsonWritableSig {
 		json.comma(dst).propName("parameterModifiers", dst)
 			.toStringArray(parameterModifiers, dst, (acs) -> acs.toSrc());
 
-		if(annotations != null) {
+		if(annotations != null && annotations.size() > 0) {
 			json.comma(dst).propName("annotations", dst)
 				.toArrayConsume(annotations, dst, (ann) -> ann.toJson(dst, st));
 		}

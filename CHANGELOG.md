@@ -4,7 +4,34 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.19.2](N/A) - 2020-05-23
+### [0.20.0](N/A) - 2020-11-22
+__Method generic type parameters parsing support__ (i.e. 'public T Create<T>()' in C#).
+#### Added
+* Method generic type parameters added - `MethodSig` and sub-classes have a new `typeParameters` field. Note: if these 'types' contain lower/upper type bounds these are included in the `typeName` property in Java and are not yet included in C# parsing
+  * Added basic unit tests for this new method generic type parameters parsing support
+* `AstFragType.isBlock(CodeToken, char)` overload for attempted performance optimization
+
+#### Changed
+* Renamed `DataTypeExtractor` -> `TypeExtractor`
+* Added `EnhancedListIterator` as a replacement for `TokenListIterable` to try and simplify fragment iteration since it is a fairly hot section of code in most parsing scenarios
+* `ParseTimes.TrackerAction` enums renamed:
+  * `LOAD` -> `READ`
+  * `PARSE` -> `EXTRACT_AST`
+* Update dependency jtext-tokenizer@0.6.0 and code to match
+  * Adjustments to `new CharParserMatchableFactory()` and `CharConditions.Identifier.newInstance()` calls in `IdentifierTokenizer` and `NumberTokenizer`
+* JSON output now excludes empty `annotations` arrays on fields, methods, and parameters
+* Additional performance log counters added to several methods and printed when performance info is enabled via `-debug` CLI flag
+
+#### Removed
+* `AstFragType.isType()` static method and overloads since they were unused
+* Unused `CommentTokenizer.createCommentTokenizerForJava()`
+
+#### Fixed
+* An exception being thrown when resolving class names if a file imported a namespace and also imported a child namespace of the first namespace
+
+
+--------
+### [0.19.2](https://github.com/TeamworkGuy2/JParseCode/commit/9967d655b7c274b8d58892ab74b7fd1fe4dea522) - 2020-05-23
 __Parameter varargs parsing support__ (i.e. 'int...' in Java).
 #### Changed
 * Update dependency `jtext-parser@0.16.0` and `jtext-tokenizer@0.4.0`

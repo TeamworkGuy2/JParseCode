@@ -2,11 +2,11 @@ package twg2.parser.codeParser.extractors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.CodeToken;
-import twg2.streams.EnhancedListBuilderIterator;
 import twg2.treeLike.simpleTree.SimpleTree;
 
 /**
@@ -25,7 +25,7 @@ public class AccessModifierExtractor {
 	 * Returns the iterator where {@code next()} would return the first access modifier element.
 	 * @return access modifiers read backward from the iterator's current {@code previous()} value
 	 */
-	public static List<String> readAccessModifiers(KeywordUtil<? extends Keyword> keywordUtil, EnhancedListBuilderIterator<SimpleTree<CodeToken>> iter) {
+	public static List<String> readAccessModifiers(KeywordUtil<? extends Keyword> keywordUtil, ListIterator<SimpleTree<CodeToken>> iter) {
 		int prevCount = 0;
 		var accessModifiers = new ArrayList<String>();
 		SimpleTree<CodeToken> child = iter.hasPrevious() ? iter.previous() : null;

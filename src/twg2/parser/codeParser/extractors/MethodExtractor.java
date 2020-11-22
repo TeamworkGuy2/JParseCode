@@ -29,6 +29,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	static enum State {
 		INIT,
 		FINDING_ACCESS_MODIFIERS,
+		FINDING_TYPE_PARAMS,
 		FINDING_RETURN_TYPE,
 		FINDING_NAME,
 		FINDING_PARAMS,
@@ -42,6 +43,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	AstParser<List<AnnotationSig>> annotationParser;
 	AstParser<List<String>> commentParser;
 	AstParser<TypeSig.TypeSigSimple> typeParser;
+	List<TypeSig.TypeSigSimple> typeParameters = new ArrayList<>();
 	List<Keyword> accessModifiers = new ArrayList<>();
 	String methodName;
 	TypeSig.TypeSigSimple returnTypeSig;
@@ -79,14 +81,23 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 				res = findingAccessModifiers(tokenNode);
 				if(res.isAccept()) { return true; }
 			}
-			if(DataTypeExtractor.isPossiblyType(keywordUtil, tokenNode, true)) {
+			if(AstFragType.isBlock(tokenNode.getData(), '<')) {
+				state = State.FINDING_TYPE_PARAMS;
+				res = findingTypeParams(tokenNode);
+				if(res.isAccept()) { return true; }
+			}
+			if(TypeExtractor.isPossiblyType(keywordUtil, tokenNode, true)) {
 				state = State.FINDING_RETURN_TYPE;
-				res = updateAndCheckTypeParser(tokenNode);
+				res = updateReturnTypeParser(tokenNode);
 				if(res.isAccept()) { return true; }
 			}
 		}
 		else if(state == State.FINDING_ACCESS_MODIFIERS) {
 			res = findingAccessModifiers(tokenNode);
+			if(res.isAccept()) { return true; }
+		}
+		else if(state == State.FINDING_TYPE_PARAMS) {
+			res = findingTypeParams(tokenNode);
 			if(res.isAccept()) { return true; }
 		}
 		else if(state == State.FINDING_RETURN_TYPE) {
@@ -105,7 +116,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
-	private Consume updateAndCheckTypeParser(SimpleTree<CodeToken> tokenNode) {
+	private Consume updateReturnTypeParser(SimpleTree<CodeToken> tokenNode) {
 		boolean res = typeParser.acceptNext(tokenNode);
 		boolean complete = typeParser.isComplete();
 		boolean failed = typeParser.isFailed();
@@ -116,6 +127,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 		}
 		else if(failed) {
 			typeParser = typeParser.recycle();
+			typeParameters.clear();
 			accessModifiers.clear();
 			state = State.FAILED;
 		}
@@ -130,8 +142,8 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 			return Consume.ACCEPTED;
 		}
 		else {
-			state = State.FINDING_RETURN_TYPE;
-			var res2 = findingReturnType(tokenNode);
+			state = State.FINDING_TYPE_PARAMS;
+			var res2 = findingTypeParams(tokenNode);
 			if(res2 == Consume.REJECTED) {
 				accessModifiers.clear();
 				state = State.FAILED;
@@ -141,9 +153,28 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	}
 
 
+	private Consume findingTypeParams(SimpleTree<CodeToken> tokenNode) {
+		if(AstFragType.isBlock(tokenNode.getData(), '<')) {
+			var genericTypes = TypeExtractor.extractGenericTypes(tokenNode.getData().getText(), keywordUtil);
+			typeParameters.addAll(genericTypes.getParams());
+			return Consume.ACCEPTED;
+		}
+		else {
+			state = State.FINDING_RETURN_TYPE;
+			var res2 = findingReturnType(tokenNode);
+			if(res2 == Consume.REJECTED) {
+				typeParameters.clear();
+				accessModifiers.clear();
+				state = State.FAILED;
+			}
+			return res2;
+		}
+	}
+
+
 	private Consume findingReturnType(SimpleTree<CodeToken> tokenNode) {
-		var res = updateAndCheckTypeParser(tokenNode);
-		// TODO required because type parser has to look ahead
+		var res = updateReturnTypeParser(tokenNode);
+		// required because type parser has to look ahead
 		if(state == State.FINDING_NAME) {
 			var res2 = findingName(tokenNode);
 			if(res2.isAccept()) { return res2; }
@@ -155,9 +186,15 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	private Consume findingName(SimpleTree<CodeToken> tokenNode) {
 		if(AstFragType.isIdentifier(tokenNode.getData())) {
 			methodName = tokenNode.getData().getText();
+			if(methodName.endsWith(">")) {
+				var genericTypes = TypeExtractor.extractGenericTypes(methodName, keywordUtil);
+				methodName = genericTypes.getTypeName();
+				typeParameters.addAll(genericTypes.getParams());
+			}
 			state = State.FINDING_PARAMS;
 			return Consume.ACCEPTED;
 		}
+		typeParameters.clear();
 		accessModifiers.clear();
 		state = State.FAILED;
 		return Consume.REJECTED;
@@ -165,7 +202,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 
 
 	private Consume findingParams(SimpleTree<CodeToken> tokenNode) {
-		if(AstFragType.isBlock(tokenNode.getData(), "(")) {
+		if(AstFragType.isBlock(tokenNode.getData(), '(')) {
 			state = State.COMPLETE;
 			var annotations = new ArrayList<>(annotationParser.getParserResult());
 			annotationParser.recycle();
@@ -174,13 +211,16 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 			commentParser.recycle();
 
 			var params = MethodParametersParser.extractParamsFromSignature(keywordUtil, operatorUtil, annotationParser, tokenNode);
+			var typeParams = new ArrayList<>(typeParameters);
 			var accessMods = new ArrayList<>(accessModifiers);
 			annotationParser.recycle();
 
-			methods.add(new MethodSigSimple(methodName, NameUtil.newFqName(parentBlock.declaration.getFullName(), methodName), params, returnTypeSig, accessMods, annotations, comments));
+			methods.add(new MethodSigSimple(methodName, NameUtil.newFqName(parentBlock.declaration.getFullName(), methodName), params, returnTypeSig, accessMods, typeParams, annotations, comments));
+			typeParameters.clear();
 			accessModifiers.clear();
 			return Consume.ACCEPTED;
 		}
+		typeParameters.clear();
 		accessModifiers.clear();
 		state = State.FAILED;
 		return Consume.REJECTED;
@@ -209,6 +249,7 @@ public class MethodExtractor extends AstMemberInClassParserReusable<MethodExtrac
 	// package-private
 	void reset() {
 		this.methods.clear();
+		this.typeParameters.clear();
 		this.accessModifiers.clear();
 		this.typeParser = typeParser.recycle();
 		this.annotationParser = annotationParser.recycle();

@@ -19,17 +19,17 @@ public class ParseTimes implements JsonWritableSig {
 
 	public static enum TrackerAction {
 		SETUP,
-		LOAD,
+		READ,
 		TOKENIZE,
-		PARSE;
+		EXTRACT_AST;
 	}
 
 
 
 	long setupNs;
-	long loadNs;
+	long readNs;
 	long tokenizeNs;
-	long parseNs;
+	long extractAstNs;
 
 
 	public long getSetupNs() {
@@ -37,8 +37,8 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public long getLoadNs() {
-		return loadNs;
+	public long getReadNs() {
+		return readNs;
 	}
 
 
@@ -47,13 +47,13 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public long getParseNs() {
-		return parseNs;
+	public long getExtractAstNs() {
+		return extractAstNs;
 	}
 
 
 	public long getTotalNs() {
-		return setupNs + loadNs + tokenizeNs + parseNs;
+		return setupNs + readNs + tokenizeNs + extractAstNs;
 	}
 
 
@@ -62,14 +62,14 @@ public class ParseTimes implements JsonWritableSig {
 		case SETUP:
 			this.setupNs = timeNanos;
 			break;
-		case LOAD:
-			this.loadNs = timeNanos;
+		case READ:
+			this.readNs = timeNanos;
 			break;
 		case TOKENIZE:
 			this.tokenizeNs = timeNanos;
 			break;
-		case PARSE:
-			this.parseNs = timeNanos;
+		case EXTRACT_AST:
+			this.extractAstNs = timeNanos;
 			break;
 		default:
 			throw EnumError.unknownValue(action, TrackerAction.class);
@@ -88,9 +88,9 @@ public class ParseTimes implements JsonWritableSig {
 		dst.append(
 				(srcName != null ? ("\"file\": \"" + srcName + "\", ") : "") +
 				"\"setup\": " + roundNsToMs(this.setupNs) + ", " +
-				"\"load\": " + roundNsToMs(this.loadNs) + ", " +
+				"\"read\": " + roundNsToMs(this.readNs) + ", " +
 				"\"tokenize\": " + roundNsToMs(this.tokenizeNs) + ", " +
-				"\"parse\": " + roundNsToMs(this.parseNs) + ", " +
+				"\"extractAst\": " + roundNsToMs(this.extractAstNs) + ", " +
 				"\"units\": \"milliseconds\""
 			);
 		if(includeSurroundingBrackets) { dst.append(" }"); }
@@ -107,9 +107,9 @@ public class ParseTimes implements JsonWritableSig {
 		return (includeClassName ? "parserPerformance: { " : "") +
 				(srcName != null ? ("file: " + srcName + ", ") : "") +
 				"setup: " + roundNsToMs(this.setupNs) + ", " +
-				"load: " + roundNsToMs(this.loadNs) + ", " +
+				"read: " + roundNsToMs(this.readNs) + ", " +
 				"tokenize: " + roundNsToMs(this.tokenizeNs) + ", " +
-				"parse: " + roundNsToMs(this.parseNs) + ", " +
+				"extractAst: " + roundNsToMs(this.extractAstNs) + ", " +
 				"total: " + roundNsToMs(this.getTotalNs()) +
 			(includeClassName ? " }" : "");
 	}
@@ -132,7 +132,7 @@ public class ParseTimes implements JsonWritableSig {
 
 		for(var entry : fileParseTimes.entrySet()) {
 			var stat = entry.getValue();
-			long subtotal = stat.setupNs + stat.loadNs + stat.tokenizeNs + stat.parseNs;
+			long subtotal = stat.setupNs + stat.readNs + stat.tokenizeNs + stat.extractAstNs;
 			total += subtotal;
 
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());

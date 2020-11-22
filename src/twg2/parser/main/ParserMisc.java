@@ -104,8 +104,7 @@ public class ParserMisc {
 
 					CodeFileSrc parsedFile = ParseCodeFile.parseFile(file, fileReader.get(), perfTracking);
 
-					long start = 0;
-					if(perfTracking != null) { start = System.nanoTime(); }
+					long start = (perfTracking != null ? System.nanoTime() : 0);
 
 					@SuppressWarnings("unchecked")
 					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
@@ -118,7 +117,7 @@ public class ParserMisc {
 					}
 
 					if(perfTracker != null) {
-						perfTracker.setActionTime(TrackerAction.PARSE, System.nanoTime() - start);
+						perfTracker.setActionTime(TrackerAction.EXTRACT_AST, System.nanoTime() - start);
 					}
 
 					return parsedFile;
@@ -142,8 +141,7 @@ public class ParserMisc {
 				var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(parsedFile.srcName) : null;
 
 				try {
-					long start = 0;
-					if(perfTracking != null) { start = System.nanoTime(); }
+					long start = (perfTracking != null ? System.nanoTime() : 0);
 
 					@SuppressWarnings("unchecked")
 					List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<BlockType>>> blockDeclarations = ((AstExtractor<BlockType>)parsedFile.language.getExtractor()).extractClassFieldsAndMethodSignatures(parsedFile.astTree);
@@ -154,7 +152,7 @@ public class ParserMisc {
 					}
 
 					if(perfTracker != null) {
-						perfTracker.setActionTime(TrackerAction.PARSE, System.nanoTime() - start);
+						perfTracker.setActionTime(TrackerAction.EXTRACT_AST, System.nanoTime() - start);
 					}
 				} catch(Exception e) {
 					throw new FileFormatException(parsedFile.srcName, null, e);

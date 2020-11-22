@@ -115,12 +115,15 @@ public class HtmlTemplateTest {
 
 
 	public static final CharParserFactory createHtmlNamedVarParser(String startMark, String templateName, String endMark) {
-		CharParserFactory htmlParser = new CharParserMatchableFactory<CharParserMatchable>("HTML Named Var Template", false, Arrays.asList(CharConditionPipe.createPipeAllRequired("HTML Named Var Template", Arrays.asList(
-			new StringConditions.Literal("start tag", new String[] { startMark + templateName + "(name=" }, Inclusion.INCLUDE),
-			new CharConditions.Literal("attribute-string-start", CharArrayList.of('"'), Inclusion.INCLUDE),
-			new CharConditions.EndNotPrecededBy("attribute-string-end", CharArrayList.of('"'), Inclusion.INCLUDE, CharArrayList.of('\\')),
-			new StringConditions.Literal("end tag", new String[] { ")" + endMark }, Inclusion.INCLUDE)
-		))));
+		var charParsers = new CharParserMatchable[] {
+			CharConditionPipe.createPipeAllRequired("HTML Named Var Template", Arrays.asList(
+				new StringConditions.Literal("start tag", new String[] { startMark + templateName + "(name=" }, Inclusion.INCLUDE),
+				new CharConditions.Literal("attribute-string-start", CharArrayList.of('"'), Inclusion.INCLUDE),
+				new CharConditions.EndNotPrecededBy("attribute-string-end", CharArrayList.of('"'), Inclusion.INCLUDE, CharArrayList.of('\\')),
+				new StringConditions.Literal("end tag", new String[] { ")" + endMark }, Inclusion.INCLUDE)
+			))
+		};
+		CharParserFactory htmlParser = new CharParserMatchableFactory<CharParserMatchable>("HTML Named Var Template", false, charParsers);
 		return htmlParser;
 	}
 

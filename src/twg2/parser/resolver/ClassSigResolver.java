@@ -14,7 +14,7 @@ import twg2.collections.builder.ListBuilder;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.BlockType;
 import twg2.parser.codeParser.KeywordUtil;
-import twg2.parser.codeParser.extractors.DataTypeExtractor;
+import twg2.parser.codeParser.extractors.TypeExtractor;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.project.ProjectClassSet;
 import twg2.parser.workflow.CodeFileParsed;
@@ -65,7 +65,7 @@ public class ClassSigResolver {
 			// TODO maybe should check isClass() rather than !isInterface()
 			if(!firstCompilationUnitBlockType.isInterface()) {
 				var name = NameUtil.joinFqName(firstCompilationUnitName);
-				var extendClassSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
+				var extendClassSimpleType = TypeExtractor.extractGenericTypes(name, keywordUtil);
 				extendClassType = TypeSigResolver.resolveFrom(extendClassSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 				extendsClass = true;
 			}
@@ -79,7 +79,7 @@ public class ClassSigResolver {
 						throw new IllegalStateException("class cannot extend more than one class (checking extends/implements list: " + classSig.getExtendImplementSimpleNames() + ") for class '" + classSig.getFullName() + "'");
 					}
 					var name = NameUtil.joinFqName(resolvedParentNames.get(i));
-					var implementInterfaceSimpleType = DataTypeExtractor.extractGenericTypes(name, keywordUtil);
+					var implementInterfaceSimpleType = TypeExtractor.extractGenericTypes(name, keywordUtil);
 					var implementInterfaceType = TypeSigResolver.resolveFrom(implementInterfaceSimpleType, namespaceClass, projFiles, missingNamespacesDst);
 					implementInterfaceTypes.add(implementInterfaceType);
 				}
