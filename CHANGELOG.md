@@ -4,7 +4,18 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.20.0](N/A) - 2020-11-22
+### [0.21.0](https://github.com/TeamworkGuy2/JParseCode/commit/7482a2a148a5f42e230c33897d3f17d907c5348f) - 2020-11-22
+__Parsing performance optimizations (~15-20%)__
+#### Changed
+* Update dependencies `jtext-tokenizer@0.7.0` and `jtext-parser@0.18.0`
+* `ParserActionLogger` and `ParseTimes` optimizations and changes to work with `jtext-tokenizer` new `TokenizationLogger`
+* `JavaFileTokenizer`, `CsFileTokenizer`, `CommentTokenizer`, `IdentifierTokenizer`, and `NumberTokenizer` `reusable/reusableCharParsers` flag implementation to control which `CharParserMatchableFactory` implementation is used
+* `CodeTokenizer.tokenizeDocument()` `fragmentConstructor` parameter optimization to skip creating fragment source string twice, major performance improvement ~5-10%
+* New aggregate performance logging output for text tokenization related counters
+
+
+--------
+### [0.20.0](https://github.com/TeamworkGuy2/JParseCode/commit/7482a2a148a5f42e230c33897d3f17d907c5348f) - 2020-11-22
 __Method generic type parameters parsing support__ (i.e. 'public T Create<T>()' in C#).
 #### Added
 * Method generic type parameters added - `MethodSig` and sub-classes have a new `typeParameters` field. Note: if these 'types' contain lower/upper type bounds these are included in the `typeName` property in Java and are not yet included in C# parsing

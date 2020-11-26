@@ -11,7 +11,7 @@ import twg2.text.tokenizer.CharParserMatchableFactory;
  */
 public class NumberTokenizer {
 
-	public static CharParserMatchableFactory<CharParser> createNumericLiteralTokenizer() {
+	public static CharParserMatchableFactory<CharParser> createNumericLiteralTokenizer(boolean reusable) {
 		// TODO create a C# numeric literal parse
 
 		// do not parse number sign -/+
@@ -29,7 +29,9 @@ public class NumberTokenizer {
 					prevCh != '_' && prevCh != '$' && (prevCh < 'A' || prevCh > 'Z') && (prevCh < 'a' || prevCh > 'z');
 		};
 
-		return new CharParserMatchableFactory<CharParser>("numeric literal", false, new CharParserPredicate[] { charCheck }, new CharParser[] { numParser });
+		return reusable ?
+			new CharParserMatchableFactory.Reusable<>("numeric literal", false, new CharParserPredicate[] { charCheck }, new CharParser[] { numParser }) :
+			new CharParserMatchableFactory<>("numeric literal", false, new CharParserPredicate[] { charCheck }, new CharParser[] { numParser });
 	}
 
 }

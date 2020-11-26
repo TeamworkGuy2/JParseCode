@@ -13,7 +13,7 @@ public class CodeBlockTokenizer {
 	private CodeBlockTokenizer() { throw new AssertionError("cannot instantiate static class CodeBlockTokenizer"); }
 
 
-	public static CharParserFactory createBlockTokenizer(char... blockStarts) {
+	public static CharParserFactory createBlockTokenizer(boolean reusable, char... blockStarts) {
 		StringParserBuilder blockParser = new StringParserBuilder("block");
 
 		for(char blockStart : blockStarts) {
@@ -36,7 +36,7 @@ public class CodeBlockTokenizer {
 
 		return blockParser
 			.isCompound(true)
-			.build();
+			.build(reusable);
 	}
 
 }

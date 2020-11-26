@@ -1,107 +1,74 @@
 package twg2.parser.codeParser.analytics;
 
 import java.io.IOException;
-import java.util.EnumMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import twg2.io.files.FileUtil;
 import twg2.io.json.stringify.JsonStringify;
+import twg2.parser.condition.text.CharParser;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringEscape.StringEscapeJson;
 import twg2.text.stringUtils.StringPad;
-import twg2.text.tokenizer.analytics.ParserAction;
-import twg2.text.tokenizer.analytics.TypedLogger;
+import twg2.text.tokenizer.CharParserFactory;
+import twg2.text.tokenizer.CharParserMatchableFactory;
+import twg2.text.tokenizer.analytics.TokenizationLogger;
 
 /**
  * @author TeamworkGuy2
  * @since 2016-09-11
  */
-public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettings>, JsonWritableSig {
-
-	static class CountAndDurationLog {
-		String msg;
-		long count;
-		double durationMilliseconds;
-
-
-		@Override
-		public String toString() {
-			return (this.msg != null ? "msg: " + this.msg + ", " : "") +
-					(this.count != 0 ? "count: " + this.count + ", " : "") +
-					(this.durationMilliseconds != 0 ? "durationMillis: " + this.durationMilliseconds : "");
-		}
-
-
-		public void toJson(Appendable dst, WriteSettings st) throws IOException {
-			var json = JsonStringify.inst;
-
-			json.append("{ ", dst);
-
-			if(this.msg != null) {
-				json.comma(dst).toProp("message", this.msg, dst);
-			}
-
-			if(this.count != 0) {
-				json.comma(dst).toProp("count", this.count, dst);
-			}
-
-			if(this.durationMilliseconds != 0) {
-				json.comma(dst).toProp("durationMillis", this.durationMilliseconds, dst);
-			}
-
-			json.append(" }", dst);
-		}
-
-	}
-
-
-	Map<ParserAction, CountAndDurationLog> actions;
+public class ParserActionLogger implements TokenizationLogger, JsonWritableSig {
+	public int countCompoundCharParserMatch;
+	public int countCompoundCharParserAcceptNext;
+	public int countCreateParser;
+	public int countTextFragmentsConsumed;
+	public int totalParserReuseCount;
+	public List<CharParserMatchableFactory.Reusable<CharParser>> reusableParserFactories;
 
 
 	public ParserActionLogger() {
-		this.actions = new EnumMap<>(ParserAction.class);
-	}
-
-
-	public CountAndDurationLog getLog(ParserAction action) {
-		return this.actions.get(action);
-	}
-
-
-	public String getLogMsg(ParserAction action) {
-		var res = this.actions.get(action);
-		return res != null ? res.msg : null;
-	}
-
-
-	public long getLogCount(ParserAction action) {
-		var res = this.actions.get(action);
-		return res != null ? res.count : 0;
-	}
-
-
-	public double getLogDuration(ParserAction action) {
-		var res = this.actions.get(action);
-		return res != null ? res.durationMilliseconds : 0;
 	}
 
 
 	@Override
-	public void logMsg(ParserAction action, String msg) {
-		getTypedAction(action).msg = msg;
+	public void logCountCompoundCharParserMatch(int count) {
+		countCompoundCharParserMatch += count;
 	}
 
 
 	@Override
-	public void logCount(ParserAction action, long count) {
-		getTypedAction(action).count += count;
+	public void logCountCompoundCharParserAcceptNext(int count) {
+		countCompoundCharParserAcceptNext += count;
 	}
 
 
 	@Override
-	public void logDuration(ParserAction action, double durationMilliseconds) {
-		getTypedAction(action).durationMilliseconds += durationMilliseconds;
+	public void logCountCreateParser(int count) {
+		countCreateParser += count;
+	}
+
+
+	@Override
+	public void logCountTextFragmentsConsumed(int count) {
+		countTextFragmentsConsumed += count;
+	}
+
+
+	public void logCharParserFactoryReuse(Collection<? extends CharParserFactory> charParserFactories) {
+		this.reusableParserFactories = new ArrayList<>();
+		
+		for(var parserFactory : charParserFactories) {
+			if(parserFactory instanceof CharParserMatchableFactory.Reusable) {
+				@SuppressWarnings("unchecked")
+				var parserFactoryReusable = (CharParserMatchableFactory.Reusable<CharParser>)parserFactory;
+				reusableParserFactories.add(parserFactoryReusable);
+				totalParserReuseCount += parserFactoryReusable.getReuseCount();
+			}
+		}
 	}
 
 
@@ -111,7 +78,6 @@ public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	@Override
 	public void toJson(String srcName, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("{\n"); }
 		if(srcName != null) {
@@ -120,16 +86,20 @@ public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettin
 			dst.append("\"");
 		}
 
-		boolean first = true;
-		for(ParserAction action : ParserAction.values()) {
-			var data = this.actions.get(action);
-			if(data != null) {
-				if(!first || srcName != null) { dst.append(",\n"); }
-				String name = action.name();
-				dst.append("\t\"").append(name).append("\": ");
-				data.toJson(dst, st);
-				first = false;
-			}
+		if(countCompoundCharParserMatch > 0) {
+			dst.append("\t\"compoundCharParserMatch\": ").append(Integer.toString(countCompoundCharParserMatch));
+		}
+		if(countCompoundCharParserAcceptNext > 0) {
+			dst.append(",\n");
+			dst.append("\t\"compoundCharParserAcceptNext\": ").append(Integer.toString(countCompoundCharParserAcceptNext));
+		}
+		if(countCreateParser > 0) {
+			dst.append(",\n");
+			dst.append("\t\"createParser\": ").append(Integer.toString(countCreateParser));
+		}
+		if(countTextFragmentsConsumed > 0) {
+			dst.append(",\n");
+			dst.append("\t\"textFragmentsConsumed\": ").append(Integer.toString(countTextFragmentsConsumed));
 		}
 
 		if(includeSurroundingBrackets) { dst.append("\n}"); }
@@ -142,7 +112,6 @@ public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	@Override
 	public String toString(String srcName, boolean includeClassName) {
 		var dst = new StringBuilder();
 		if(includeClassName) {
@@ -152,16 +121,22 @@ public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettin
 			dst.append("file: " + srcName);
 		}
 
-		boolean first = true;
-		for(ParserAction action : ParserAction.values()) {
-			var data = this.actions.get(action);
-			if(data != null) {
-				if(!first || srcName != null) { dst.append(", "); }
-				String name = action.name();
-				dst.append("\"").append(name).append("\": ").append(data.toString());
-				first = false;
-			}
+		if(countCompoundCharParserMatch > 0) {
+			dst.append("compoundCharParserMatch: ").append(Integer.toString(countCompoundCharParserMatch));
 		}
+		if(countCompoundCharParserAcceptNext > 0) {
+			dst.append(", ");
+			dst.append("compoundCharParserAcceptNext: ").append(Integer.toString(countCompoundCharParserAcceptNext));
+		}
+		if(countCreateParser > 0) {
+			dst.append(", ");
+			dst.append("createParser: ").append(Integer.toString(countCreateParser));
+		}
+		if(countTextFragmentsConsumed > 0) {
+			dst.append(", ");
+			dst.append("textFragmentsConsumed: ").append(Integer.toString(countTextFragmentsConsumed));
+		}
+
 		if(includeClassName) {
 			dst.append("\n}");
 		}
@@ -169,23 +144,15 @@ public class ParserActionLogger implements TypedLogger<ParserAction, WriteSettin
 	}
 
 
-	private CountAndDurationLog getTypedAction(ParserAction action) {
-		var data = actions.get(action);
-		if(data == null) {
-			data = new CountAndDurationLog();
-			actions.put(action, data);
-		}
-		return data;
-	}
-
-
 	public static void toJsons(Map<String, ParserActionLogger> fileParserDetails, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
+
 		JsonStringify.inst.joinConsume(fileParserDetails.entrySet(), ",\n", dst, (entry) -> {
 			var stat = entry.getValue();
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			stat.toJson(fileName, includeSurroundingBrackets, dst, st);
 		});
+
 		if(includeSurroundingBrackets) { dst.append("\n]"); }
 	}
 

@@ -13,30 +13,30 @@ public final class CodeStringTokenizer {
 	private CodeStringTokenizer() { throw new AssertionError("cannot instantiate static class CodeStringParser"); }
 
 
-	public static final CharParserFactory createStringTokenizerForJava() {
+	public static CharParserFactory createStringTokenizerForJava(boolean reusable) {
 		CharParserFactory stringParser = new StringParserBuilder("Java string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
-			.build();
+			.build(reusable);
 		return stringParser;
 	}
 
 
 	// TODO make parser work with all types of C# string literals
-	public static final CharParserFactory createStringTokenizerForCSharp() {
+	public static CharParserFactory createStringTokenizerForCSharp(boolean reusable) {
 		CharParserFactory stringParser = new StringParserBuilder("C# string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
-			.build();
+			.build(reusable);
 		return stringParser;
 	}
 
 
-	public static final CharParserFactory createStringTokenizerForJavascript() {
+	public static CharParserFactory createStringTokenizerForJavascript(boolean reusable) {
 		CharParserFactory stringParser = new StringParserBuilder("JS string")
 			.addStartEndNotPrecededByMarkers("string literal", '"', '\\', '"', Inclusion.INCLUDE)
 			.addStartEndNotPrecededByMarkers("char literal", '\'', '\\', '\'', Inclusion.INCLUDE)
-			.build();
+			.build(reusable);
 		return stringParser;
 	}
 

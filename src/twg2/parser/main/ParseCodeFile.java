@@ -15,7 +15,6 @@ import twg2.io.json.Json;
 import twg2.parser.codeParser.analytics.ParseTimes;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.analytics.ParserActionLogger;
-import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.codeParser.codeStats.ParseDirectoryCodeFiles;
 import twg2.parser.language.CodeLanguage;
 import twg2.parser.language.CodeLanguageOptions;
@@ -45,16 +44,16 @@ public class ParseCodeFile {
 	public static CodeFileSrc parseFile(File file, FileReadUtil fileReader, PerformanceTrackers perfTracking) throws IOException {
 		String fileStr = file.toString();
 		var perfTracker = perfTracking != null ? perfTracking.getOrCreateParseTimes(fileStr) : null;
-		var stepsTracker = perfTracking != null ? perfTracking.getOrCreateStepDetails(fileStr) : null;
+		var stepsTracker = perfTracking != null ? perfTracking.getOrCreateParseActions(fileStr) : null;
 		long start = (perfTracker != null ? System.nanoTime() : 0);
 
 		char[] src = fileReader.readChars(new FileInputStream(file));
 
-		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
-
 		if(perfTracker != null) {
-			perfTracker.setActionTime(TrackerAction.READ, System.nanoTime() - start);
+			perfTracker.setTimeRead(System.nanoTime() - start);
 		}
+
+		if(perfTracking != null) { perfTracking.setSrcSize(fileStr, src.length); }
 
 		String fileName = file.getName();
 		String fileExt = StringSplit.lastMatch(fileName, '.');

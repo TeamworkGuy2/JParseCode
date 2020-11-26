@@ -3,7 +3,6 @@ package twg2.parser.codeParser.analytics;
 import java.io.IOException;
 import java.util.Map;
 
-import twg2.dataUtil.dataUtils.EnumError;
 import twg2.io.files.FileUtil;
 import twg2.io.json.stringify.JsonStringify;
 import twg2.parser.output.JsonWritableSig;
@@ -15,17 +14,6 @@ import twg2.text.stringUtils.StringPad;
  * @since 2016-09-07
  */
 public class ParseTimes implements JsonWritableSig {
-
-
-	public static enum TrackerAction {
-		SETUP,
-		READ,
-		TOKENIZE,
-		EXTRACT_AST;
-	}
-
-
-
 	long setupNs;
 	long readNs;
 	long tokenizeNs;
@@ -57,23 +45,23 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public void setActionTime(TrackerAction action, long timeNanos) {
-		switch(action) {
-		case SETUP:
-			this.setupNs = timeNanos;
-			break;
-		case READ:
-			this.readNs = timeNanos;
-			break;
-		case TOKENIZE:
-			this.tokenizeNs = timeNanos;
-			break;
-		case EXTRACT_AST:
-			this.extractAstNs = timeNanos;
-			break;
-		default:
-			throw EnumError.unknownValue(action, TrackerAction.class);
-		}
+	public void setTimeSetup(long setupNanos) {
+		this.setupNs = setupNanos;
+	}
+
+
+	public void setTimeRead(long readNanos) {
+		this.readNs = readNanos;
+	}
+
+
+	public void setTimeTokenize(long tokenizeNanos) {
+		this.tokenizeNs = tokenizeNanos;
+	}
+
+
+	public void setTimeExtractAst(long extractAstNanos) {
+		this.extractAstNs = extractAstNanos;
 	}
 
 
@@ -104,7 +92,7 @@ public class ParseTimes implements JsonWritableSig {
 
 
 	public String toString(String srcName, boolean includeClassName) {
-		return (includeClassName ? "parserPerformance: { " : "") +
+		return (includeClassName ? "parseTimes: { " : "") +
 				(srcName != null ? ("file: " + srcName + ", ") : "") +
 				"setup: " + roundNsToMs(this.setupNs) + ", " +
 				"read: " + roundNsToMs(this.readNs) + ", " +
@@ -115,7 +103,7 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public static final void toJsons(Map<String, ParseTimes> fileParseTimes, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
+	public static void toJsons(Map<String, ParseTimes> fileParseTimes, boolean includeSurroundingBrackets, Appendable dst, WriteSettings st) throws IOException {
 		if(includeSurroundingBrackets) { dst.append("[\n"); }
 		JsonStringify.inst.joinConsume(fileParseTimes.entrySet(), ",\n", dst, (entry) -> {
 			var stat = entry.getValue();
@@ -126,14 +114,13 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public static final String toStrings(Map<String, ParseTimes> fileParseTimes) {
+	public static String toStrings(Map<String, ParseTimes> fileParseTimes) {
 		long total = 0;
 		var sb = new StringBuilder();
 
 		for(var entry : fileParseTimes.entrySet()) {
 			var stat = entry.getValue();
-			long subtotal = stat.setupNs + stat.readNs + stat.tokenizeNs + stat.extractAstNs;
-			total += subtotal;
+			total += stat.getTotalNs();
 
 			String fileName = FileUtil.getFileNameWithoutExtension(entry.getKey());
 			fileName = '"' + fileName.substring(0, Math.min(30, fileName.length())) + '"';
@@ -148,8 +135,13 @@ public class ParseTimes implements JsonWritableSig {
 	}
 
 
-	public static String roundNsToMs(long ns) {
-		return String.format("%.2f", ns/1000000D);
+	public static String roundNsToMs(long nanos) {
+		return String.format("%.2f", nanos / 1000000D);
+	}
+
+
+	public static String roundNsToMs(long nanos, int decimalPlaces) {
+		return String.format("%." + decimalPlaces + "f", nanos / 1000000D);
 	}
 
 }

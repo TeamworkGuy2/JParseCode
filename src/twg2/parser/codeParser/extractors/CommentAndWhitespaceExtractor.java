@@ -32,16 +32,16 @@ import twg2.treeLike.simpleTree.SimpleTree;
  */
 public class CommentAndWhitespaceExtractor {
 
-	public static CodeFileSrc buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, char[] src, int srcOff, int srcLen) throws IOException {
+	public static CodeFileSrc buildCommentsAndWhitespaceTreeFromFileExtension(String srcName, String fileExtension, boolean reusable, char[] src, int srcOff, int srcLen) throws IOException {
 		EnumSet<CommentStyle> commentStyle = CommentStyle.fromFileExtension(fileExtension);
 
-		return buildCommentsAndWhitespaceTree(commentStyle, srcName, src, srcOff, srcLen);
+		return buildCommentsAndWhitespaceTree(reusable, commentStyle, srcName, src, srcOff, srcLen);
 	}
 
 
-	public static CodeFileSrc buildCommentsAndWhitespaceTree(EnumSet<CommentStyle> style, String srcName, char[] src, int srcOff, int srcLen) throws IOException {
-		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript();
-		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(style);
+	public static CodeFileSrc buildCommentsAndWhitespaceTree(boolean reusable, EnumSet<CommentStyle> style, String srcName, char[] src, int srcOff, int srcLen) throws IOException {
+		CharParserFactory stringParser = CodeStringTokenizer.createStringTokenizerForJavascript(reusable);
+		CharParserFactory commentParser = CommentTokenizer.createCommentTokenizer(reusable, style);
 
 		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 		parsers.add(commentParser, CodeTokenizer.ofType(CodeTokenType.COMMENT));
@@ -69,6 +69,7 @@ public class CommentAndWhitespaceExtractor {
 			}
 
 			var lineTokens = tokensPerLine.get(i);
+			// TODO performance of stream + lambda for every line
 			if(lineTokens.size() > 0 && lineTokens.stream().allMatch((t) -> t.getTokenType() == CodeTokenType.COMMENT)) {
 				if(lineTokens.size() > 1) {
 					// TODO this was causing issues parsing a particular project that had a number of multiple-comments-per-line files

@@ -26,6 +26,7 @@ public class JavaFileTokenizer {
 	 * !!!!==== NOTE: this has a huge impact on performance (last tested 0.20.0 - 2020-11-21) ====!!!!
 	 */
 	public static int maxGenericTypeDepth = 3;
+	public static boolean reuseCharParsers = true;
 
 
 	public static CodeTokenizer createJavaTokenizer() {
@@ -35,17 +36,17 @@ public class JavaFileTokenizer {
 
 	// this gets call once per file parsed
 	public static PairList<CharParserFactory, TextTransformer<CodeTokenType>> createJavaTokenizers() {
-		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(maxGenericTypeDepth);
-		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(reuseCharParsers, maxGenericTypeDepth);
+		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer(reuseCharParsers);
 
 		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 
-		parsers.add(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
-		parsers.add(CodeStringTokenizer.createStringTokenizerForJava(), ofType(CodeTokenType.STRING));
+		parsers.add(CommentTokenizer.createCommentTokenizer(reuseCharParsers, CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
+		parsers.add(CodeStringTokenizer.createStringTokenizerForJava(reuseCharParsers), ofType(CodeTokenType.STRING));
 		//parsers.add(CodeBlockTokenizer.createBlockTokenizer('{', '(', '<'), ofType(CodeTokenType.BLOCK)); // this appears ~8% SLOWER in total program time (2020-11-21)
-		parsers.add(CodeBlockTokenizer.createBlockTokenizer('{'), ofType(CodeTokenType.BLOCK));
-		parsers.add(CodeBlockTokenizer.createBlockTokenizer('('), ofType(CodeTokenType.BLOCK));
-		parsers.add(CodeBlockTokenizer.createBlockTokenizer('<'), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '{'), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '('), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '<'), ofType(CodeTokenType.BLOCK));
 		// no annotation parser, instead we parse
 		parsers.add(identifierParser, (text, off, len) -> {
 			return JavaKeyword.check.isKeyword(text.toString()) ? CodeTokenType.KEYWORD : CodeTokenType.IDENTIFIER; // possible bad performance
@@ -61,14 +62,9 @@ public class JavaFileTokenizer {
 	// TODO only partially implemented
 	static CharParserFactory createOperatorTokenizer() {
 		CharParserFactory operatorParser = new StringParserBuilder("Java operator")
-			//.addCharLiteralMarker("+-=?:", '+', '-', '=', '?', ':') // this is SLOWER!! IDK why!?! (2020-11-21)
-			.addCharLiteralMarker("+", '+')
-			.addCharLiteralMarker("-", '-')
-			.addCharLiteralMarker("=", '=')
-			.addCharLiteralMarker("?", '?')
-			.addCharLiteralMarker(":", ':')
+			.addCharLiteralMarker("+-=?:", '+', '-', '=', '?', ':')
 			//.addCharLiteralMarker("*", '*') // causes issue parsing comments..?
-			.build();
+			.build(reuseCharParsers);
 		return operatorParser;
 	}
 
@@ -80,7 +76,7 @@ public class JavaFileTokenizer {
 			.addCharLiteralMarker(";", ';')
 			.addCharLiteralMarker("@", '@')
 			.addStringLiteralMarker("::", "::") // TODO technically not a separator, integrate with identifier parser
-			.build();
+			.build(reuseCharParsers);
 		return annotationParser;
 	}
 

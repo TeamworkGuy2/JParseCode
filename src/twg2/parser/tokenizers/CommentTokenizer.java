@@ -16,7 +16,7 @@ public final class CommentTokenizer {
 	private CommentTokenizer() { throw new AssertionError("cannot instantiate static class CommentTokenizer"); }
 
 
-	public static final CharParserFactory createCommentTokenizer(EnumSet<CommentStyle> style) {
+	public static CharParserFactory createCommentTokenizer(boolean reusable, EnumSet<CommentStyle> style) {
 		StringParserBuilder commentParser = new StringParserBuilder("comment " + style);
 		int markerCount = 0;
 
@@ -38,7 +38,7 @@ public final class CommentTokenizer {
 			throw new IllegalArgumentException("comment parser style enum set '" + style + "' is not valid, must contain at least one of '" + validCommentSet + "'");
 		}
 
-		return commentParser.build();
+		return commentParser.build(reusable);
 	}
 
 }

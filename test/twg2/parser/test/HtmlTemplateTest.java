@@ -86,7 +86,8 @@ public class HtmlTemplateTest {
 
 
 	private static final CodeTokenizer createHtmlParser() {
-		CharParserFactory parser = createHtmlNamedVarParser("$", "importHtml", "$");
+		boolean reuseCharParsers = true;
+		CharParserFactory parser = createHtmlNamedVarParser("$", "importHtml", "$", reuseCharParsers);
 		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 		parsers.add(parser, CodeTokenizer.ofType(CodeTokenType.IDENTIFIER));
 
@@ -114,7 +115,7 @@ public class HtmlTemplateTest {
 	}
 
 
-	public static final CharParserFactory createHtmlNamedVarParser(String startMark, String templateName, String endMark) {
+	public static final CharParserFactory createHtmlNamedVarParser(String startMark, String templateName, String endMark, boolean reuseCharParsers) {
 		var charParsers = new CharParserMatchable[] {
 			CharConditionPipe.createPipeAllRequired("HTML Named Var Template", Arrays.asList(
 				new StringConditions.Literal("start tag", new String[] { startMark + templateName + "(name=" }, Inclusion.INCLUDE),
@@ -123,8 +124,9 @@ public class HtmlTemplateTest {
 				new StringConditions.Literal("end tag", new String[] { ")" + endMark }, Inclusion.INCLUDE)
 			))
 		};
-		CharParserFactory htmlParser = new CharParserMatchableFactory<CharParserMatchable>("HTML Named Var Template", false, charParsers);
-		return htmlParser;
+		return reuseCharParsers ?
+			new CharParserMatchableFactory.Reusable<>("HTML Named Var Template", false, charParsers) :
+			new CharParserMatchableFactory<>("HTML Named Var Template", false, charParsers);
 	}
 
 

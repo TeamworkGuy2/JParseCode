@@ -42,20 +42,19 @@ public class MainParser {
 		if(logPerformance) {
 			System.out.println("FileTokenizer identifier checks=" + twg2.parser.codeParser.csharp.CsFileTokenizer.cnt);
 			System.out.println("CodeTokenizer frags=" + (twg2.parser.tokenizers.CodeTokenizer.Stats.parentFrags + twg2.parser.tokenizers.CodeTokenizer.Stats.frags) + " (parentFrags=" + twg2.parser.tokenizers.CodeTokenizer.Stats.parentFrags + ", frags=" + twg2.parser.tokenizers.CodeTokenizer.Stats.frags + ")");
-			System.out.println("BlockExtractor accept token cnt=" + twg2.parser.codeParser.extractors.BlockExtractor.acceptNextCalls);
-			System.out.println("TypeExtractor isPossiblyType cnt=" + twg2.parser.codeParser.extractors.TypeExtractor.isPossiblyType);
+			System.out.println("BlockExtractor.acceptNext() cnt=" + twg2.parser.codeParser.extractors.BlockExtractor.acceptNextCalls);
+			System.out.println("TypeExtractor.isPossiblyType() cnt=" + twg2.parser.codeParser.extractors.TypeExtractor.isPossiblyType);
 			System.out.println("CsBlockParser tree cnt=" + twg2.parser.codeParser.csharp.CsBlockParser.treeCount);
 			System.out.println("CsBlockParser loop cnt=" + twg2.parser.codeParser.csharp.CsBlockParser.blockLoopCount);
-			System.out.println("CsAnnotationExtractor accept token cnt=" + twg2.parser.codeParser.csharp.CsAnnotationExtractor.acceptNextCalls);
-			System.out.println("JavaAnnotationExtractor accept token cnt=" + twg2.parser.codeParser.java.JavaAnnotationExtractor.acceptNextCalls);
+			System.out.println("AnnotationExtractor accept token cnt=" + (twg2.parser.codeParser.csharp.CsAnnotationExtractor.acceptNextCalls + twg2.parser.codeParser.java.JavaAnnotationExtractor.acceptNextCalls) + " (c#=" + twg2.parser.codeParser.csharp.CsAnnotationExtractor.acceptNextCalls + ", Java=" + twg2.parser.codeParser.java.JavaAnnotationExtractor.acceptNextCalls + ")");
 
 			System.out.println("\n==== Parse Timings (slowest 10 in millis) ====");
 			var perfData = perfTracking.getTopParseTimes(true, -10);
-			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
+			System.out.println(PerformanceTrackers.toString(perfData));
 
 			System.out.println("\n==== Parse Step Details (most 10 in millis) ====");
-			perfData = perfTracking.getTopParseStepDetails(true, -10);
-			System.out.println(PerformanceTrackers.toString(perfData.iterator()));
+			perfData = perfTracking.getTopParseActions(true, -10);
+			System.out.println(PerformanceTrackers.toString(perfData));
 
 			//System.out.println("\n==== All Performance Data ====\n");
 			//var writeSettings = new twg2.parser.output.WriteSettings(true, false, false, true);

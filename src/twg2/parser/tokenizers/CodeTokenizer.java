@@ -3,13 +3,12 @@ package twg2.parser.tokenizers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import twg2.collections.dataStructures.PairList;
+import twg2.functions.TriFunction;
 import twg2.parser.codeParser.analytics.ParserActionLogger;
-import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.fragment.TextToken;
@@ -76,8 +75,8 @@ public interface CodeTokenizer {
 				var res = parser.tokenizeDocument(params.src(), params.srcOff(), params.srcLen(), fileName, params.parserStepsTracker());
 
 				if(params.parseTimes() != null) {
-					params.parseTimes().setActionTime(TrackerAction.SETUP, setupDone - start);
-					params.parseTimes().setActionTime(TrackerAction.TOKENIZE, System.nanoTime() - setupDone);
+					params.parseTimes().setTimeSetup(setupDone - start);
+					params.parseTimes().setTimeTokenize(System.nanoTime() - setupDone);
 				}
 
 				return res;
@@ -108,7 +107,7 @@ public interface CodeTokenizer {
 		var docRoot = new CodeToken(CodeTokenType.DOCUMENT, docTextFragment, docTextFragment.getText(0, src, srcOff, srcLen).toString());
 
 		SimpleTree<CodeToken> docTree = tokenizeDocument(srcName, input, src, srcOff, srcLen, stepsDetails, tokenizers, docRoot,
-				(type, frag) -> new CodeToken(type, frag, frag.getText(0, src, srcOff, srcLen).toString()),
+				(type, frag, text) -> new CodeToken(type, frag, text),
 				(docFrag) -> docFrag.getTokenType().isCompound(),
 				(parent, child) -> parent != child && parent.getToken().contains(child.getToken()));
 
@@ -135,7 +134,7 @@ public interface CodeTokenizer {
 		ParserActionLogger stepsDetails,
 		PairList<? extends CharParserFactory, ? extends TextTransformer<T>> tokenizers,
 		D root,
-		BiFunction<T, TextFragmentRefImpl, ? extends D> fragmentConstructor,
+		TriFunction<T, TextFragmentRefImpl, String, ? extends D> fragmentConstructor,
 		Function<? super D, Boolean> isParent,
 		IsParentChild<? super D> isInside
 	) {
@@ -151,7 +150,7 @@ public interface CodeTokenizer {
 				T elemType = transformer.apply(text, off, len);
 				var textFragment = new TextFragmentRefImpl(off, off + len, lineStart, columnStart, lineEnd, columnEnd);
 
-				D docFrag = fragmentConstructor.apply(elemType, textFragment);
+				D docFrag = fragmentConstructor.apply(elemType, textFragment, text);
 
 				if(isParent.apply(docFrag)) {
 					Stats.parentFrags++;
@@ -178,6 +177,10 @@ public interface CodeTokenizer {
 		while(input.hasNext()) {
 			char ch = input.nextChar();
 			parser.parse(ch, input);
+		}
+
+		if(stepsDetails != null) {
+			stepsDetails.logCharParserFactoryReuse(tokenizers.keyList());
 		}
 
 		return tree;

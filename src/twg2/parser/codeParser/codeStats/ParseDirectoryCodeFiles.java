@@ -132,6 +132,7 @@ public class ParseDirectoryCodeFiles {
 
 
 	public static ParseDirectoryCodeFiles parseFileStats(Path relativePath, List<Path> files, FileReadUtil fileReader) throws IOException {
+		boolean reuseCharParsers = true;
 		List<ParsedFileStats> filesStats = new ArrayList<>();
 
 		for(Path path : files) {
@@ -147,7 +148,7 @@ public class ParseDirectoryCodeFiles {
 				filesStats.add(parsedStats);
 			}
 			else {
-				var parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), src, srcOff, srcLen);
+				var parsedFileInfo = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTreeFromFileExtension(fileNameExt.getKey(), fileNameExt.getValue(), reuseCharParsers, src, srcOff, srcLen);
 				var parsedStats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats(file.toString(), src, srcOff, srcLen, parsedFileInfo.lineStartOffsets, parsedFileInfo.astTree);
 				filesStats.add(parsedStats);
 			}

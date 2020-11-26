@@ -26,6 +26,7 @@ public class CsFileTokenizer {
 	 * !!!!==== NOTE: this has a huge impact on performance (last tested 0.20.0 - 2020-11-21) ====!!!!
 	 */
 	public static int maxGenericTypeDepth = 3;
+	public static boolean reuseCharParsers = true;
 	public static int cnt = 0;
 
 
@@ -36,16 +37,16 @@ public class CsFileTokenizer {
 
 	// this gets call once per file parsed
 	public static PairList<CharParserFactory, TextTransformer<CodeTokenType>> createCsTokenizers() {
-		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(maxGenericTypeDepth);
-		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer();
+		var identifierParser = IdentifierTokenizer.createIdentifierWithGenericTypeTokenizer(reuseCharParsers, maxGenericTypeDepth);
+		var numericLiteralParser = NumberTokenizer.createNumericLiteralTokenizer(reuseCharParsers);
 
 		var parsers = new PairList<CharParserFactory, TextTransformer<CodeTokenType>>();
 
-		parsers.add(CommentTokenizer.createCommentTokenizer(CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
-		parsers.add(CodeStringTokenizer.createStringTokenizerForCSharp(), ofType(CodeTokenType.STRING));
-		//parsers.add(CodeBlockTokenizer.createBlockTokenizer('{', '('), ofType(CodeTokenType.BLOCK)); // this appears ~8% SLOWER in total program time (2020-11-21)
-		parsers.add(CodeBlockTokenizer.createBlockTokenizer('{'), ofType(CodeTokenType.BLOCK));
-		parsers.add(CodeBlockTokenizer.createBlockTokenizer('('), ofType(CodeTokenType.BLOCK));
+		parsers.add(CommentTokenizer.createCommentTokenizer(reuseCharParsers, CommentStyle.multiAndSingleLine()), ofType(CodeTokenType.COMMENT));
+		parsers.add(CodeStringTokenizer.createStringTokenizerForCSharp(reuseCharParsers), ofType(CodeTokenType.STRING));
+		//parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '{', '('), ofType(CodeTokenType.BLOCK)); // this appears ~8% SLOWER in total program time (2020-11-21)
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '{'), ofType(CodeTokenType.BLOCK));
+		parsers.add(CodeBlockTokenizer.createBlockTokenizer(reuseCharParsers, '('), ofType(CodeTokenType.BLOCK));
 		parsers.add(createAnnotationTokenizer(), ofType(CodeTokenType.BLOCK));
 		parsers.add(identifierParser, (text, off, len) -> {
 			cnt++;
@@ -64,7 +65,7 @@ public class CsFileTokenizer {
 		CharParserFactory annotationParser = new StringParserBuilder("C# annotation")
 			.addStartEndNotPrecededByMarkers("block [ ]", '[', '[', ']', Inclusion.INCLUDE)
 			.isCompound(true)
-			.build();
+			.build(reuseCharParsers);
 		return annotationParser;
 	}
 
@@ -72,14 +73,9 @@ public class CsFileTokenizer {
 	// TODO only partially implemented
 	public static CharParserFactory createOperatorTokenizer() {
 		CharParserFactory operatorParser = new StringParserBuilder("C# operator")
-			//.addCharLiteralMarker("+-=?:", '+', '-', '=', '?', ':') // this is SLOWER!! IDK why!?! (2020-11-21)
-			.addCharLiteralMarker("+", '+')
-			.addCharLiteralMarker("-", '-')
-			.addCharLiteralMarker("=", '=')
-			.addCharLiteralMarker("?", '?')
-			.addCharLiteralMarker(":", ':')
+			.addCharLiteralMarker("+-=?:", '+', '-', '=', '?', ':')
 			//.addCharLiteralMarker("*", '*') // causes issue parsing comments..?
-			.build();
+			.build(reuseCharParsers);
 		return operatorParser;
 	}
 
@@ -89,7 +85,7 @@ public class CsFileTokenizer {
 		CharParserFactory annotationParser = new StringParserBuilder("C# separator")
 			//.addCharLiteralMarker(',')
 			.addCharLiteralMarker(";", ';')
-			.build();
+			.build(reuseCharParsers);
 		return annotationParser;
 	}
 

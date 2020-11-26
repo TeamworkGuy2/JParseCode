@@ -16,8 +16,14 @@ public class NumberParserTest {
 
 	@Test
 	public void numberParser() {
+		numberParser(false);
+		numberParser(true);
+	}
+
+
+	private void numberParser(boolean reusable) {
 		String name = "numberParser";
-		CharParserMatchableFactory<CharParser> parser = NumberTokenizer.createNumericLiteralTokenizer();
+		CharParserMatchableFactory<CharParser> parser = NumberTokenizer.createNumericLiteralTokenizer(reusable);
 
 		parseTest(false, true, name, parser.createParser(), "t30)", "30");
 		parseTest(false, true, name, parser.createParser(), " 30)", "30");

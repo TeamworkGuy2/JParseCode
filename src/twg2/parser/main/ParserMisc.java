@@ -16,7 +16,6 @@ import twg2.io.files.FileFormatException;
 import twg2.io.files.FileReadUtil;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
-import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.project.ProjectClassSet;
@@ -117,7 +116,7 @@ public class ParserMisc {
 					}
 
 					if(perfTracker != null) {
-						perfTracker.setActionTime(TrackerAction.EXTRACT_AST, System.nanoTime() - start);
+						perfTracker.setTimeExtractAst(System.nanoTime() - start);
 					}
 
 					return parsedFile;
@@ -152,7 +151,7 @@ public class ParserMisc {
 					}
 
 					if(perfTracker != null) {
-						perfTracker.setActionTime(TrackerAction.EXTRACT_AST, System.nanoTime() - start);
+						perfTracker.setTimeExtractAst(System.nanoTime() - start);
 					}
 				} catch(Exception e) {
 					throw new FileFormatException(parsedFile.srcName, null, e);

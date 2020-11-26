@@ -1,20 +1,18 @@
 package twg2.parser.codeParser.analytics;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import twg2.collections.builder.ListBuilder;
-import twg2.parser.codeParser.analytics.ParseTimes.TrackerAction;
 import twg2.parser.output.JsonWritableSig;
 import twg2.parser.output.WriteSettings;
 import twg2.text.stringUtils.StringPad;
 import twg2.text.stringUtils.StringSplit;
-import twg2.text.tokenizer.analytics.ParserAction;
 import twg2.tuple.Tuple3;
 import twg2.tuple.Tuples;
 
@@ -31,24 +29,12 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public void log(TrackerAction action, String srcName, long timeNanos) {
-		var stat = getOrCreateParseStats(srcName, null);
-		stat.getValue0().setActionTime(action, timeNanos);
-	}
-
-
-	public void log(ParserAction action, String srcName, long detail) {
-		var stat = getOrCreateParseStats(srcName, null);
-		stat.getValue1().logCount(action, detail);
-	}
-
-
 	public ParseTimes getOrCreateParseTimes(String srcName) {
 		return getOrCreateParseStats(srcName, null).getValue0();
 	}
 
 
-	public ParserActionLogger getOrCreateStepDetails(String srcName) {
+	public ParserActionLogger getOrCreateParseActions(String srcName) {
 		return getOrCreateParseStats(srcName, null).getValue1();
 	}
 
@@ -78,25 +64,12 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	public List<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> getTopParseStepDetails(boolean sortAscending, int size) {
+	public List<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> getTopParseActions(boolean sortAscending, int size) {
 		var list = ListBuilder.mutable(
 			this.fileStats.entrySet().stream()
-				.sorted(PerformanceTrackers.createParseStepDetailsSorter(sortAscending)).iterator()
+				.sorted(PerformanceTrackers.createParseActionsSorter(sortAscending)).iterator()
 		);
 		return (size < 0 ? list.subList(list.size() + size, list.size()) : list.subList(0, size));
-	}
-
-
-	private Tuple3<ParseTimes, ParserActionLogger, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
-		synchronized(fileStats) {
-			var stats = fileStats.get(srcName);
-			if(stats == null) {
-				var inst = Tuples.of(new ParseTimes(), new ParserActionLogger(), fileSize);
-				fileStats.put(srcName, inst);
-				return inst;
-			}
-			return stats;
-		}
 	}
 
 
@@ -119,28 +92,45 @@ public class PerformanceTrackers implements JsonWritableSig {
 
 	@Override
 	public String toString() {
-		return toString(fileStats.entrySet().iterator());
+		return toString(fileStats.entrySet());
 	}
 
 
-	public static final String toString(Iterator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> parseStatsIter) {
+	private Tuple3<ParseTimes, ParserActionLogger, Integer> getOrCreateParseStats(String srcName, Integer fileSize) {
+		synchronized(fileStats) {
+			var stats = fileStats.get(srcName);
+			if(stats == null) {
+				stats = Tuples.of(new ParseTimes(), new ParserActionLogger(), fileSize);
+				fileStats.put(srcName, stats);
+			}
+			return stats;
+		}
+	}
+
+
+	public static String toString(Collection<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> parseStats) {
 		var sb = new StringBuilder();
-		while(parseStatsIter.hasNext()) {
-			var stat = parseStatsIter.next();
+
+		for(var stat : parseStats) {
 			var key = stat.getKey();
 			var parseTimes = stat.getValue().getValue0();
-			var stepDetails = stat.getValue().getValue1();
-			var fileName = StringPad.padRight(StringSplit.lastMatch(key, '\\'), 40, ' ');
-			sb.append(fileName).append(" : ").append(parseTimes.toString(null, false));
+			var parseActions = stat.getValue().getValue1();
+			var fileSizeBytes = stat.getValue().getValue2();
+			var fileName = StringPad.padRight(StringSplit.lastMatch(key, '\\'), 32, ' ');
+
+			sb.append(fileName).append(" : ");
+			sb.append("bytes: ").append(fileSizeBytes).append(", ");
+			sb.append(parseTimes.toString(null, false));
 			sb.append(", ");
-			sb.append(stepDetails.toString(null, false));
+			sb.append(parseActions.toString(null, false));
 			sb.append('\n');
 		}
+
 		return sb.toString();
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseTimesSorter(boolean sortAscending) {
+	private static Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseTimesSorter(boolean sortAscending) {
 		if(sortAscending) {
 			return (a, b) -> (int)(a.getValue().getValue0().getTotalNs() - b.getValue().getValue0().getTotalNs());
 		}
@@ -150,12 +140,12 @@ public class PerformanceTrackers implements JsonWritableSig {
 	}
 
 
-	private static final Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseStepDetailsSorter(boolean sortAscending) {
+	private static Comparator<Entry<String, Tuple3<ParseTimes, ParserActionLogger, Integer>>> createParseActionsSorter(boolean sortAscending) {
 		if(sortAscending) {
-			return (a, b) -> (int)(a.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS) - b.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS));
+			return (a, b) -> (int)(a.getValue().getValue1().countCompoundCharParserMatch - b.getValue().getValue1().countCompoundCharParserMatch);
 		}
 		else {
-			return (a, b) -> (int)(b.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS) - a.getValue().getValue1().getLogCount(ParserAction.CHAR_CHECKS));
+			return (a, b) -> (int)(b.getValue().getValue1().countCompoundCharParserMatch - a.getValue().getValue1().countCompoundCharParserMatch);
 		}
 	}
 

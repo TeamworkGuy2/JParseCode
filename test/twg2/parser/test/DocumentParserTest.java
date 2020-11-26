@@ -22,6 +22,7 @@ import twg2.treeLike.simpleTree.SimpleTreeUtil;
  * @since 2015-5-27
  */
 public class DocumentParserTest {
+	public static boolean reuseCharParsers = true;
 	EnumSet<CommentStyle> style = CommentStyle.multiAndSingleLine();
 
 	@Test
@@ -35,7 +36,7 @@ public class DocumentParserTest {
 				"line 5 - comment */\n" +
 				"'last \\'line\\' string' ending\n" +
 				"";
-		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, srcNameBase + "-1", src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(reuseCharParsers, style, srcNameBase + "-1", src.toCharArray(), 0, src.length());
 
 		// TODO debugging
 		TreePrint.printTree(parserRes.astTree, (f) -> f.getText(), System.out);
@@ -64,7 +65,7 @@ public class DocumentParserTest {
 				"line 5 - comment */ }\n" +
 				"\r\n" +
 				"";
-		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, "parseStats-1", src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(reuseCharParsers, style, "parseStats-1", src.toCharArray(), 0, src.length());
 
 		var stats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats("parseStats-1", src.toCharArray(), 0, src.length(), parserRes.lineStartOffsets, parserRes.astTree);
 		Assert.assertEquals(8, stats.getTotalLineCount());
@@ -83,7 +84,7 @@ public class DocumentParserTest {
 				"line 5 - comment */\n" +
 				"'last \\'line\\' string' ending\n" +
 				"";
-		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(style, "parseStats-2", src.toCharArray(), 0, src.length());
+		CodeFileSrc parserRes = CommentAndWhitespaceExtractor.buildCommentsAndWhitespaceTree(reuseCharParsers, style, "parseStats-2", src.toCharArray(), 0, src.length());
 
 		var stats = CommentAndWhitespaceExtractor.calcCommentsAndWhitespaceLinesTreeStats("parseStats-1", src.toCharArray(), 0, src.length(), parserRes.lineStartOffsets, parserRes.astTree);
 		Assert.assertEquals(8, stats.getTotalLineCount());

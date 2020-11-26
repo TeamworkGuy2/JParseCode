@@ -17,13 +17,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import twg2.ast.interm.classes.ClassAst;
 import twg2.collections.builder.MapBuilder;
 import twg2.collections.dataStructures.PairList;
-import twg2.dateTimes.TimeUnitUtil;
 import twg2.io.fileLoading.DirectorySearchInfo;
 import twg2.io.fileLoading.SourceFiles;
 import twg2.io.files.FileFormatException;
@@ -33,6 +31,7 @@ import twg2.logging.LogPrefixFormat;
 import twg2.logging.LogService;
 import twg2.logging.LogServiceImpl;
 import twg2.parser.codeParser.BlockType;
+import twg2.parser.codeParser.analytics.ParseTimes;
 import twg2.parser.codeParser.analytics.PerformanceTrackers;
 import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -121,18 +120,52 @@ public class ParserWorkflow {
 
 		long end = System.nanoTime();
 
+		String parseTimeBreakdownStr = null;
 		if(perfTracking != null) {
+			var parserStats = perfTracking.getParseStats().entrySet();
+
 			// print out file reader stats
 			System.out.println(StringJoin.join(fileReaders.keySet(), "\n", (k) -> k.getStats().toString()));
+
 			// print out total files stats
-			var fileSizes = perfTracking.getParseStats().entrySet().stream().mapToInt((entry) -> entry.getValue().getValue2());
+			var fileSizes = parserStats.stream().mapToInt((entry) -> entry.getValue().getValue2());
 			System.out.println("Loaded " + perfTracking.getParseStats().size() + " files, total " + fileSizes.sum() + " bytes");
+
+			var totalCompoundCharParserMatch = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue1().countCompoundCharParserMatch).sum();
+			var totalCompoundCharParserAcceptNext = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue1().countCompoundCharParserAcceptNext).sum();
+			var totalCreateParser = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue1().countCreateParser).sum();
+			var totalTextFragmentsConsumed = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue1().countTextFragmentsConsumed).sum();
+			var maxSizePools = new HashMap<String, Integer>();
+			var totalParserReuseCount = parserStats.stream().mapToLong((entry) -> {
+				var debugging = entry.getValue().getValue1();
+				// track the largest pool sizes
+				for(int i = 0, size = debugging.reusableParserFactories.size(); i < size; i++) {
+					var name = debugging.reusableParserFactories.get(i).name();
+					var maxPool = debugging.reusableParserFactories.get(i).getPoolPeekSize();
+					var existingMax = maxSizePools.get(name);
+					if(existingMax == null || maxPool > existingMax) {
+						maxSizePools.put(name, maxPool);
+					}
+				}
+				return debugging.totalParserReuseCount;
+			}).sum();
+
+			var readNs = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue0().getReadNs()).sum();
+			var setupNs = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue0().getSetupNs()).sum();
+			var tokenizeNs = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue0().getTokenizeNs()).sum();
+			var extractAstNs = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue0().getExtractAstNs()).sum();
+			var totalNs = parserStats.stream().mapToLong((entry) -> entry.getValue().getValue0().getTotalNs()).sum();
+			parseTimeBreakdownStr = " (read=" + ParseTimes.roundNsToMs(readNs) + " ms, setup=" + ParseTimes.roundNsToMs(setupNs) + " ms, tokenize=" + ParseTimes.roundNsToMs(tokenizeNs) + " ms, extractAst=" + ParseTimes.roundNsToMs(extractAstNs) + " ms, total=" + ParseTimes.roundNsToMs(totalNs) + " ms)" +
+				"\ncompoundCharParserMatch=" + totalCompoundCharParserMatch +
+				"\ncompoundCharParserAcceptNext=" + totalCompoundCharParserAcceptNext +
+				"\ncreateParser=" + totalCreateParser +
+				"\ntextFragmentsConsumed=" + totalTextFragmentsConsumed +
+				"\ntotalParserReuseCount=" + totalParserReuseCount + " (peak pool sizes: " + maxSizePools + ")";
 		}
 
 		// TODO debugging
-		var abbr = TimeUnitUtil.abbreviation(TimeUnit.MILLISECONDS, true, false);
-		System.out.println("load() time: " + (int)TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (postLoad - start), TimeUnit.MILLISECONDS) + " " + abbr);
-		System.out.println("parse() time: " + (int)TimeUnitUtil.convert(TimeUnit.NANOSECONDS, (end - postLoad), TimeUnit.MILLISECONDS) + " " + abbr);
+		System.out.println("load() time: " + ParseTimes.roundNsToMs(postLoad - start, 0) + " ms");
+		System.out.println("parse() time: " + ParseTimes.roundNsToMs(end - postLoad, 0) + " ms" + (parseTimeBreakdownStr != null ? parseTimeBreakdownStr : ""));
 
 		if(log != null) {
 			parseRes.log(log, logLevel, true, 1);

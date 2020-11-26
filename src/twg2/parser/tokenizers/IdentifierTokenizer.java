@@ -20,9 +20,11 @@ public class IdentifierTokenizer {
 	private IdentifierTokenizer() { throw new AssertionError("cannot instantiate static class IdentifierTokenizer"); }
 
 
-	public static CharParserFactory createIdentifierWithGenericTypeTokenizer(int maxGenericTypeDepth) {
+	public static CharParserFactory createIdentifierWithGenericTypeTokenizer(boolean reusable, int maxGenericTypeDepth) {
 		var typeStatementCond = GenericTypeTokenizer.createGenericTypeTokenizer(maxGenericTypeDepth, IdentifierTokenizer::createCompoundIdentifierTokenizer);
-		return new CharParserMatchableFactory<>("compound identifier with optional generic type", false, new CharParserMatchable[] { typeStatementCond });
+		return reusable ?
+			new CharParserMatchableFactory.Reusable<>("compound identifier with optional generic type", false, new CharParserMatchable[] { typeStatementCond }) :
+			new CharParserMatchableFactory<>("compound identifier with optional generic type", false, new CharParserMatchable[] { typeStatementCond });
 	}
 
 
