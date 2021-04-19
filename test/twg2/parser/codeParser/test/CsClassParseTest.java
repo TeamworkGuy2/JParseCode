@@ -151,7 +151,7 @@ public class CsClassParseTest {
 		Assert.assertEquals(CsBlock.CLASS, trackInfo.getBlockType());
 		Assert.assertEquals("ParserExamples.Models.TrackInfo", fullClassName);
 
-		Assert.assertEquals(ls("ISerializable", "IComparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
+		Assert.assertEquals(ls("BaseClass", "ISerializable", "IComparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
 
 		var fields = trackInfo.getFields();
 		assertField(fields, 0, fullClassName + ".Name", "string");

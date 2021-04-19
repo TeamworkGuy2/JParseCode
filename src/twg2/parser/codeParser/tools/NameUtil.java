@@ -49,4 +49,15 @@ public class NameUtil {
 		return resNames;
 	}
 
+
+	public static String joinFqNameExceptLast(List<String> names) {
+		int size = names.size() - 1;
+		var res = new StringBuilder();
+		for(int i = 0; i < size; i++) {
+			if(i > 0) { res.append('.'); }
+			res.append(names.get(i));
+		}
+		return res.toString();
+	}
+
 }

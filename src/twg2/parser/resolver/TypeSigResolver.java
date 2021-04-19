@@ -34,7 +34,8 @@ public class TypeSigResolver {
 			}
 		}
 
-		List<String> resolvedType = projFiles.resolveSimpleName(intermSig.getTypeName(), namespaceClass, missingNamespacesDst);
+		var resolvedClass = projFiles.resolveSimpleNameToClass(intermSig.getTypeName(), namespaceClass, missingNamespacesDst);
+		List<String> resolvedType = resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
 
 		if(resolvedType == null) {
 			resolvedType = ListBuilder.mutable(intermSig.getTypeName());

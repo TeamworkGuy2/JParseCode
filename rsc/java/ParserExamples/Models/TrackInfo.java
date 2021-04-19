@@ -11,7 +11,7 @@ import System.Runtime.Serialization;
 /// This class is mutable. And it is not thread-safe.
 /// </threadsafety>
 @DataContract
-public class TrackInfo implements Serializable, Comparable<TrackInfo> {
+public class TrackInfo extends BaseClass implements Serializable, Comparable<TrackInfo> {
 
 	/// <value>The track name.</value>
 	@DataMember

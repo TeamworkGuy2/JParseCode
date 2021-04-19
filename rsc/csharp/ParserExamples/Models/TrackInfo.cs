@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ParserExamples.Models {
-
+namespace ParserExamples.Models
+{
     /// <summary>
     /// A class representing a Track.
     /// </summary>
@@ -10,8 +10,8 @@ namespace ParserExamples.Models {
     /// This class is mutable. And it is not thread-safe.
     /// </threadsafety>
     [DataContract]
-    public class TrackInfo : ISerializable, IComparable<TrackInfo> {
-
+    public class TrackInfo : BaseClass, ISerializable, IComparable<TrackInfo>
+	{
         /// <value>The track name.</value>
         [DataMember]
         public string Name { get; set; }
@@ -41,5 +41,4 @@ namespace ParserExamples.Models {
             return tt;
         }
     }
-
 }

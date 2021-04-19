@@ -37,6 +37,7 @@ public class CsParseFilesTest {
 	private ClassAst.ResolvedImpl<CsBlock> trackSearchServiceDef;
 	private ClassAst.ResolvedImpl<CsBlock> albumInfoDef;
 	private ClassAst.ResolvedImpl<CsBlock> trackInfoDef;
+	private ClassAst.ResolvedImpl<CsBlock> baseClassDef;
 
 	@Parameter
 	private ProjectClassSet.Intermediate<CsBlock> projFiles;
@@ -46,13 +47,14 @@ public class CsParseFilesTest {
 		Path trackSearchServiceFile = Paths.get("rsc/csharp/ParserExamples/Services/ITrackSearchService.cs");
 		Path albumInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/AlbumInfo.cs");
 		Path trackInfoFile = Paths.get("rsc/csharp/ParserExamples/Models/TrackInfo.cs");
+		Path baseClassFile = Paths.get("rsc/csharp/ParserExamples/BaseClass.cs");
 		projFiles = new ProjectClassSet.Intermediate<CsBlock>();
 		// TODO until better solution for managing algorithm parallelism
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		ThreadLocal<FileReadUtil> fileReader = ThreadLocal.withInitial(() -> new FileReadUtil());
 
 		HashSet<List<String>> missingNamespaces = new HashSet<>();
-		ParserMisc.parseFileSet(ls(trackSearchServiceFile, albumInfoFile, trackInfoFile), projFiles, executor, fileReader, null);
+		ParserMisc.parseFileSet(ls(trackSearchServiceFile, albumInfoFile, trackInfoFile, baseClassFile), projFiles, executor, fileReader, null);
 		ProjectClassSet.Resolved<CsBlock> resFileSet = ProjectClassSet.resolveClasses(projFiles, CsBlock.CLASS, missingNamespaces);
 
 		List<CodeFileParsed.Resolved<CsBlock>> res = resFileSet.getCompilationUnitsStartWith(ls(""));
@@ -73,6 +75,9 @@ public class CsParseFilesTest {
 			else if("AlbumInfo".equals(simpleName)) {
 				albumInfoDef = classParsed;
 			}
+			else if("BaseClass".equals(simpleName)) {
+				baseClassDef = classParsed;
+			}
 			else {
 				throw new IllegalStateException("unknown class '" + NameUtil.joinFqName(classParsed.getSignature().getFullName()) + "'");
 			}
@@ -92,11 +97,12 @@ public class CsParseFilesTest {
 
 	@Test
 	public void checkResolvedClasses() {
-		// TrackInfo : ISerializable, IComparable<TrackInfo>
+		// TrackInfo : BaseClass, ISerializable, IComparable<TrackInfo>
 		Assert.assertArrayEquals(ary("ParserExamples", "Models", "TrackInfo"), trackInfoDef.getSignature().getFullName().toArray());
-		assertType(ary("ISerializable"), trackInfoDef.getSignature().getExtendClass());
-		Assert.assertEquals(1, trackInfoDef.getSignature().getImplementInterfaces().size());
-		assertType(ary("IComparable", ary("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(0));
+		assertType(ary("ParserExamples.BaseClass"), trackInfoDef.getSignature().getExtendClass());
+		Assert.assertEquals(2, trackInfoDef.getSignature().getImplementInterfaces().size());
+		assertType(ary("ISerializable"), trackInfoDef.getSignature().getImplementInterfaces().get(0));
+		assertType(ary("IComparable", ary("TrackInfo")), trackInfoDef.getSignature().getImplementInterfaces().get(1));
 
 		// AlbumInfo
 		Assert.assertArrayEquals(ary("ParserExamples", "Models", "AlbumInfo"), albumInfoDef.getSignature().getFullName().toArray());

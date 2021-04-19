@@ -4,7 +4,17 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.21.0](https://github.com/TeamworkGuy2/JParseCode/commit/7482a2a148a5f42e230c33897d3f17d907c5348f) - 2020-11-22
+### [0.22.0](N/A) - 2020-04-18
+#### Removed
+* `ProjectClassSet` `resolveSimpleName()` in favor of moving the two lines of code to the single calling location
+
+#### Fixed
+* C# full type name resolution fixed to resolve against the parent namespaces the class resides in (affects types in class signatures, method signatures, and fields)
+* Java class signature parsing fixed to support both `extends` and implements in the same signature `implements` (can't believe I overlooked this and didn't have a unit test)
+
+
+--------
+### [0.21.0](https://github.com/TeamworkGuy2/JParseCode/commit/e6177edf59fb46bd8edcd830f0cf720eb44206b5) - 2020-11-26
 __Parsing performance optimizations (~15-20%)__
 #### Changed
 * Update dependencies `jtext-tokenizer@0.7.0` and `jtext-parser@0.18.0`

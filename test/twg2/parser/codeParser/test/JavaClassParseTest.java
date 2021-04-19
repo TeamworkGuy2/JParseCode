@@ -135,7 +135,7 @@ public class JavaClassParseTest {
 		Assert.assertEquals(JavaBlock.CLASS, trackInfo.getBlockType());
 		Assert.assertEquals("ParserExamples.Models.TrackInfo", fullClassName);
 
-		Assert.assertEquals(ls("Serializable", "Comparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
+		Assert.assertEquals(ls("BaseClass", "Serializable", "Comparable<TrackInfo>"), trackInfo.getSignature().getExtendImplementSimpleNames());
 
 		var fields = trackInfo.getFields();
 		assertField(fields, 0, fullClassName + ".Name", "String");

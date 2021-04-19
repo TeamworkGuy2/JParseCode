@@ -11,6 +11,7 @@ import twg2.ast.interm.classes.ClassSig;
 import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.collections.builder.ListUtil;
 import twg2.parser.codeParser.BlockType;
+import twg2.parser.codeParser.csharp.CsBlock;
 import twg2.parser.codeParser.tools.NameUtil;
 import twg2.parser.resolver.ClassSigResolver;
 import twg2.parser.resolver.FieldSigResolver;
@@ -18,7 +19,7 @@ import twg2.parser.resolver.MethodSigResolver;
 import twg2.parser.workflow.CodeFileParsed;
 
 /** A group of classes/interfaces representing all of the compilation units in a project.
- * Provides {@link #resolveSimpleName(String, List, Collection)} for resolving simple names to fully qualifying names
+ * Provides {@link #resolveSimpleNameToClass(String, ClassAst.SimpleImpl, Collection)} for resolving simple names to fully qualifying names
  * @author TeamworkGuy2
  * @since 2015-12-8
  */
@@ -31,16 +32,13 @@ public class ProjectClassSet<T_CLASS extends ClassAst<? extends ClassSig, ? exte
 		String fullName = NameUtil.joinFqName(fullyQualifyingName);
 		entryByFullyQualifyingName.put(fullName, classUnit);
 
-		// loop through the fully qualifying name parts and add the new compilation unit to each namespace set
-		String partialName = "";
-		for(String namePart : fullyQualifyingName) {
-			partialName = NameUtil.appendToFqName(partialName, namePart);
-			List<T_CODE_FILE> nsCompilationUnits = entriesByNamespaces.get(partialName);
-			if(nsCompilationUnits == null) {
-				entriesByNamespaces.put(partialName, nsCompilationUnits = new ArrayList<>());
-			}
-			nsCompilationUnits.add(classUnit);
+		// add the compilation unit to its namespace set
+		var namespace = NameUtil.joinFqNameExceptLast(fullyQualifyingName);
+		List<T_CODE_FILE> nsCompilationUnits = entriesByNamespaces.get(namespace);
+		if(nsCompilationUnits == null) {
+			entriesByNamespaces.put(namespace, nsCompilationUnits = new ArrayList<>());
 		}
+		nsCompilationUnits.add(classUnit);
 	}
 
 
@@ -136,26 +134,26 @@ public class ProjectClassSet<T_CLASS extends ClassAst<? extends ClassSig, ? exte
 	}
 
 
-	public List<String> resolveSimpleName(String simpleName, List<List<String>> namespaces, Collection<List<String>> missingNamespacesDst) {
-		var resolvedClass = resolveClassNameAgainstNamespaces(simpleName, namespaces, missingNamespacesDst);
-		return resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
-	}
-
-
 	public T_CLASS resolveSimpleNameToClass(String simpleName, ClassAst.SimpleImpl<? extends BlockType> classScope, Collection<List<String>> missingNamespacesDst) {
 		ClassSigSimple classSig = classScope.getSignature();
+		boolean searchParentNamespaces = classScope.getBlockType().getClass() == CsBlock.class; // TODO workaround for C# supporting class resolution based on the parent namespace of a class
 
-		// try resolve using the nested class' parent class
+		// try resolve using the class name (for nested/in-file classes)
 		T_CLASS resolvedClass = resolveClassNameAgainstNamespace(simpleName, classSig.getFullName(), missingNamespacesDst);
+
+		// try resolve using the class' parent packages/namespaces
+		var fullNamespace = new ArrayList<>(classSig.getFullName());
+		while(resolvedClass == null && fullNamespace.size() > 0) {
+			resolvedClass = resolveClassNameAgainstNamespace(simpleName, NameUtil.allExceptLastFqName(fullNamespace), missingNamespacesDst);
+			fullNamespace.remove(fullNamespace.size() - 1);
+			if(!searchParentNamespaces) {
+				break;
+			}
+		}
 
 		// try resolve using the class' imports
 		if(resolvedClass == null) {
 			resolvedClass = resolveClassNameAgainstNamespaces(simpleName, classScope.getUsingStatements(), missingNamespacesDst);
-		}
-
-		// try resolve using the class' parent package/namespace
-		if(resolvedClass == null) {
-			resolvedClass = resolveClassNameAgainstNamespace(simpleName, NameUtil.allExceptLastFqName(classSig.getFullName()), missingNamespacesDst);
 		}
 
 		// TODO support resolution of types that are generic class params
@@ -163,12 +161,6 @@ public class ProjectClassSet<T_CLASS extends ClassAst<? extends ClassSig, ? exte
 		//	resolvedClass = resolveSimpleNameToClass(simpleName, Arrays.asList(classSig.getGenericParams().get(0)), missingNamespacesDst);
 		//}
 		return resolvedClass;
-	}
-
-
-	public List<String> resolveSimpleName(String simpleName, ClassAst.SimpleImpl<? extends BlockType> classScope, Collection<List<String>> missingNamespacesDst) {
-		var resolvedClass = resolveSimpleNameToClass(simpleName, classScope, missingNamespacesDst);
-		return resolvedClass != null ? resolvedClass.getSignature().getFullName() : null;
 	}
 
 

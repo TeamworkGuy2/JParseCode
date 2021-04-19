@@ -14,7 +14,6 @@ import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
-import twg2.collections.dataStructures.BaseList;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.extractors.AccessModifierExtractor;
 import twg2.parser.codeParser.extractors.BlockExtractor;
@@ -179,53 +178,62 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	}
 
 
-	/** Reads backward from a '{' block through a simple class signature ({@code ClassName [: ClassName]}).
+	/** Reads backward from a '{' block through a simple class signature ({@code ClassName [: ClassName, ClassName, ...]}).
 	 * Returns the iterator where {@code next()} would return the class name element.
-	 * @return {@code <className, extendImplementNames>}
+	 * @return {@code <className, extendImplementNames[]>}
 	 */
 	private static Entry<String, List<String>> readClassIdentifierAndExtends(ListIterator<SimpleTree<CodeToken>> iter) {
 		var keywordUtil = CodeLanguageOptions.C_SHARP.getKeywordUtil();
 		// class signatures are read backward from the opening '{'
 		int prevCount = 0;
 		var names = new ArrayList<String>();
+		boolean lastNodeWasInheritanceKeyword = false;
 		Entry<String, List<String>> nameCompoundRes = null;
 
-		// get the first element and begin checking
+		// get the node and begin checking backward
 		if(iter.hasPrevious()) { prevCount++; }
 		SimpleTree<CodeToken> prevNode = iter.hasPrevious() ? iter.previous() : null;
 
-		while(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywordUtil.blockModifiers().is(prevNode.getData()) && !keywordUtil.isInheritanceKeyword(prevNode.getData().getText())) {
+		while(prevNode != null && (AstFragType.isIdentifierOrKeyword(prevNode.getData()) || keywordUtil.isInheritanceKeyword(prevNode.getData().getText())) && !keywordUtil.blockModifiers().is(prevNode.getData())) {
 			// found an object initializer in the form 'new [Abc] {', not a class/interface definition so return nothing
 			if(names.size() < 2 && CsKeyword.NEW.toSrc().equals(prevNode.getData().getText())) {
 				break;
 			}
-			names.add(prevNode.getData().getText());
-			prevNode = iter.hasPrevious() ? iter.previous() : null;
-			if(iter.hasPrevious()) { prevCount++; }
-		}
 
-		// if the class signature extends/implements, then the identifiers just read are the class/interface names, next read the actual class name
-		if(prevNode != null && prevNode.getData().getText().equals(":")) {
-			prevNode = iter.hasPrevious() ? iter.previous() : null;
-			if(iter.hasPrevious()) { prevCount++; }
-			if(prevNode != null && AstFragType.isIdentifierOrKeyword(prevNode.getData()) && !keywordUtil.blockModifiers().is(prevNode.getData())) {
-				Collections.reverse(names);
-				var extendImplementNames = names;
-				String className = prevNode.getData().getText();
-				nameCompoundRes = Tuples.of(className, extendImplementNames);
+			if(!keywordUtil.isInheritanceKeyword(prevNode.getData().getText())) {
+				names.add(prevNode.getData().getText());
+				lastNodeWasInheritanceKeyword = false;
 			}
 			else {
-				throw new IllegalStateException("found block with extend/implement names, but no class name " + names);
+				lastNodeWasInheritanceKeyword = true;
 			}
+
+			if(iter.hasPrevious()) { prevCount++; }
+			prevNode = iter.hasPrevious() ? iter.previous() : null;
 		}
-		// else, we should have only read one name with the loop and it is the class name
-		else if(names.size() == 1) {
-			String className = names.get(0);
-			nameCompoundRes = Tuples.of(className, Collections.emptyList());
-			// move iterator forward since the while loop doesn't use the last value (i.e. reads one element past the valid elements it wants to consume)
-			if(prevCount > 0) {
-				iter.next();
+
+		// syntax check, ensure there's a class name identifier between the block modifier and inheritance keyword ':'
+		if(lastNodeWasInheritanceKeyword) {
+			throw new IllegalStateException("found class inheritance keyword ':' with no class name preceeding it, found '" + String.valueOf(prevNode) + "'");
+		}
+
+		// move iterator forward since the while loop reads past the class name to the first block modifier
+		if(prevCount > 0) {
+			iter.next();
+		}
+
+		// if a likely valid class block modifier has been reached, then the identifiers just read are the class/interface names and the class name
+		if(prevNode != null && keywordUtil.blockModifiers().is(prevNode.getData())) {
+			// TODO this is valid for the code: 'method<T>() where T : class { ... }'
+			if(names.size() == 0) {
+				return null;
+				//throw new IllegalStateException("found block with no name");
 			}
+
+			String className = names.remove(names.size() - 1);
+			if(names.size() > 1) { Collections.reverse(names); }
+			var extendImplementNames = names;
+			nameCompoundRes = Tuples.of(className, extendImplementNames);
 		}
 
 		return nameCompoundRes;
