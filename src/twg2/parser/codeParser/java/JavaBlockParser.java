@@ -11,7 +11,6 @@ import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.classes.ClassSigSimple;
 import twg2.ast.interm.field.FieldDef;
-import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.collections.interfaces.ListReadOnly;
@@ -28,7 +27,6 @@ import twg2.parser.fragment.AstFragType;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.language.CodeLanguageOptions;
 import twg2.parser.stateMachine.AstParser;
-import twg2.text.stringUtils.StringJoin;
 import twg2.treeLike.simpleTree.SimpleTree;
 import twg2.tuple.Tuples;
 
@@ -72,10 +70,10 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 
 	@Override
-	public AstParser<List<FieldSig>> createFieldParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
+	public AstParser<List<FieldDef>> createFieldParser(BlockAst<JavaBlock> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser) {
 		var lang = CodeLanguageOptions.JAVA;
 		var typeParser = new TypeExtractor(lang, false);
-		return new FieldExtractor(lang.displayName(), JavaKeyword.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
+		return new FieldExtractor(lang.displayName(), JavaKeyword.check, JavaOperator.check, block, typeParser, annotationParser, commentParser, lang.getAstUtil());
 	}
 
 
@@ -106,7 +104,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		}
 		nameScope.add(pkgName);
 
-		_extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, blocks);
+		extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, blocks);
 		return blocks;
 	}
 
@@ -117,7 +115,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void _extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
+	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
 			int depth, SimpleTree<CodeToken> parentNode, BlockAst<JavaBlock> parentScope, JavaAnnotationExtractor annotationExtractor, List<BlockAst<JavaBlock>> blocks) {
 		var lang = CodeLanguageOptions.JAVA;
 		var keywordUtil = lang.getKeywordUtil();
@@ -133,6 +131,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 			boolean annotAccepted = annotationExtractor.acceptNext(child);
 
 			int addBlockCount = 0;
+			BlockAst<JavaBlock> newestBlock = null;
 
 			// if this token is an opening block, then this is probably a valid block declaration
 			if(AstFragType.isBlock(token, '{')) {
@@ -148,11 +147,9 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 					if(nameCompoundRes != null && prevNode != null && keywordUtil.blockModifiers().is(prevNode.getData())) {
 						addBlockCount = 1;
 						var blockTypeStr = prevNode.getData().getText();
-						var blockType = lang.getBlockUtil().tryParseKeyword(keywordUtil.tryToKeyword(blockTypeStr));
+						var blockType = lang.getBlockUtil().tryToBlock(keywordUtil.tryToKeyword(blockTypeStr));
 						var accessModifiers = AccessModifierExtractor.readAccessModifiers(keywordUtil, childIter);
-						// TODO we can't just join the access modifiers, defaultAccessModifier doesn't parse this way
-						var accessStr = accessModifiers != null ? StringJoin.join(accessModifiers, " ") : null;
-						var access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessStr, blockType, parentScope != null ? parentScope.blockType : null);
+						var access = lang.getAstUtil().getAccessModifierParser().defaultAccessModifier(accessModifiers, blockType, parentScope != null ? parentScope.blockType : null);
 
 						nameScope.add(nameCompoundRes.getKey());
 
@@ -161,7 +158,8 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 						var blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 						var annotations = new ArrayList<>(annotationExtractor.getParserResult());
 
-						blocks.add(new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, blockTypeStr, nameCompoundRes.getValue()), child, blockType));
+						newestBlock = new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, blockTypeStr, nameCompoundRes.getValue()), child, blockType);
+						blocks.add(newestBlock);
 					}
 
 					childIter.reset(mark);
@@ -170,7 +168,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 			// a valid block must have 2 or more children: a 'name' and a '{...}' block
 			if(child.size() > 1) {
-				_extractBlocksFromTree(nameScope, child, depth + 1, blockTree, parentScope, (annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle()), blocks);
+				extractBlocksFromTree(nameScope, child, depth + 1, blockTree, newestBlock != null ? newestBlock : parentScope, (annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle()), blocks);
 				if(!annotAccepted) { annotationExtractor.recycle(); }
 			}
 

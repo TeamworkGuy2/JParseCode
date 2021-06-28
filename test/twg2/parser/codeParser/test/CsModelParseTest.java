@@ -2,7 +2,6 @@ package twg2.parser.codeParser.test;
 
 import static twg2.parser.test.utils.AnnotationAssert.assertAnnotation;
 import static twg2.parser.test.utils.MethodAssert.assertParameter;
-import static twg2.parser.test.utils.TypeAssert.ls;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,7 +11,7 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
 import twg2.ast.interm.classes.ClassAst;
-import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.parser.codeParser.AccessModifierEnum;
@@ -45,6 +44,8 @@ public class CsModelParseTest {
 		"    ]",
 		"    private int mod;",
 		"",
+		"    private int? initialMod;",
+		"",
 		"    /// <value>The name.</value>",
 		"    private string _name { get; } = \"initial-name\";",
 		"",
@@ -56,11 +57,13 @@ public class CsModelParseTest {
 		"    /// <returns>the properties</returns>",
 		"    [SetterAnnotation(Prop = \"Props\", UriTemplate = \"/SetProps?props={props}\",",
 		"        ResponseFormat = WebMessageFormat.Json)]",
-		"    public static IList<int?> SetProps(this SimpleCs inst, ref Constraints constraints, params List<string>[] props) {",
+		"    public static Result<IList<int?>> SetProps(this SimpleCs inst, ref Constraints constraints, params List<string>[] props) {",
 		"        content of SetNames;",
 		"    }",
 		"",
 		"    IList<string> hiddenField;",
+		"",
+		"    IList<Tuple<string, int>>[] _fields;",
 		"  }",
 		"",
 		"}"
@@ -80,8 +83,8 @@ public class CsModelParseTest {
 		String fullClassName = simpleCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
 		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).parsedClass;
-		List<FieldSig> fs = clas.getFields();
-		Assert.assertEquals(4, fs.size());
+		List<FieldDef> fs = clas.getFields();
+		Assert.assertEquals(6, fs.size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.INHERITANCE_LOCAL, clas.getSignature().getAccessModifier());
@@ -92,9 +95,11 @@ public class CsModelParseTest {
 		// annotations: [MultiLineAnnotation(Alpha = "alpha-1", Beta = Double.TYPE, Charlie = 3)]
 		assertAnnotation(fs.get(0).getAnnotations(), 0, "MultiLineAnnotation", new String[] { "Alpha", "Beta", "Charlie" }, "alpha-1", "Double.TYPE", "3");
 
-		assertField(fs, 1, fullClassName + "._name", "string");
-		assertField(fs, 2, fullClassName + ".Props", ary("IDictionary", ary("int", "string")));
-		assertField(fs, 3, fullClassName + ".hiddenField", ary("IList", ary("string")));
+		assertField(fs, 1, fullClassName + ".initialMod", "int?");
+		assertField(fs, 2, fullClassName + "._name", "string");
+		assertField(fs, 3, fullClassName + ".Props", ary("IDictionary", ary("int", "string")));
+		assertField(fs, 4, fullClassName + ".hiddenField", ary("IList", ary("string")));
+		assertField(fs, 5, fullClassName + "._fields", ary("IList[]", ary("Tuple", ary("string", "int"))));
 
 		// methods:
 		Assert.assertEquals(1, clas.getMethods().size());
@@ -106,15 +111,15 @@ public class CsModelParseTest {
 				" <param name=\"props\">the properties</param>\n",
 				" <returns>the properties</returns>\n"), m.comments);
 		List<ParameterSig> ps = m.paramSigs;
-		assertParameter(ps, 0, "inst", "SimpleCs", null, ls(CsKeyword.THIS), null);
-		assertParameter(ps, 1, "constraints", "Constraints", null, ls(CsKeyword.REF), null);
-		assertParameter(ps, 2, "props", "List<string>[]", null, ls(CsKeyword.PARAMS), null);
+		assertParameter(ps, 0, "inst", "SimpleCs", false, null, ls(CsKeyword.THIS), null);
+		assertParameter(ps, 1, "constraints", "Constraints", false, null, ls(CsKeyword.REF), null);
+		assertParameter(ps, 2, "props", "List<string>[]", false, null, ls(CsKeyword.PARAMS), null);
 		// annotations:
 		// [SetterAnnotation(Prop = "Props", UriTemplate = "/SetProps?props={props}", ResponseFormat = WebMessageFormat.Json)]
 		assertAnnotation(m.annotations, 0, "SetterAnnotation", new String[] { "Prop", "UriTemplate", "ResponseFormat" }, new String[] { "Props", "/SetProps?props={props}", "WebMessageFormat.Json" });
 
-		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		assertType(ary("IList", ary("int")), m.returnType);
+		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "int", "nullable": true, "primitive": true}]}]}
+		assertType(ary("Result", ary("IList", ary("int?"))), m.returnType);
 	}
 
 }

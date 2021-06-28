@@ -7,7 +7,10 @@ import org.junit.Assert;
 
 import twg2.ast.interm.type.TypeSig.TypeSigResolved;
 import twg2.ast.interm.type.TypeSig.TypeSigSimple;
+import twg2.parser.codeParser.csharp.CsKeyword;
+import twg2.parser.codeParser.java.JavaKeyword;
 import twg2.text.stringUtils.StringSplit;
+import twg2.text.stringUtils.StringTrim;
 
 /**
  * @author TeamworkGuy2
@@ -100,14 +103,15 @@ public class TypeAssert {
 	 * If the type is 'int[][]' both the name and {@link TypeSigSimple#getArrayDimensions()} are checked.
 	 */
 	private static void assertSimpleType(String type, TypeSigSimple sig) {
-		String typeName = type;
-		int arrayDimensions = StringSplit.countMatches(typeName, "[]");
-		if(arrayDimensions > 0) {
-			typeName = typeName.substring(0, typeName.length() - (arrayDimensions * 2));
+		var typeNameAndNullable = StringTrim.countAndTrimTrailing(type, '?');
+		boolean nullable = typeNameAndNullable.getKey() > 0;
+		String typeName = typeNameAndNullable.getValue();
+		int arrayDimensions = StringSplit.countMatches(type, "[]");
+		typeName = typeName.substring(0, typeName.length() - (arrayDimensions * 2));
 
-			Assert.assertEquals(arrayDimensions, sig.getArrayDimensions());
-		}
-
+		Assert.assertEquals(arrayDimensions, sig.getArrayDimensions());
+		Assert.assertEquals(nullable, sig.isNullable());
+		Assert.assertEquals(isAnyPrimitive(typeName), sig.isPrimitive());
 		Assert.assertEquals(typeName, sig.getTypeName());
 	}
 
@@ -126,6 +130,13 @@ public class TypeAssert {
 		}
 
 		Assert.assertEquals(typeName, sig.getSimpleName());
+	}
+
+
+	/** Check if a data type is either a Java OR C# primitive (may cause issues in unit tests if a unit tests tries to use a primitive type name as a non-primitive type from the other language)
+	 */
+	private static boolean isAnyPrimitive(String type) {
+		return JavaKeyword.check.isPrimitive(type) || CsKeyword.check.isPrimitive(type);
 	}
 
 

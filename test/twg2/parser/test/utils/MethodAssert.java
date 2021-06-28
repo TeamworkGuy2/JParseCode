@@ -14,10 +14,11 @@ import twg2.parser.codeParser.Keyword;
  */
 public class MethodAssert {
 
-	public static void assertParameter(List<ParameterSig> params, int idx, String name, String type, String defaultValue, List<? extends Keyword> accessMods, List<? extends AnnotationSig> annotations) {
+	public static void assertParameter(List<ParameterSig> params, int idx, String name, String type, boolean optional, String defaultValue, List<? extends Keyword> accessMods, List<? extends AnnotationSig> annotations) {
 		ParameterSig p = params.get(idx);
 		Assert.assertEquals(name, p.name);
 		Assert.assertEquals(type, p.typeSimpleName);
+		Assert.assertEquals(optional, p.optional);
 		Assert.assertEquals(defaultValue, p.defaultValue);
 		if(accessMods != null) {
 			Assert.assertEquals(accessMods, p.parameterModifiers);

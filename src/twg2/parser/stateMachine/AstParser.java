@@ -35,4 +35,11 @@ public interface AstParser<T_RESULT> extends TokenParser<SimpleTree<CodeToken>, 
 		return filter;
 	}
 
+
+	/** This function should be called when a block completes and no more tokens are going to be passed to {@link #acceptNext(Object)}
+	 */
+	public default void blockComplete() {
+		// default implementation
+	}
+
 }

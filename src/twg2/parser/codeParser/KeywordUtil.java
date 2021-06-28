@@ -20,7 +20,7 @@ public interface KeywordUtil<T_KEYWORD extends Keyword> {
 	 */
 	public T_KEYWORD tryToKeyword(String str);
 
-	/** Check if a string is an inheritance keyword (i.e. ':' in C# or 'extends' and 'implements' in Java and TypeScript */
+	/** Check if a string is an inheritance keyword (i.e. ':' in C# or 'extends' and 'implements' in Java and TypeScript) */
 	public boolean isInheritanceKeyword(String str);
 
 	/** Check if a string is a keyword */

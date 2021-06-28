@@ -108,7 +108,7 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 			return true;
 		}
 		else if(state == State.FOUND_NAME) {
-			// if a '=' symbol is found, the enum has a custom value (i.e. 'MY_ENUM = 2, ...;')
+			// if '=' symbol is found, the enum has a custom value (i.e. 'MY_ENUM = 2, ...;')
 			if(AstFragType.isOperator(tokenData, CsOperator.ASSIGNMENT)) {
 				// remove the minimum viable enum that was added when the previous identifier node was found, this is going to be a full enum with a value
 				var minimumEnum = enumMembers.remove(enumMembers.size() - 1);
@@ -171,8 +171,9 @@ public class CsEnumMemberExtractor extends AstMemberInClassParserReusable<CsEnum
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		var comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
+		var initializer = tokenNode != null ? Arrays.asList(tokenNode) : null;
 		var field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
-				Arrays.asList(CsKeyword.PUBLIC), Collections.<AnnotationSig>emptyList(), comments, tokenNode);
+				Arrays.asList(CsKeyword.PUBLIC), Collections.<AnnotationSig>emptyList(), comments, initializer);
 		nextMemberComments = null;
 		commentParser.recycle();
 		enumMembers.add(field);

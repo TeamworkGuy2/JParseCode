@@ -1,5 +1,7 @@
 package twg2.parser.codeParser.csharp;
 
+import java.util.List;
+
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.AccessModifierParser;
@@ -36,8 +38,8 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 
 
 	@Override
-	public AccessModifierEnum defaultAccessModifier(String src, CsBlock currentBlock, CsBlock parentBlock) {
-		AccessModifierEnum access = tryParseFromSrc(src);
+	public AccessModifierEnum defaultAccessModifier(List<String> accessModifiers, CsBlock currentBlock, CsBlock parentBlock) {
+		AccessModifierEnum access = tryParseFromSrc(accessModifiers);
 		return defaultAccessModifier(access, currentBlock, parentBlock);
 	}
 
@@ -83,22 +85,26 @@ public class CsAstUtil implements AccessModifierParser<AccessModifierEnum, CsBlo
 	}
 
 
+	// TODO how should we handle other class modifiers like 'abstract': https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#class-modifiers
 	@Override
-	public final AccessModifierEnum tryParseFromSrc(String src) {
-		if("public".equals(src)) {
+	public final AccessModifierEnum tryParseFromSrc(List<String> accessModifiers) {
+		if(accessModifiers == null) {
+			return null;
+		}
+		if(accessModifiers.contains("public")) {
 			return AccessModifierEnum.PUBLIC;
 		}
-		if("private".equals(src)) {
+		if(accessModifiers.contains("private")) {
 			return AccessModifierEnum.PRIVATE;
 		}
-		if("protected".equals(src)) {
+		if(accessModifiers.contains("protected") && accessModifiers.contains("internal")) {
+			return AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL;
+		}
+		if(accessModifiers.contains("protected")) {
 			return AccessModifierEnum.INHERITANCE_LOCAL;
 		}
-		if("internal".equals(src)) {
+		if(accessModifiers.contains("internal")) {
 			return AccessModifierEnum.NAMESPACE_LOCAL;
-		}
-		if("protected internal".equals(src)) {
-			return AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL;
 		}
 		return null;
 	}

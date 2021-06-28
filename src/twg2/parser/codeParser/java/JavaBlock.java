@@ -33,19 +33,19 @@ public enum JavaBlock implements BlockType {
 	}
 
 
-	public final boolean canContainImports() {
+	public boolean canContainImports() {
 		return false;
 	}
 
 
 	@Override
-	public final boolean canContainFields() {
+	public boolean canContainFields() {
 		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
 
 	@Override
-	public final boolean canContainMethods() {
+	public boolean canContainMethods() {
 		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
@@ -59,17 +59,7 @@ public enum JavaBlock implements BlockType {
 	public static class JavaBlockUtil implements BlockUtil<JavaBlock, JavaKeyword> {
 
 		@Override
-		public final JavaBlock parseKeyword(JavaKeyword keyword) {
-			JavaBlock blockType = tryParseKeyword(keyword);
-			if(blockType == null) {
-				throw new IllegalArgumentException("Java keyword '" + keyword + "' is not a valid compound block type");
-			}
-			return blockType;
-		}
-
-
-		@Override
-		public final JavaBlock tryParseKeyword(JavaKeyword keyword) {
+		public JavaBlock tryToBlock(JavaKeyword keyword) {
 			switch(keyword) {
 			case CLASS:
 				return JavaBlock.CLASS;

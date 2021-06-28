@@ -7,7 +7,6 @@ import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.block.BlockAst;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
-import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.type.TypeSig;
 import twg2.parser.fragment.CodeToken;
@@ -31,7 +30,7 @@ public interface AstExtractor<T_BLOCK extends BlockType> {
 
 	public AstParser<List<String>> createCommentParser(BlockAst<T_BLOCK> block);
 
-	public AstParser<List<FieldSig>> createFieldParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
+	public AstParser<List<FieldDef>> createFieldParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
 
 	public AstParser<List<MethodSigSimple>> createMethodParser(BlockAst<T_BLOCK> block, AstParser<List<AnnotationSig>> annotationParser, AstParser<List<String>> commentParser);
 

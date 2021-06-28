@@ -35,19 +35,19 @@ public enum CsBlock implements BlockType {
 	}
 
 
-	public final boolean canContainImports() {
+	public boolean canContainImports() {
 		return this == NAMESPACE;
 	}
 
 
 	@Override
-	public final boolean canContainFields() {
+	public boolean canContainFields() {
 		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
 
 	@Override
-	public final boolean canContainMethods() {
+	public boolean canContainMethods() {
 		return this == CLASS || this == ENUM || this == INTERFACE;
 	}
 
@@ -61,17 +61,7 @@ public enum CsBlock implements BlockType {
 	public static class CsBlockUtil implements BlockUtil<CsBlock, CsKeyword> {
 
 		@Override
-		public final CsBlock parseKeyword(CsKeyword keyword) {
-			CsBlock blockType = tryParseKeyword(keyword);
-			if(blockType == null) {
-				throw new IllegalArgumentException("C# keyword '" + keyword + "' is not a valid compound block type");
-			}
-			return blockType;
-		}
-
-
-		@Override
-		public final CsBlock tryParseKeyword(CsKeyword keyword) {
+		public CsBlock tryToBlock(CsKeyword keyword) {
 			switch(keyword) {
 			case CLASS:
 				return CsBlock.CLASS;

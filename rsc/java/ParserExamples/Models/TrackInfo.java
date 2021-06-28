@@ -38,4 +38,11 @@ public class TrackInfo extends BaseClass implements Serializable, Comparable<Tra
 		return tt;
 	}
 
+
+	class ArtistMeta {
+		public String Name;
+		Guid guid;
+		protected int referenceCount;
+	}
+
 }

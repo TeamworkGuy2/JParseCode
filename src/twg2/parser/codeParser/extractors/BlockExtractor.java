@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
-import twg2.ast.interm.field.FieldSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.parser.codeParser.AstExtractor;
 import twg2.parser.codeParser.BlockType;
@@ -27,7 +26,6 @@ public class BlockExtractor {
 	 * @param astTree the tree of basic {@link CodeToken} tokens
 	 * @return a list of entries with simple AST tree blocks as keys and classes ({@link ClassAst} instances) as values containing the annotations, comments, fields, and methods found inside the AST tree
 	 */
-	// TODO this only parses some fields and interface methods
 	public static <_T_BLOCK extends BlockType> List<Entry<SimpleTree<CodeToken>, ClassAst.SimpleImpl<_T_BLOCK>>> extractBlockFieldsAndInterfaceMethods(
 			AstExtractor<_T_BLOCK> extractor, SimpleTree<CodeToken> astTree) {
 
@@ -59,18 +57,22 @@ public class BlockExtractor {
 			var methodExtractor = extractor.createMethodParser(block, annotationExtractor, commentExtractor);
 			AstParser<List<FieldDef>> enumMemberExtractor = null;
 
+			// Important: annotation and comment extractors go last because field parsing can end with optional tokens, if the
+			// next token after a field is a comment the field extractor doesn't end until it consumes the comment and
+			// retroactively creates the field definition, but if the comment extractor comes first then the next comment
+			// token gets included with the previous field
 			if(blockType.isEnum()) {
 				enumMemberExtractor = extractor.createEnumParser(block, commentExtractor);
-				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor, enumMemberExtractor);
+				runParsers(blockTree, fieldExtractor, methodExtractor, enumMemberExtractor, annotationExtractor, commentExtractor);
 			}
 			else if(blockType.canContainFields() || blockType.canContainMethods()) {
-				runParsers(blockTree, annotationExtractor, commentExtractor, fieldExtractor, methodExtractor);
+				runParsers(blockTree, fieldExtractor, methodExtractor, annotationExtractor, commentExtractor);
 			}
 			else {
 				runParsers(blockTree, annotationExtractor, commentExtractor);
 			}
 
-			List<FieldSig> fields = null;
+			List<FieldDef> fields = null;
 			List<FieldDef> enumMembers = null;
 			List<MethodSigSimple> intfMethods = null;
 
@@ -117,6 +119,14 @@ public class BlockExtractor {
 				//}
 			}
 		}
+
+		// loop over each parser and allow it to consume the block
+		for(int ii = 0; ii < parserCount; ii++) {
+			var parser = parsers[ii];
+			if(parser.isComplete()) {
+				parser.blockComplete();
+			}
+		}		
 	}
 
 }

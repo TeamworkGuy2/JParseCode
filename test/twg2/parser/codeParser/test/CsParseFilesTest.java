@@ -37,6 +37,7 @@ public class CsParseFilesTest {
 	private ClassAst.ResolvedImpl<CsBlock> trackSearchServiceDef;
 	private ClassAst.ResolvedImpl<CsBlock> albumInfoDef;
 	private ClassAst.ResolvedImpl<CsBlock> trackInfoDef;
+	private ClassAst.ResolvedImpl<CsBlock> artistMetaDef;
 	private ClassAst.ResolvedImpl<CsBlock> baseClassDef;
 
 	@Parameter
@@ -75,6 +76,9 @@ public class CsParseFilesTest {
 			else if("AlbumInfo".equals(simpleName)) {
 				albumInfoDef = classParsed;
 			}
+			else if("ArtistMeta".equals(simpleName)) {
+				artistMetaDef = classParsed;
+			}
 			else if("BaseClass".equals(simpleName)) {
 				baseClassDef = classParsed;
 			}
@@ -109,6 +113,16 @@ public class CsParseFilesTest {
 		assertAnnotation(albumInfoDef.getSignature().getAnnotations(), 0, "DataContract", new String[0]);
 		Assert.assertNull(albumInfoDef.getSignature().getExtendClass());
 		Assert.assertEquals(0, albumInfoDef.getSignature().getImplementInterfaces().size());
+
+		// BaseClass
+		Assert.assertArrayEquals(ary("ParserExamples", "BaseClass"), baseClassDef.getSignature().getFullName().toArray());
+		Assert.assertEquals(0, baseClassDef.getFields().size());
+		Assert.assertEquals(1, baseClassDef.getMethods().size());
+
+		// TrackInfo.ArtistMeta
+		Assert.assertArrayEquals(ary("ParserExamples", "Models", "TrackInfo", "ArtistMeta"), artistMetaDef.getSignature().getFullName().toArray());
+		Assert.assertEquals(3, artistMetaDef.getFields().size());
+		Assert.assertEquals(0, artistMetaDef.getMethods().size());
 	}
 
 

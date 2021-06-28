@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameter;
 
 import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.classes.ClassAst;
-import twg2.ast.interm.field.FieldSig;
+import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.method.ParameterSig;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.parser.codeParser.AccessModifierEnum;
@@ -46,6 +46,8 @@ public class JavaModelParseTest {
 		"        3)",
 		"    private int mod;",
 		"",
+		"    private int? initialMod;",
+		"",
 		"    /** The name. */",
 		"    private String _name = \"initial-name\";",
 		"",
@@ -58,11 +60,13 @@ public class JavaModelParseTest {
 		"     */",
 		"    @SetterAnnotation(Prop = \"Props\", UriTemplate = \"/SetProps?props={props}\",",
 		"        ResponseFormat = WebMessageFormat.Json)",
-		"    public static Result<List<String>> SetProps(final List<String>[] props) {",
+		"    public static Result<List<int?>> SetProps(final List<String>[] props) {",
 		"        content of SetProps;",
 		"    }",
 		"",
 		"    List<String> hiddenField;",
+		"",
+		"    List<Tuple<String, int>>[] _fields;",
 		"}"
 	);
 
@@ -80,8 +84,8 @@ public class JavaModelParseTest {
 		String fullClassName = simpleJava.fullClassName;
 		Assert.assertEquals(1, blocks.size());
 		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).parsedClass;
-		List<FieldSig> fields = clas.getFields();
-		Assert.assertEquals(4, fields.size());
+		List<FieldDef> fields = clas.getFields();
+		Assert.assertEquals(6, fields.size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL, clas.getSignature().getAccessModifier());
@@ -93,14 +97,16 @@ public class JavaModelParseTest {
 		// annotations: EmptyAnnotation()
 		assertAnnotation(as, 0, "MultiLineAnnotation", new String[] { "arg1", "arg2", "arg3" }, "alpha-1", "Double.TYPE", "3");
 
-		assertField(fields, 1, fullClassName + "._name", "String");
-		assertField(fields, 2, fullClassName + ".Props", ary("Map", ary("Integer", "String")));
-		assertField(fields, 3, fullClassName + ".hiddenField", ary("List", ary("String")));
+		assertField(fields, 1, fullClassName + ".initialMod", "int?");
+		assertField(fields, 2, fullClassName + "._name", "String", "\"initial-name\"");
+		assertField(fields, 3, fullClassName + ".Props", ary("Map", ary("Integer", "String")));
+		assertField(fields, 4, fullClassName + ".hiddenField", ary("List", ary("String")));
+		assertField(fields, 5, fullClassName + "._fields", ary("List[]", ary("Tuple", ary("String", "int"))));
 
 		// methods:
 		Assert.assertEquals(1, clas.getMethods().size());
 
-		// AddName()
+		// SetProps()
 		MethodSigSimple m = clas.getMethods().get(0);
 		Assert.assertEquals(fullClassName + ".SetProps", NameUtil.joinFqName(m.fullName));
 		Assert.assertEquals(ls(" Set properties\n" +
@@ -108,14 +114,14 @@ public class JavaModelParseTest {
 		        "     * @return the properties\n" +
 		        "     "), m.comments);
 		List<ParameterSig> ps = m.paramSigs;
-		assertParameter(ps, 0, "props", "List<String>[]", null, ls(JavaKeyword.FINAL), null);
+		assertParameter(ps, 0, "props", "List<String>[]", false, null, ls(JavaKeyword.FINAL), null);
 
 		// annotations:
 		// @SetterAnnotation(Prop = "Props", UriTemplate = "/SetProps?props={props}", ResponseFormat = WebMessageFormat.Json)
 		assertAnnotation(m.annotations, 0, "SetterAnnotation", new String[] { "Prop", "UriTemplate", "ResponseFormat" }, new String[] { "Props", "/SetProps?props={props}", "WebMessageFormat.Json" });
 
-		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "IList", "genericParameters": [ {"typeName": "String"}]}]}
-		assertType(ary("Result", ary("List", ary("String"))), m.returnType);
+		//returnType: {"typeName": "Result", "genericParameters": [ {"typeName": "List", "genericParameters": [ {"typeName": "int", "nullable": true, "primitive": true}]}]}
+		assertType(ary("Result", ary("List", ary("int?"))), m.returnType);
 	}
 
 }

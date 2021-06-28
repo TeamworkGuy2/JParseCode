@@ -7,8 +7,6 @@ import lombok.Getter;
 import twg2.annotations.Immutable;
 import twg2.ast.interm.field.FieldDef;
 import twg2.ast.interm.field.FieldDefResolved;
-import twg2.ast.interm.field.FieldSig;
-import twg2.ast.interm.field.FieldSigResolved;
 import twg2.ast.interm.method.MethodSigResolved;
 import twg2.ast.interm.method.MethodSigSimple;
 import twg2.ast.interm.method.ParameterSig;
@@ -38,23 +36,23 @@ public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> ext
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	public static class Impl<T_SIG extends ClassSig, T_ENUM extends JsonWritableSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends BlockType>
+	public static class Impl<T_SIG extends ClassSig, T_FIELD extends JsonWritableSig, T_METHOD extends JsonWritableSig, T_PARAM extends JsonWritableSig, T_BLOCK extends BlockType>
 			implements ClassAst<T_SIG, T_BLOCK> {
 		private final @Getter T_SIG signature;
 		private final @Getter List<List<String>> usingStatements;
-		private final @Getter List<T_ENUM> enumMembers;
+		private final @Getter List<T_FIELD> enumMembers;
 		private final @Getter List<T_FIELD> fields;
 		private final @Getter List<T_METHOD> methods;
 		private final @Getter T_BLOCK blockType;
 
 
-		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods, List<? extends T_ENUM> enums, T_BLOCK blockType) {
+		public Impl(T_SIG signature, List<List<String>> usingStatements, List<? extends T_FIELD> fields, List<? extends T_METHOD> methods, List<? extends T_FIELD> enums, T_BLOCK blockType) {
 			@SuppressWarnings("unchecked")
 			var fieldsCast = (List<T_FIELD>)fields;
 			@SuppressWarnings("unchecked")
 			var methodsCast = (List<T_METHOD>)methods;
 			@SuppressWarnings("unchecked")
-			var enumsCast = (List<T_ENUM>)enums;
+			var enumsCast = (List<T_FIELD>)enums;
 
 			this.signature = signature;
 			this.usingStatements = usingStatements;
@@ -124,9 +122,9 @@ public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> ext
 	 * @since 2016-1-2
 	 */
 	@Immutable
-	public static class SimpleImpl<T_BLOCK extends BlockType> extends Impl<ClassSigSimple, FieldDef, FieldSig, MethodSigSimple, ParameterSig, T_BLOCK> {
+	public static class SimpleImpl<T_BLOCK extends BlockType> extends Impl<ClassSigSimple, FieldDef, MethodSigSimple, ParameterSig, T_BLOCK> {
 
-		public SimpleImpl(ClassSigSimple signature, List<List<String>> usingStatements, List<? extends FieldSig> fields,
+		public SimpleImpl(ClassSigSimple signature, List<List<String>> usingStatements, List<? extends FieldDef> fields,
 				List<? extends MethodSigSimple> methods, List<? extends FieldDef> enums, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, enums, blockType);
 		}
@@ -141,9 +139,9 @@ public interface ClassAst<T_SIG extends ClassSig, T_BLOCK extends BlockType> ext
 	 * @since 2015-12-4
 	 */
 	@Immutable
-	public static class ResolvedImpl<T_BLOCK extends BlockType> extends Impl<ClassSigResolved, FieldDefResolved, FieldSigResolved, MethodSigResolved, ParameterSigResolved, T_BLOCK> {
+	public static class ResolvedImpl<T_BLOCK extends BlockType> extends Impl<ClassSigResolved, FieldDefResolved, MethodSigResolved, ParameterSigResolved, T_BLOCK> {
 
-		public ResolvedImpl(ClassSigResolved signature, List<List<String>> usingStatements, List<? extends FieldSigResolved> fields,
+		public ResolvedImpl(ClassSigResolved signature, List<List<String>> usingStatements, List<? extends FieldDefResolved> fields,
 				List<? extends MethodSigResolved> methods, List<? extends FieldDefResolved> enums, T_BLOCK blockType) {
 			super(signature, usingStatements, fields, methods, enums, blockType);
 		}

@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
-import twg2.ast.interm.field.FieldSig;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.java.JavaBlock;
 import twg2.parser.codeParser.tools.NameUtil;
@@ -66,7 +65,7 @@ public class JavaEnumParseTest {
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("enum", clas.getSignature().getDeclarationType());
 
-		FieldSig f = enums.get(0);
+		FieldDef f = enums.get(0);
 		Assert.assertEquals(fullClassName + ".Fields", NameUtil.joinFqName(f.getFullName()));
 		Assert.assertEquals(ls(" The fields enum\n"), f.getComments());
 

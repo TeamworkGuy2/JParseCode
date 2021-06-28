@@ -4,13 +4,40 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.22.0](N/A) - 2020-04-18
+### [0.23.0](N/A) - 2021-06-28
+#### Added
+* Lots of additional unit tests
+* `TypeExtractor.isSimpleLiteral()` used to determine whether a `FieldDef.initializer` should be serialized as a literal value `"initializer"` or an `"initializerExpression"`
+
+#### Changed
+* `FieldExtractor` now parses field default value assignments and returns `FieldDef` instead of `FieldSig` (`FieldDef` contains `initializer` field)
+* `FieldExtractor` constructor requires a new 3rd parameter, an `OperatorUtil<>`
+* `ClassAst` remove `T_ENUM` type parameter, enum members in a parsed enum will be represented by `T_FIELD`
+* `FieldDef.initializerToJson()` signature changed significantly to support new multiple token initializer expressions
+* `AccessModifierParser` and `AccessModifierEnum` removed `parseFromSrc()`, cleaned up code, added documentation
+* `AccessModifierParser` `tryParseFromSrc(String)` and `defaultAccessModifier(String, ...)` modified to takes `List<String>` for correctness and to simplify call sites
+* `AstExtractor.createFieldParser()` and implementations (`CsBlock` and `JavaBlock`) now return `AstParser<List<FieldDef>>` instead of `...FieldSig`
+* `BlockUtil` `parseKeyword()` and `tryParseKeyword()` replaced with `tryToBlock()`
+* `CsBlockParser._extractBlocksFromTree()` renamed `extractBlocksFromTree()` (which was already public)
+* `AstParser` added `blockComplete()` with empty default implementation, will be called by `BlockExtractor`
+
+#### Removed
+* Merged `FieldSig` and `FieldSigResolved` into `FieldDef` and `FieldDefResolved`
+
+#### Fixed
+* C# annotation parsing fixed to handle multiple annotations in the same block, i.e. '[Annotation(One), Annotation(Two), ...]'
+* An issue with nested classes/interfaces getting assigned the incorrect access modifiers
+* An issue with complex generic type parsing
+
+
+--------
+### [0.22.0](https://github.com/TeamworkGuy2/JParseCode/commit/0007395d8a4d53de3690ef5ef4e452f6256b5ea0) - 2021-04-18
 #### Removed
 * `ProjectClassSet` `resolveSimpleName()` in favor of moving the two lines of code to the single calling location
 
 #### Fixed
 * C# full type name resolution fixed to resolve against the parent namespaces the class resides in (affects types in class signatures, method signatures, and fields)
-* Java class signature parsing fixed to support both `extends` and implements in the same signature `implements` (can't believe I overlooked this and didn't have a unit test)
+* Java class signature parsing fixed to support both `extends` and `implements` in the same signature (can't believe I overlooked this and didn't have a unit test!)
 
 
 --------

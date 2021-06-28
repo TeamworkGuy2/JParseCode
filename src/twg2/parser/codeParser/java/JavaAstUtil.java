@@ -1,5 +1,7 @@
 package twg2.parser.codeParser.java;
 
+import java.util.List;
+
 import twg2.dataUtil.dataUtils.EnumError;
 import twg2.parser.codeParser.AccessModifierEnum;
 import twg2.parser.codeParser.AccessModifierParser;
@@ -36,8 +38,8 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 
 
 	@Override
-	public AccessModifierEnum defaultAccessModifier(String src, JavaBlock currentBlock, JavaBlock parentBlock) {
-		AccessModifierEnum access = tryParseFromSrc(src);
+	public AccessModifierEnum defaultAccessModifier(List<String> accessModifiers, JavaBlock currentBlock, JavaBlock parentBlock) {
+		AccessModifierEnum access = tryParseFromSrc(accessModifiers);
 		return defaultAccessModifier(access, currentBlock, parentBlock);
 	}
 
@@ -89,19 +91,20 @@ public class JavaAstUtil implements AccessModifierParser<AccessModifierEnum, Jav
 	}
 
 
+	// TODO how should we handle other class modifiers like 'abstract': https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.1.1
 	@Override
-	public final AccessModifierEnum tryParseFromSrc(String src) {
-		if("public".equals(src)) {
+	public final AccessModifierEnum tryParseFromSrc(List<String> accessModifiers) {
+		if(accessModifiers == null) {
+			return null;
+		}
+		if(accessModifiers.contains("public")) {
 			return AccessModifierEnum.PUBLIC;
 		}
-		if("private".equals(src)) {
+		if(accessModifiers.contains("private")) {
 			return AccessModifierEnum.PRIVATE;
 		}
-		if("protected".equals(src)) {
+		if(accessModifiers.contains("protected")) {
 			return AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL;
-		}
-		if("".equals(src)) {
-			return AccessModifierEnum.NAMESPACE_LOCAL;
 		}
 		return null;
 	}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import twg2.ast.interm.type.TypeSig;
+import twg2.functions.consumers.BooleanConsumer;
 import twg2.parser.codeParser.Keyword;
 import twg2.parser.codeParser.KeywordUtil;
 import twg2.parser.fragment.AstFragType;
@@ -151,8 +152,8 @@ public class TypeExtractor extends AstParserReusableBase<TypeExtractor.State, Ty
 
 
 	/** Check if one or two nodes are a number with an optional -/+ sign
-	 * @param node1
-	 * @param node2Optional
+	 * @param node1 the numeric token or optional a sign (i.e. '-' or '+')
+	 * @param node2Optional if the first node is a sign, then this node is the numeric token
 	 * @return the number of nodes used, 0 if neither node was a number, 1 if the first node was a number, 2 if the first node was a sign and the second node was a number
 	 */
 	public static int isNumber(CodeToken node1, CodeToken node2Optional) {
@@ -163,6 +164,32 @@ public class TypeExtractor extends AstParserReusableBase<TypeExtractor.State, Ty
 		}
 		matches = (node2Optional != null && (n1Text = node1.getText()).length() == 1 && NumericParser.isSign.test(n1Text.charAt(0)) && node2Optional.getTokenType() == CodeTokenType.NUMBER) ? 2 : 0;
 		return matches;
+	}
+
+
+	/** Whether a set of code tokens represent a simple type (numeric, boolean, or null literal) and return the source code representation of those tokens concatenated together
+	 * @param astNodes the list of simple tree {@link CodeToken}s to check
+	 * @param isNotString an output flag, the flag is set if this call returns a non-null value,
+	 * if set to true then the returned value represents numeric, boolean, or null,
+	 * otherwise if set to false then the returned value represents a string literal
+	 * @return a source code string representation of the tokens if they represent a number, boolean, string, or null literal, null otherwise
+	 */
+	public static String isSimpleLiteral(List<SimpleTree<CodeToken>> astNodes, BooleanConsumer isNotString) {
+		CodeToken data = null;
+		CodeToken data2 = null;
+		boolean isNumOrBoolOrNull = false;
+		int astNodeCount = astNodes != null ? astNodes.size() : 0;
+		if(astNodeCount == 1 && (data = astNodes.get(0).getData()) != null && (data.getTokenType() == CodeTokenType.STRING || (isNumOrBoolOrNull = TypeExtractor.isDefaultValueLiteral(data)))) {
+			isNotString.accept(isNumOrBoolOrNull);
+			return data.getText();
+		}
+		else if (astNodeCount == 2 && (data = astNodes.get(0).getData()) != null && TypeExtractor.isNumber(data, (data2 = astNodes.get(1).getData())) > 0) {
+			isNotString.accept(true);
+			return data.getText() + data2.getText();
+		}
+		else {
+			return null;
+		}
 	}
 
 
@@ -195,14 +222,20 @@ public class TypeExtractor extends AstParserReusableBase<TypeExtractor.State, Ty
 		}
 
 		// convert the generic parameters to TypeSig nested
-		var rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), '#');
-		String paramName = StringTrim.trimTrailing(rootNameAndMarker.getKey(), '?');
-		var nameAndArrayDimensions = StringTrim.countAndTrimTrailing(paramName, "[]", true);
-		boolean isOptional = rootNameAndMarker.getKey().endsWith("?");
-		var root = new TypeSig.TypeSigSimpleBase(nameAndArrayDimensions.getValue(), nameAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(nameAndArrayDimensions.getValue()));
+		// ex: BaseType<A, B>[][]?
+		// ex: BaseType[]
+		var rootNameAndMarker = StringSplit.firstMatchParts(sb.toString(), '#'); // ex: ('BaseType', '#0[][]?') OR ('BaseType[]', '')
+		String rootName = rootNameAndMarker.getKey(); // 'BaseType' OR 'BaseType[]'
+		String markerAndMeta = rootNameAndMarker.getValue(); // '#0[][]?' OR ''
+		String typeMeta = markerAndMeta.length() > 0 ? markerAndMeta : rootName; // '#0[][]?' OR 'BaseType[]'
+		String paramValue = StringTrim.trimTrailing(typeMeta, '?'); // '#0[][]' OR BaseType[]'
+		boolean isOptional = paramValue.length() < typeMeta.length();
+		var valueAndArrayDimensions = StringTrim.countAndTrimTrailing(paramValue, "[]", true); // (2, '#0') OR (1, 'BaseType')
+		var typeName = typeMeta == rootName ? valueAndArrayDimensions.getValue() : StringTrim.trimTrailing(rootName, "[]", true); // 'BaseType' or 'BaseType'
+		var root = new TypeSig.TypeSigSimpleBase(typeName, valueAndArrayDimensions.getKey(), isOptional, keywordUtil.isPrimitive(typeName));
 		TypeSig.TypeSigSimple sig;
 
-		int rootMarker = !StringCheck.isNullOrEmpty(rootNameAndMarker.getValue()) ? Integer.parseInt(rootNameAndMarker.getValue()) : -1;
+		int rootMarker = !StringCheck.isNullOrEmpty(markerAndMeta) ? Integer.parseInt(valueAndArrayDimensions.getValue()) : -1;
 		if(rootMarker > -1) {
 			var sigChilds = expandGenericParamSet(keywordUtil, rootMarker, genericParamSets);
 			sig = new TypeSig.TypeSigSimpleGeneric(root.getTypeName(), sigChilds, root.getArrayDimensions(), root.isNullable(), keywordUtil.isPrimitive(root.getTypeName()));

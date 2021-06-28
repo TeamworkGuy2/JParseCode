@@ -40,5 +40,13 @@ namespace ParserExamples.Models
         public TType Refresh<TType>(TType tt) where TType : IConvertible {
             return tt;
         }
+
+
+        class ArtistMeta
+        {
+            public string Name;
+            Guid guid;
+            protected int referenceCount;
+        }
     }
 }

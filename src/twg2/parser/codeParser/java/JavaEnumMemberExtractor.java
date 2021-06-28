@@ -203,8 +203,9 @@ public class JavaEnumMemberExtractor extends AstMemberInClassParserReusable<Java
 
 	private void addEnumMember(String memberName, SimpleTree<CodeToken> tokenNode) {
 		var comments = (nextMemberComments != null ? nextMemberComments : new ArrayList<>(commentParser.getParserResult()));
+		var initializer = tokenNode != null ? Arrays.asList(tokenNode) : null;
 		var field = new FieldDef(memberName, NameUtil.newFqName(parentBlock.declaration.getFullName(), memberName), enumType,
-				Arrays.asList(CsKeyword.PUBLIC), Collections.emptyList(), comments, tokenNode);
+				Arrays.asList(CsKeyword.PUBLIC), Collections.emptyList(), comments, initializer);
 		nextMemberComments = null;
 		commentParser.recycle();
 		enumMembers.add(field);

@@ -36,12 +36,19 @@ public class CsAnnotationExtractor extends AstParserReusableBase<CsAnnotationExt
 
 		if(state != State.FAILED) {
 			var childs = tokenNode.getChildren();
+			var childCount = childs != null ? childs.size() : 0;
 			CodeToken annotTypeFrag = null;
-			if(AstFragType.isBlock(tokenNode.getData(), '[') && childs != null && childs.size() > 0 && AstFragType.isIdentifier(annotTypeFrag = childs.get(0).getData())) {
-				var annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getTokenType(), annotTypeFrag.getText(), (childs.size() > 1 ? childs.get(1) : null));
-				annotations.add(annot);
-				state = State.COMPLETE;
-				return true;
+			if(AstFragType.isBlock(tokenNode.getData(), '[')) {
+				int i = 0;
+				while(i < childCount && AstFragType.isIdentifier(annotTypeFrag = childs.get(i).getData())) {
+					var paramsChild = childs.size() > i + 1 ? childs.get(i + 1) : null;
+
+					var annot = AnnotationExtractor.parseAnnotationBlock(lang, annotTypeFrag.getTokenType(), annotTypeFrag.getText(), paramsChild);
+					annotations.add(annot);
+					state = State.COMPLETE;
+					i += (paramsChild != null && paramsChild.size() > 0 ? 2 : 1);
+				}
+				return i > 0;
 			}
 		}
 		// annotations are optional

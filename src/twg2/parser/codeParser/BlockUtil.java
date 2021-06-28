@@ -9,7 +9,9 @@ package twg2.parser.codeParser;
  */
 public interface BlockUtil<T_BLOCK, T_KEYWORD> {
 
-	public T_BLOCK parseKeyword(T_KEYWORD keyword);
-
-	public T_BLOCK tryParseKeyword(T_KEYWORD keyword);
+	/** Check if a keyword is a valid compound block keyword/identifier
+	 * @param keyword the keyword/identifier to check
+	 * @return the {@code T_BLOCK} type of the keyword or null if the keyword is not a valid block keyword/identifier
+	 */
+	public T_BLOCK tryToBlock(T_KEYWORD keyword);
 }

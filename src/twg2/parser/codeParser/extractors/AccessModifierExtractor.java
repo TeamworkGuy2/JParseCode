@@ -30,6 +30,14 @@ public class AccessModifierExtractor {
 		var accessModifiers = new ArrayList<String>();
 		SimpleTree<CodeToken> child = iter.hasPrevious() ? iter.previous() : null;
 
+		// in C# the token before the class name can be 'partial' to identify partial classes, we'll push this into the accessModifiers list for now
+		// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#class-declarations
+		if(child != null && "partial".equals(child.getData().getText())) {
+			accessModifiers.add(child.getData().getText());
+			child = iter.hasPrevious() ? iter.previous() : null;
+			if(iter.hasPrevious()) { prevCount++; }
+		}
+
 		while(child != null && keywordUtil.classModifiers().is(child.getData())) {
 			accessModifiers.add(0, child.getData().getText());
 			child = iter.hasPrevious() ? iter.previous() : null;

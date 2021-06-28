@@ -23,7 +23,6 @@ public class TypeSigResolver {
 	 */
 	public static <T_BLOCK extends BlockType> TypeSig.TypeSigResolved resolveFrom(TypeSig.TypeSigSimple intermSig, ClassAst.SimpleImpl<? extends BlockType> namespaceClass,
 			ProjectClassSet<ClassAst.SimpleImpl<T_BLOCK>, CodeFileParsed.Intermediate<T_BLOCK>> projFiles, Collection<List<String>> missingNamespacesDst) {
-		// TODO also resolve annotations
 
 		List<TypeSig.TypeSigResolved> childSigs = Collections.emptyList();
 		if(intermSig.isGeneric()) {
