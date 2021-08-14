@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.23.0](N/A) - 2021-06-28
+### [0.23.1](N/A) - 2021-08-14
+#### Changed
+* Expanded C# and Java field parsing tests
+
+
+--------
+### [0.23.0](https://github.com/TeamworkGuy2/JParseCode/commit/7cf3562bbeace52d7ff816251f106de2b2c64d05) - 2021-06-28
 #### Added
 * Lots of additional unit tests
 * `TypeExtractor.isSimpleLiteral()` used to determine whether a `FieldDef.initializer` should be serialized as a literal value `"initializer"` or an `"initializerExpression"`

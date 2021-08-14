@@ -35,7 +35,7 @@ public class JavaEnumParseTest {
 		"  /** The classes enum */",
 		"  Classes(4) {",
 		"    @Override",
-		"	public String toString() { return \"classic\"; }",
+		"    public String toString() { return \"classic\"; }",
 		"  };",
         "",
 		"  int secret;",
@@ -67,13 +67,16 @@ public class JavaEnumParseTest {
 
 		FieldDef f = enums.get(0);
 		Assert.assertEquals(fullClassName + ".Fields", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("SimpleEnumJava", f.getFieldType().getTypeName());
 		Assert.assertEquals(ls(" The fields enum\n"), f.getComments());
 
 		f = enums.get(1);
 		Assert.assertEquals(fullClassName + ".Methods", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("SimpleEnumJava", f.getFieldType().getTypeName());
 
 		f = enums.get(2);
 		Assert.assertEquals(fullClassName + ".Classes", NameUtil.joinFqName(f.getFullName()));
+		Assert.assertEquals("SimpleEnumJava", f.getFieldType().getTypeName());
 		Assert.assertEquals(ls(" The classes enum "), f.getComments());
 	}
 

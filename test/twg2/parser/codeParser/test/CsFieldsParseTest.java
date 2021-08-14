@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
 
-import twg2.ast.interm.annotation.AnnotationSig;
 import twg2.ast.interm.classes.ClassAst;
 import twg2.ast.interm.field.FieldDef;
 import twg2.parser.codeParser.AccessModifierEnum;
@@ -40,8 +39,8 @@ public class CsFieldsParseTest {
 		"    [DefaultValue(-1)]",
 		"    private int mod = -1;",
 		"",
-		"    /// <value>The name.</value>",
-		"    private string name;",
+		"    // The lower and upper.",
+		"    private string lower;private string upper ;",
 		"",
 		"    /// <value>The names.</value>",
 		"    public IList<string> Names { get; set; } = DEFAULT_NAMES;",
@@ -58,7 +57,7 @@ public class CsFieldsParseTest {
 		"    /// <value>The access timestamps.</value>",
 		"    public DateTime[] accesses { set { this.mod++; this.accesses = value; } }",
 		"",
-		"    public string name { get { this.mod++; return this.name != null ? this._name : \"\"; } set { this.mod++; this._name = value; } } = \"functional\";",
+		"    public string Name { get { this.mod++; return this.name != null ? this._name : \"\"; } set { this.mod++; this._name = value; } } = \"functional\";",
 		"    public TrackInfo TrackInfo { get; }",
 		"  }",
 		"",
@@ -80,7 +79,7 @@ public class CsFieldsParseTest {
 		String fullClassName = simpleCs.fullClassName;
 		Assert.assertEquals(1, blocks.size());
 		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).parsedClass;
-		Assert.assertEquals(9, clas.getFields().size());
+		Assert.assertEquals(10, clas.getFields().size());
 
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
@@ -89,27 +88,28 @@ public class CsFieldsParseTest {
 		List<FieldDef> fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int", "-1");
 		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fields.get(0).getComments());
-		List<AnnotationSig> as = fields.get(0).getAnnotations();
-		// annotation: DefaultValue(-1)
-		assertAnnotation(as, 0, "DefaultValue", new String[] { "value" }, "-1");
+		assertAnnotation(fields.get(0).getAnnotations(), 0, "DefaultValue", new String[] { "value" }, "-1");
 		Assert.assertArrayEquals(ary(CsKeyword.PRIVATE), fields.get(0).getAccessModifiers().toArray());
 
-		assertField(fields, 1, fullClassName + ".name", "string");
+		assertField(fields, 1, fullClassName + ".lower", "string");
+		Assert.assertEquals(ls(" The lower and upper.\n"), fields.get(1).getComments());
 		Assert.assertArrayEquals(ary(CsKeyword.PRIVATE), fields.get(1).getAccessModifiers().toArray());
-		assertField(fields, 2, fullClassName + ".Names", ary("IList", ary("string")), "DEFAULT_NAMES");
-		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(2).getAccessModifiers().toArray());
-		assertField(fields, 3, fullClassName + ".Count", "int", "1");
+		assertField(fields, 2, fullClassName + ".upper", "string");
+		Assert.assertArrayEquals(ary(CsKeyword.PRIVATE), fields.get(2).getAccessModifiers().toArray());
+		assertField(fields, 3, fullClassName + ".Names", ary("IList", ary("string")), "DEFAULT_NAMES");
 		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(3).getAccessModifiers().toArray());
-		assertField(fields, 4, fullClassName + ".C2", "float", "3.141592f");
-		Assert.assertArrayEquals(ary(CsKeyword.PROTECTED), fields.get(4).getAccessModifiers().toArray());
-		assertField(fields, 5, fullClassName + ".C3", "decimal", "(decimal)1.23456789");
-		Assert.assertArrayEquals(ary(CsKeyword.PROTECTED, CsKeyword.INTERNAL), fields.get(5).getAccessModifiers().toArray());
-		assertField(fields, 6, fullClassName + ".accesses", "DateTime[]");
-		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(6).getAccessModifiers().toArray());
-		assertField(fields, 7, fullClassName + ".name", "string");
+		assertField(fields, 4, fullClassName + ".Count", "int", "1");
+		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(4).getAccessModifiers().toArray());
+		assertField(fields, 5, fullClassName + ".C2", "float", "3.141592f");
+		Assert.assertArrayEquals(ary(CsKeyword.PROTECTED), fields.get(5).getAccessModifiers().toArray());
+		assertField(fields, 6, fullClassName + ".C3", "decimal", "(decimal)1.23456789");
+		Assert.assertArrayEquals(ary(CsKeyword.PROTECTED, CsKeyword.INTERNAL), fields.get(6).getAccessModifiers().toArray());
+		assertField(fields, 7, fullClassName + ".accesses", "DateTime[]");
 		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(7).getAccessModifiers().toArray());
-		assertField(fields, 8, fullClassName + ".TrackInfo", "TrackInfo");
+		assertField(fields, 8, fullClassName + ".Name", "string");
 		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(8).getAccessModifiers().toArray());
+		assertField(fields, 9, fullClassName + ".TrackInfo", "TrackInfo");
+		Assert.assertArrayEquals(ary(CsKeyword.PUBLIC), fields.get(9).getAccessModifiers().toArray());
 	}
 
 }
