@@ -89,6 +89,9 @@ public class CsModelParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.INHERITANCE_LOCAL, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		Assert.assertEquals(ls(" <summary>\n",
+				" A simple class to test parsing.\n",
+				" </summary>\n"), clas.getSignature().getComments());
 
 		assertField(fs, 0, fullClassName + ".mod", "int");
 		Assert.assertEquals(ls(" <value>The modification count.</value>\n"), fs.get(0).getComments());

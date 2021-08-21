@@ -67,7 +67,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	@Override
 	public AstParser<List<String>> createCommentParser(BlockAst<CsBlock> block) {
 		var lang = CodeLanguageOptions.C_SHARP;
-		return new CommentBlockExtractor(lang.displayName(), block);
+		return new CommentBlockExtractor(lang.displayName());
 	}
 
 
@@ -97,7 +97,8 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	public List<BlockAst<CsBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<CsBlock> parentScope) {
 		List<BlockAst<CsBlock>> blocks = new ArrayList<>();
 		var annotationExtractor = new CsAnnotationExtractor();
-		extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, blocks);
+		var commentExtractor = createCommentParser(parentScope);
+		extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, commentExtractor, blocks);
 		return blocks;
 	}
 
@@ -108,8 +109,8 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
-			int depth, SimpleTree<CodeToken> parentNode, BlockAst<CsBlock> parentScope, CsAnnotationExtractor annotationExtractor, List<BlockAst<CsBlock>> blocks) {
+	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree, int depth, SimpleTree<CodeToken> parentNode, BlockAst<CsBlock> parentScope,
+			AstParser<List<AnnotationSig>> annotationExtractor, AstParser<List<String>> commentExtractor, List<BlockAst<CsBlock>> blocks) {
 		var lang = CodeLanguageOptions.C_SHARP;
 		var keywordUtil = lang.getKeywordUtil();
 		var children = blockTree.getChildren();
@@ -124,6 +125,7 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 			var token = child.getData();
 
 			boolean annotAccepted = annotationExtractor.acceptNext(child);
+			boolean commentAccepted = commentExtractor.acceptNext(child) || annotAccepted; // keep comments if annotation was accepted so that comments before an annotation carry over if there is a block following the annotation(s)
 
 			int addBlockCount = 0;
 			BlockAst<CsBlock> newestBlock = null;
@@ -152,8 +154,9 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 						var blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						var blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 						var annotations = new ArrayList<>(annotationExtractor.getParserResult());
+						var comments = new ArrayList<>(commentExtractor.getParserResult());
 
-						newestBlock = new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, blockTypeStr, nameCompoundRes.getValue()), child, blockType);
+						newestBlock = new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, comments, blockTypeStr, nameCompoundRes.getValue()), child, blockType);
 						blocks.add(newestBlock);
 					}
 
@@ -164,8 +167,11 @@ public class CsBlockParser implements AstExtractor<CsBlock> {
 			// a valid block must have 2 or more children: a 'name' and a '{...}' block
 			// create a separate annotation extractor when extracting blocks within an annotation (not sure if this could ever happen)
 			if(child.size() > 1) {
-				extractBlocksFromTree(nameScope, child, depth + 1, blockTree, newestBlock != null ? newestBlock : parentScope, (annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle()), blocks);
+				var childAnnotExtractor = annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle();
+				var childCommentExtractor = commentAccepted ? commentExtractor.copy() : commentExtractor.recycle();
+				extractBlocksFromTree(nameScope, child, depth + 1, blockTree, newestBlock != null ? newestBlock : parentScope, childAnnotExtractor, childCommentExtractor, blocks);
 				if(!annotAccepted) { annotationExtractor.recycle(); }
+				if(!commentAccepted) { commentExtractor.recycle(); }
 			}
 
 			while(addBlockCount > 0) {

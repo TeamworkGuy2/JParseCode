@@ -84,6 +84,9 @@ public class CsFieldsParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		Assert.assertEquals(ls(" <summary>\n",
+				" A simple class to test field parsing.\n",
+				" </summary>\n"), clas.getSignature().getComments());
 
 		List<FieldDef> fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int", "-1");

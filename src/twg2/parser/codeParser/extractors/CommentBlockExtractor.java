@@ -3,8 +3,6 @@ package twg2.parser.codeParser.extractors;
 import java.util.ArrayList;
 import java.util.List;
 
-import twg2.ast.interm.block.BlockAst;
-import twg2.parser.codeParser.BlockType;
 import twg2.parser.fragment.CodeToken;
 import twg2.parser.fragment.CodeTokenType;
 import twg2.parser.stateMachine.AstParserReusableBase;
@@ -25,16 +23,14 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 	}
 
 
-	BlockAst<? extends BlockType> parentBlock;
 	List<String> comments = new ArrayList<>();
 	boolean multiLine;
 	String langName;
 
 
-	public CommentBlockExtractor(String langName, BlockAst<? extends BlockType> parentBlock) {
+	public CommentBlockExtractor(String langName) {
 		super(langName + " field", State.COMPLETE, State.FAILED);
 		this.langName = langName;
-		this.parentBlock = parentBlock;
 		this.state = State.INIT;
 	}
 
@@ -121,7 +117,7 @@ public class CommentBlockExtractor extends AstParserReusableBase<CommentBlockExt
 
 	@Override
 	public CommentBlockExtractor copy() {
-		return new CommentBlockExtractor(this.langName, this.parentBlock);
+		return new CommentBlockExtractor(this.langName);
 	}
 
 

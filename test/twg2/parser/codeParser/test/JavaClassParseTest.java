@@ -99,6 +99,8 @@ public class JavaClassParseTest {
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "StringAnnotation", new String[] { "value" }, "-SimpleJava-");
+		Assert.assertEquals(ls(" A simple class to test parsing.\n" +
+				" * @since 2016-1-15\n" + " "), clas.getSignature().getComments());
 
 		var fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int");

@@ -25,10 +25,11 @@ public class ClassSigSimple implements ClassSig {
 	/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 	private final @Getter String declarationType;
 	private final @Getter List<String> extendImplementSimpleNames;
+	private final @Getter List<String> comments;
 
 
 
-	public ClassSigSimple(List<String> fullName, List<? extends TypeSigSimple> params, Keyword accessModifier, List<? extends AnnotationSig> annotations, String declarationType, List<String> extendImplementSimpleNames) {
+	public ClassSigSimple(List<String> fullName, List<? extends TypeSigSimple> params, Keyword accessModifier, List<? extends AnnotationSig> annotations, List<String> comments, String declarationType, List<String> extendImplementSimpleNames) {
 		@SuppressWarnings("unchecked")
 		var paramsCast = (List<TypeSigSimple>)params;
 		@SuppressWarnings("unchecked")
@@ -38,6 +39,7 @@ public class ClassSigSimple implements ClassSig {
 		this.params = paramsCast;
 		this.accessModifier = accessModifier;
 		this.annotations = annotationsCast;
+		this.comments = comments;
 		this.declarationType = declarationType;
 		this.extendImplementSimpleNames = extendImplementSimpleNames;
 	}
@@ -80,6 +82,11 @@ public class ClassSigSimple implements ClassSig {
 		if(annotations.size() > 0) {
 			json.comma(dst).propName("annotations", dst)
 				.toArrayConsume(annotations, dst, (a) -> a.toJson(dst, st));
+		}
+
+		if(comments.size() > 0) {
+			json.comma(dst).propName("comments", dst)
+				.toStringArray(comments, dst);
 		}
 
 		dst.append(" }");

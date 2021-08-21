@@ -107,6 +107,22 @@ public class CsAnnotationParseTest {
 		"}"
 	);
 
+	private static List<String> src2Lines = ls(
+		"namespace ParserExamples.Samples {",
+		"  /// <summary>",
+		"  /// First comment for annotation and comment parsing.",
+		"  /// Line two.",
+		"  /// </summary>",
+		"  [PluralAnnotation(1, \"st\")]",
+		"  /// <summary>Second comment.</summary>",
+		"  [PluralAnnotation(2, \"nd\")]",
+		"  public class CsAnnotationComments {",
+		"",
+		"  }",
+		"",
+		"}"
+	);
+
 
 	@Test
 	public void annotationsParseTest() {
@@ -204,4 +220,28 @@ public class CsAnnotationParseTest {
 		assertParameter(ps, 1, "states", "string[]", false, null, ls(CsKeyword.PARAMS), null);
 	}
 
+
+	@Test
+	public void annotationCommentsParseTest() {
+		CodeFileAndAst<CsBlock> csAnnotations = CodeFileAndAst.<CsBlock>parse(CodeLanguageOptions.C_SHARP, "CsAnnotationComments.cs", "ParserExamples.Samples.CsAnnotationComments", true, src2Lines);
+		List<CodeFileParsed.Simple<CsBlock>> blocks = csAnnotations.parsedBlocks;
+
+		String fullClassName = csAnnotations.fullClassName;
+		Assert.assertEquals(1, blocks.size());
+		ClassAst.SimpleImpl<CsBlock> clas = blocks.get(0).parsedClass;
+		Assert.assertEquals(0, clas.getUsingStatements().size());
+		Assert.assertEquals(0, clas.getFields().size());
+		Assert.assertEquals(0, clas.getMethods().size());
+		Assert.assertEquals(ls(" <summary>\n",
+				" First comment for annotation and comment parsing.\n",
+				" Line two.\n",
+				" </summary>\n",
+				" <summary>Second comment.</summary>\n"), clas.getSignature().getComments());
+
+		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
+		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
+		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "PluralAnnotation", new String[] { "arg1", "arg2" }, "1", "st");
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 1, "PluralAnnotation", new String[] { "arg1", "arg2" }, "2", "nd");
+	}
 }

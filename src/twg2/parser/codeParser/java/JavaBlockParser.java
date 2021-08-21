@@ -65,7 +65,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	@Override
 	public AstParser<List<String>> createCommentParser(BlockAst<JavaBlock> block) {
 		var lang = CodeLanguageOptions.JAVA;
-		return new CommentBlockExtractor(lang.displayName(), block);
+		return new CommentBlockExtractor(lang.displayName());
 	}
 
 
@@ -97,6 +97,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	public List<BlockAst<JavaBlock>> extractBlocks(List<String> nameScope, SimpleTree<CodeToken> astTree, BlockAst<JavaBlock> parentScope) {
 		List<BlockAst<JavaBlock>> blocks = new ArrayList<>();
 		var annotationExtractor = new JavaAnnotationExtractor();
+		var commentExtractor = createCommentParser(parentScope);
 		// parse package name and push it into the name scope
 		String pkgName = parsePackageDeclaration(astTree);
 		if(pkgName == null) {
@@ -104,7 +105,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 		}
 		nameScope.add(pkgName);
 
-		extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, blocks);
+		extractBlocksFromTree(nameScope, astTree, 0, null, parentScope, annotationExtractor, commentExtractor, blocks);
 		return blocks;
 	}
 
@@ -115,8 +116,8 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 	 * @param depth the current blockTree's depth within the tree (0=root node, 1=child of root, etc.)
 	 * @param parentNode the current blockTree's parent node or null if the parent is null (only possible if blockTree is a child of a tree with a null root or blockTree is the root and has no parent)
 	 */
-	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree,
-			int depth, SimpleTree<CodeToken> parentNode, BlockAst<JavaBlock> parentScope, JavaAnnotationExtractor annotationExtractor, List<BlockAst<JavaBlock>> blocks) {
+	public static void extractBlocksFromTree(List<String> nameScope, SimpleTree<CodeToken> blockTree, int depth, SimpleTree<CodeToken> parentNode, BlockAst<JavaBlock> parentScope,
+			AstParser<List<AnnotationSig>> annotationExtractor, AstParser<List<String>> commentExtractor, List<BlockAst<JavaBlock>> blocks) {
 		var lang = CodeLanguageOptions.JAVA;
 		var keywordUtil = lang.getKeywordUtil();
 		var children = blockTree.getChildren();
@@ -129,6 +130,7 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 			var token = child.getData();
 
 			boolean annotAccepted = annotationExtractor.acceptNext(child);
+			boolean commentAccepted = commentExtractor.acceptNext(child) || annotAccepted; // keep comments if annotation was accepted so that comments before an annotation carry over if there is a block following the annotation(s)
 
 			int addBlockCount = 0;
 			BlockAst<JavaBlock> newestBlock = null;
@@ -157,8 +159,9 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 						var blockTypes = blockSig.isGeneric() ? blockSig.getParams() : Collections.<TypeSig.TypeSigSimple>emptyList();
 						var blockFqName = NameUtil.splitFqName(blockSig.getTypeName());
 						var annotations = new ArrayList<>(annotationExtractor.getParserResult());
+						var comments = new ArrayList<>(commentExtractor.getParserResult());
 
-						newestBlock = new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, blockTypeStr, nameCompoundRes.getValue()), child, blockType);
+						newestBlock = new BlockAst<>(new ClassSigSimple(blockFqName, blockTypes, access, annotations, comments, blockTypeStr, nameCompoundRes.getValue()), child, blockType);
 						blocks.add(newestBlock);
 					}
 
@@ -168,8 +171,11 @@ public class JavaBlockParser implements AstExtractor<JavaBlock> {
 
 			// a valid block must have 2 or more children: a 'name' and a '{...}' block
 			if(child.size() > 1) {
-				extractBlocksFromTree(nameScope, child, depth + 1, blockTree, newestBlock != null ? newestBlock : parentScope, (annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle()), blocks);
+				var childAnnotExtractor = annotAccepted ? annotationExtractor.copy() : annotationExtractor.recycle();
+				var childCommentExtractor = commentAccepted ? commentExtractor.copy() : commentExtractor.recycle();
+				extractBlocksFromTree(nameScope, child, depth + 1, blockTree, newestBlock != null ? newestBlock : parentScope, childAnnotExtractor, childCommentExtractor, blocks);
 				if(!annotAccepted) { annotationExtractor.recycle(); }
+				if(!commentAccepted) { commentExtractor.recycle(); }
 			}
 
 			while(addBlockCount > 0) {

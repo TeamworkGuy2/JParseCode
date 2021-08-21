@@ -4,7 +4,13 @@ This project does its best to adhere to [Semantic Versioning](http://semver.org/
 
 
 --------
-### [0.23.1](N/A) - 2021-08-14
+### [0.23.2](N/A) - 2021-08-21
+#### Added
+* `classSignature.comments` parsing and AST output added
+
+
+--------
+### [0.23.1](https://github.com/TeamworkGuy2/JParseCode/commit/8dcac1d6a2dfe305dcd286a6d97068120f4e022e) - 2021-08-14
 #### Changed
 * Expanded C# and Java field parsing tests
 

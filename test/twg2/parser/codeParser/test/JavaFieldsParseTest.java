@@ -83,6 +83,8 @@ public class JavaFieldsParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		Assert.assertEquals(ls(" A simple class to test field parsing.\n" +
+				" * @since 2021-8-14\n" + " "), clas.getSignature().getComments());
 
 		List<FieldDef> fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int", "-1");

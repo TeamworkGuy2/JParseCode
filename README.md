@@ -76,7 +76,8 @@ JSON Result (printed to System.out):
     "classSignature": {
         "access": "PUBLIC",
         "name": "ParserExamples.Samples.SimpleCs",
-        "declarationType": "class"
+        "declarationType": "class",
+        "comments": [" <summary>\n", " A simple class to test parsing.\n", " </summary>\n"]
     },
     "blockType": "CLASS",
     "using": [],

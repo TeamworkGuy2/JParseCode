@@ -96,9 +96,24 @@ public class JavaAnnotationParseTest {
 		"}"
 	);
 
+	private static List<String> src2Lines = ls(
+		"package ParserExamples.Samples;",
+		"",
+		"/** First comment for annotation and comment parsing.",
+		" * @since 2021-8-21",
+		" */",
+		"@PluralAnnotation(1, \"st\")",
+		"/** Second comment.",
+		" */",
+		"@PluralAnnotation(2, \"nd\")",
+		"public class JavaAnnotationComments {",
+		"",
+		"}"
+	);
+
 
 	@Test
-	public void annotationJavaParseTest() {
+	public void annotationParseTest() {
 		CodeFileAndAst<JavaBlock> annotationJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "AnnotationJava.java", "ParserExamples.Samples.AnnotationJava", true, srcLines);
 		List<CodeFileParsed.Simple<JavaBlock>> blocks = annotationJava.parsedBlocks;
 
@@ -184,6 +199,29 @@ public class JavaAnnotationParseTest {
 		ps = m.paramSigs;
 		assertParameter(ps, 0, "guid", "int", false, null, null, null);
 		assertParameter(ps, 1, "states", "String...", false, null, null, null);
+	}
+
+
+	@Test
+	public void annotationCommentsParseTest() {
+		CodeFileAndAst<JavaBlock> annotationJava = CodeFileAndAst.<JavaBlock>parse(CodeLanguageOptions.JAVA, "JavaAnnotationComments.java", "ParserExamples.Samples.JavaAnnotationComments", true, src2Lines);
+		List<CodeFileParsed.Simple<JavaBlock>> blocks = annotationJava.parsedBlocks;
+
+		String fullClassName = annotationJava.fullClassName;
+		Assert.assertEquals(1, blocks.size());
+		ClassAst.SimpleImpl<JavaBlock> clas = blocks.get(0).parsedClass;
+		Assert.assertEquals(0, clas.getUsingStatements().size());
+		Assert.assertEquals(0, clas.getFields().size());
+		Assert.assertEquals(0, clas.getMethods().size());
+		Assert.assertEquals(ls(" First comment for annotation and comment parsing.\n" +
+				" * @since 2021-8-21\n ",
+				" Second comment.\n "), clas.getSignature().getComments());
+
+		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
+		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
+		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "PluralAnnotation", new String[] { "arg1", "arg2" }, "1", "st");
+		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 1, "PluralAnnotation", new String[] { "arg1", "arg2" }, "2", "nd");
 	}
 
 }

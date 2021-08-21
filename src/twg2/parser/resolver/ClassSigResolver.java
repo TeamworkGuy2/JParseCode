@@ -98,7 +98,7 @@ public class ClassSigResolver {
 
 		var classFqName = classSig.getFullName();
 
-		return new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getAnnotations(),
+		return new ClassSigResolved(classFqName, resolvedClassParams, classSig.getAccessModifier(), classSig.getAnnotations(), classSig.getComments(),
 				classSig.getDeclarationType(), extendClassType, implementInterfaceTypes);
 	}
 

@@ -35,6 +35,7 @@ public class CsClassParseTest {
 		"",
 		"  /// <summary>",
 		"  /// A simple class to test parsing.",
+		"  /// Since when.",
 		"  /// </summary>",
 		"  [StringAnnotation(\"-SimpleCs-\")]",
 		"  public class SimpleCs {",
@@ -111,6 +112,10 @@ public class CsClassParseTest {
 		Assert.assertEquals(AccessModifierEnum.PUBLIC, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
 		AnnotationAssert.assertAnnotation(clas.getSignature().getAnnotations(), 0, "StringAnnotation", new String[] { "value" }, "-SimpleCs-");
+		Assert.assertEquals(ls(" <summary>\n",
+				" A simple class to test parsing.\n",
+				" Since when.\n",
+				" </summary>\n"), clas.getSignature().getComments());
 
 		var fields = clas.getFields();
 		assertField(fields, 0, fullClassName + ".mod", "int");

@@ -26,13 +26,14 @@ public class ClassSigResolved implements ClassSig {
 	private final @Getter Keyword accessModifier;
 	/** The block's annotations */
 	private final @Getter List<AnnotationSig> annotations;
+	private final @Getter List<String> comments;
 	/** The block's type (i.e. 'interface', 'class', 'enum', etc.) */
 	private final @Getter String declarationType;
 	private final @Getter TypeSig.TypeSigResolved extendClass;
 	private final @Getter List<TypeSig.TypeSigResolved> implementInterfaces;
 
 
-	public ClassSigResolved(List<String> fullName, List<? extends TypeSigResolved> params, Keyword accessModifier, List<? extends AnnotationSig> annotations,
+	public ClassSigResolved(List<String> fullName, List<? extends TypeSigResolved> params, Keyword accessModifier, List<? extends AnnotationSig> annotations, List<String> comments,
 			String declarationType, TypeSigResolved extendClass, List<? extends TypeSigResolved> implementInterfaces) {
 		@SuppressWarnings("unchecked")
 		var paramsCast = (List<TypeSigResolved>)params;
@@ -45,6 +46,7 @@ public class ClassSigResolved implements ClassSig {
 		this.params = paramsCast;
 		this.accessModifier = accessModifier;
 		this.annotations = annotationsCast;
+		this.comments = comments;
 		this.declarationType = declarationType;
 		this.extendClass = extendClass;
 		this.implementInterfaces = implementInterfacesCast;
@@ -89,6 +91,11 @@ public class ClassSigResolved implements ClassSig {
 		if(annotations.size() > 0) {
 			json.comma(dst).propName("annotations", dst)
 				.toArrayConsume(annotations, dst, (a) -> a.toJson(dst, st));
+		}
+
+		if(comments.size() > 0) {
+			json.comma(dst).propName("comments", dst)
+				.toStringArray(comments, dst);
 		}
 
 		dst.append(" }");

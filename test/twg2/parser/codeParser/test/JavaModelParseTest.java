@@ -90,6 +90,8 @@ public class JavaModelParseTest {
 		Assert.assertEquals(fullClassName, NameUtil.joinFqName(clas.getSignature().getFullName()));
 		Assert.assertEquals(AccessModifierEnum.NAMESPACE_OR_INHERITANCE_LOCAL, clas.getSignature().getAccessModifier());
 		Assert.assertEquals("class", clas.getSignature().getDeclarationType());
+		Assert.assertEquals(ls(" A simple class to test parsing.\n" +
+				" * @since 2017-6-24\n" + " "), clas.getSignature().getComments());
 
 		assertField(fields, 0, fullClassName + ".mod", "int");
 		Assert.assertEquals(ls(" The modification count. "), fields.get(0).getComments());
